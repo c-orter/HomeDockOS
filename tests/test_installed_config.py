@@ -351,3 +351,24 @@ def test_unrepresentable_detection(env):
     for section, body in cases.items():
         env.write_text(f"services:\n  web:\n    image: n\n{body}")
         assert ic.read_installed_config("demo")["unrepresentable"] == [section]
+
+
+def test_proxied_ports_follow_the_window_port_and_domains_and_the_file_keeps_its_ports(env, monkeypatch, tmp_path):
+    from pymodules import hd_DomainStore as store
+    from pymodules import hd_RuntimeCompose as runtime
+
+    monkeypatch.setattr(store, "domains_file", str(tmp_path / "domains.json"))
+    monkeypatch.setattr(store, "reserved_hosts", lambda: set())
+    monkeypatch.setattr(runtime, "suggested_port_for", lambda names: None)
+    store.reset_cache()
+
+    before = env.read_text()
+
+    assert ic.read_installed_config("demo")["proxied"] == [80]
+
+    store.set_web_port("demo", 443)
+    store.add_domain("demo", "demo.example.com", 80)
+
+    assert ic.read_installed_config("demo")["proxied"] == [80, 443]
+    assert ic.read_installed_config("demo")["ports"] == ["18080:80", "127.0.0.1:18443:443/tcp"]
+    assert env.read_text() == before

@@ -141,3 +141,7 @@ export function addressProblem(rows: string[]): string {
 
   return "";
 }
+
+export async function setWebPort(container: string, port: number, csrf: string) {
+  await axios.post("/api/domains/web-port", { container, port }, headers(csrf));
+}

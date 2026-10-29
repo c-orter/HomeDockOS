@@ -298,7 +298,13 @@
                   </div>
                   <div v-for="(port, index) in portMappings" :key="'port-' + index" class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
                     <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('ports')" v-model:value="portMappings[index].host" placeholder="8080" />
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('ports')" v-model:value="portMappings[index].container" placeholder="80" />
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('ports')" v-model:value="portMappings[index].container" placeholder="80">
+                      <template v-if="isProxied(port.container)" #suffix>
+                        <Tooltip :overlay-inner-style="{ fontSize: '10px', textAlign: 'center', padding: '4px 10px', maxWidth: '220px', minHeight: 'auto' }" :title="$t('HomeDock reaches this port over its own network, so it is not published on the host. Your compose file still lists it as written.')" placement="top">
+                          <span :class="[themeClasses.installConfigSectionAddBtn]" class="text-[9px] font-semibold uppercase tracking-wide whitespace-nowrap">{{ $t("Proxied by HomeDock") }}</span>
+                        </Tooltip>
+                      </template>
+                    </Input>
                     <button :class="[themeClasses.storeCardSubtitle]" :disabled="fieldLocked('ports')" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removePort(index)">
                       <Icon :icon="deleteIcon" class="h-4 w-4" />
                     </button>
@@ -314,6 +320,9 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Domains Card (applies right away, like Properties) -->
+              <AppDomainsCard v-if="editing && app?.name" :container="app.name" @changed="refreshProxied" />
 
               <!-- Volumes Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
@@ -640,6 +649,7 @@ import { Select, SelectOption, Input, InputPassword, Switch, Tooltip } from "ant
 
 import { notifyError, notifySuccess, notifyWarning } from "../__Components__/Notifications.vue";
 import InstallAddressCard from "../__Components__/InstallAddressCard.vue";
+import AppDomainsCard from "../__Components__/AppDomainsCard.vue";
 import { cleanNames } from "../__Composables__/useDomains";
 
 import { Icon } from "@iconify/vue";
@@ -1034,10 +1044,29 @@ async function fetchInstalledConfig() {
     composeWarnings.value = data.warnings || [];
     unrepresentable.value = data.unrepresentable || [];
     advancedCompose.value = data.ymlContent || "";
+    proxiedPorts.value = data.proxied || [];
   } catch (error) {
     console.error("Error fetching installed config:", error);
     hasLoadedConfig.value = false;
     notifyWarning(t("Could not load the installed configuration."), themeClasses.value.scopeSelector);
+  }
+}
+
+const proxiedPorts = ref<number[]>([]);
+
+const isProxied = (container: string) => proxiedPorts.value.includes(Number(String(container).split("/")[0]));
+
+// only the proxied marks are refreshed, so unsaved edits in the form survive a domain change
+async function refreshProxied() {
+  try {
+    const response = await axios.get("/api/get-installed-config", {
+      params: { containerName: app.value!.name, service: selectedService.value },
+      headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
+    });
+
+    proxiedPorts.value = response.data.data.proxied || [];
+  } catch {
+    // the marks stay as they were
   }
 }
 

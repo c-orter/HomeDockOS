@@ -16,6 +16,7 @@ from pymodules.hd_FunctionsGlobals import compose_upload_folder
 from pymodules.hd_ComposeDevHooks import process_devhooks, get_config_path, get_internal_storage_path
 from pymodules.hd_ComposeWarnings import compose_warnings
 from pymodules.hd_PortValidator import validate_ports
+from pymodules.hd_RuntimeCompose import proxied_ports_for
 
 SECTIONS = ("ports", "volumes", "environment", "networks", "capabilities", "privileged", "restartPolicy")
 NETWORK_MODES = ("host", "bridge", "none")
@@ -177,7 +178,7 @@ def read_installed_config(container_name, service_name=None) -> dict:
     services = yml_data["services"]
     labels = service.get("labels") or {}
 
-    return {**describe(service, text), "service": name, "services": service_list(services), "ymlContent": yaml.dump(yml_data, sort_keys=False), "warnings": compose_warnings(text), "dependencies": [n for n, s in services.items() if isinstance(s, dict) and (s.get("labels") or {}).get("HDRole") == "dependency"], "hd_group": labels.get("HDGroup"), "hd_role": labels.get("HDRole")}
+    return {**describe(service, text), "service": name, "services": service_list(services), "ymlContent": yaml.dump(yml_data, sort_keys=False), "warnings": compose_warnings(text), "dependencies": [n for n, s in services.items() if isinstance(s, dict) and (s.get("labels") or {}).get("HDRole") == "dependency"], "hd_group": labels.get("HDGroup"), "hd_role": labels.get("HDRole"), "proxied": sorted(proxied_ports_for(path, services).get(name, set()))}
 
 
 # --- merging ---

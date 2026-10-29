@@ -16,7 +16,15 @@
     <p v-if="loadError" class="text-xs m-0" :class="[themeClasses.appPropsStatusDangerText]" role="alert">{{ loadError }}</p>
     <p v-else-if="!data" class="text-xs m-0 opacity-60" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Loading…") }}</p>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-[268px_1fr] rounded-[10px] border overflow-hidden min-h-[260px]" :class="[themeClasses.appPropsActionListItemBorder]">
+    <div v-if="data" class="flex items-center gap-2 mb-2.5 flex-wrap">
+      <span :id="`${headingId}-window-port`" class="text-xs font-medium" :class="[themeClasses.appPropsInfoValue]">{{ $t("Window port") }}</span>
+      <Select class="w-[110px]" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="data.effective_web_port ?? undefined" :aria-labelledby="`${headingId}-window-port`" :popup-class-name="themeClasses.scopeSelector" :show-search="false" :disabled="busy || !data.ports.length" @change="changeWebPort(Number($event))">
+        <SelectOption v-for="port in data.ports" :key="port" :value="port" :class="[themeClasses.scopeSelector]">{{ port }}</SelectOption>
+      </Select>
+      <span class="text-xs opacity-60" :class="[themeClasses.appPropsInfoLabel]">{{ data.web_port ? $t("Set by you. The window opens this port.") : $t("Picked automatically. The window opens this port.") }}</span>
+    </div>
+
+    <div v-if="data" class="grid grid-cols-1 sm:grid-cols-[268px_1fr] rounded-[10px] border overflow-hidden min-h-[260px]" :class="[themeClasses.appPropsActionListItemBorder]">
       <ul class="list-none m-0 p-0 flex flex-col border-b sm:border-b-0 sm:border-r" :class="[themeClasses.appPropsActionListItemBorder, themeClasses.appPropsInfoCardBg]" :aria-label="$t('Domains')">
         <li v-if="windowAddress" class="flex items-start gap-2 px-3 py-2.5 border-b" :class="[themeClasses.appPropsInfoRowBorder]">
           <Icon :icon="lockIcon" width="14" height="14" class="mt-0.5 flex-shrink-0 opacity-60" :class="[themeClasses.appPropsInfoLabel]" />
@@ -155,11 +163,12 @@ import checkIcon from "@iconify-icons/mdi/check";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
-import { addDomain, checkDns, domainHealth, errorMessage, fetchDomains, nameProblem, normalizeName, openUrl, removeDomain, updateDomain, type AppDomain, type AppDomains, type DnsCheck, type DomainMode } from "../__Composables__/useDomains";
+import { addDomain, checkDns, setWebPort, domainHealth, errorMessage, fetchDomains, nameProblem, normalizeName, openUrl, removeDomain, updateDomain, type AppDomain, type AppDomains, type DnsCheck, type DomainMode } from "../__Composables__/useDomains";
 
 const SelectOption = Select.Option;
 
 const props = defineProps<{ container: string; windowAddress?: string | null }>();
+const emit = defineEmits<{ (event: "changed"): void }>();
 
 const { t } = useI18n();
 const { themeClasses } = useTheme();
@@ -203,10 +212,12 @@ function say(message: string) {
   setTimeout(() => (announcement.value = message), 30);
 }
 
-async function load() {
+async function load(changed = false) {
   try {
     data.value = await fetchDomains(props.container, csrfToken.value);
     loadError.value = "";
+
+    if (changed) emit("changed");
 
     if (!data.value.domains.some((domain) => domain.fqdn === selectedName.value)) selectedName.value = data.value.domains[0]?.fqdn ?? "";
   } catch (error) {
@@ -288,6 +299,22 @@ function select(name: string) {
   selectedName.value = name;
 }
 
+async function changeWebPort(port: number) {
+  if (busy.value) return;
+
+  busy.value = true;
+
+  try {
+    await setWebPort(props.container, port, csrfToken.value);
+    await load(true);
+    say(t("Window port set to {port}.", { port }));
+  } catch (error) {
+    loadError.value = errorMessage(error, t("Could not change the window port."));
+  } finally {
+    busy.value = false;
+  }
+}
+
 async function startAdding() {
   if (!data.value) return;
 
@@ -319,7 +346,7 @@ async function commitAdd() {
 
   try {
     await addDomain(props.container, { fqdn: name, port: draft.value.port }, csrfToken.value);
-    await load();
+    await load(true);
     adding.value = false;
     selectedName.value = name;
     say(t("Domain added. Certificate reissue queued."));
@@ -338,12 +365,12 @@ async function change(changes: { port?: number; mode?: DomainMode; primary?: boo
 
   try {
     await updateDomain(props.container, domain.fqdn, changes, csrfToken.value);
-    await load();
+    await load(true);
     selectedName.value = domain.fqdn;
     say(announce);
   } catch (error) {
     say(errorMessage(error, t("Could not save the change.")));
-    await load();
+    await load(true);
   } finally {
     busy.value = false;
   }
@@ -369,7 +396,7 @@ async function removeSelected() {
   try {
     await removeDomain(props.container, domain.fqdn, csrfToken.value);
     confirmingRemove.value = false;
-    await load();
+    await load(true);
     say(t("{name} removed. Certificate reissue queued.", { name: domain.fqdn }));
   } catch (error) {
     say(errorMessage(error, t("Could not remove this domain.")));
@@ -395,9 +422,8 @@ async function copyName() {
 function openInTab() {
   if (selected.value) window.open(openUrl(selected.value, window.location), "_blank", "noopener,noreferrer");
 }
-
-onMounted(load);
-watch(() => props.container, load);
+onMounted(() => load());
+watch(() => props.container, () => load());
 onBeforeUnmount(() => {
   clearTimeout(confirmTimer);
   clearTimeout(copiedTimer);
