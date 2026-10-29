@@ -32,7 +32,6 @@ user_packages_calendar_folder = os.path.join(user_packages_folder, "_calendar")
 user_packages_shortcuts_folder = os.path.join(user_packages_folder, "_shortcuts")
 
 user_packages_app_open_folder = os.path.join(user_packages_folder, "_app_default_open")
-user_packages_exposure_file = os.path.join(user_packages_folder, "_app_exposure.json")
 user_packages_domains_file = os.path.join(user_packages_folder, "_app_domains.json")
 user_packages_app_updates_folder = os.path.join(user_packages_folder, "_app_updates")
 user_packages_desktop_widgets_folder = os.path.join(user_packages_folder, "_desktop_widgets")

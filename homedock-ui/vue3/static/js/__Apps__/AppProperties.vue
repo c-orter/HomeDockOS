@@ -185,18 +185,6 @@
 
               </div>
 
-              <div v-if="exposureAvailable" class="rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.appPropsUsageCardBgHover, themeClasses.appPropsUsageCardBorderHover, themeClasses.aeroExtraScope]">
-                <div class="flex items-center gap-2 mb-2.5">
-                  <Icon :icon="exposureMode === 'direct' ? earthIcon : shieldLockIcon" width="20" height="20" :class="[exposureMode === 'direct' ? 'text-amber-500' : themeClasses.appPropsCardHeaderIcon]" />
-                  <span class="text-[15px] font-semibold m-0" :class="[themeClasses.appPropsCardHeaderText]">{{ $t("Exposure") }}</span>
-                </div>
-                <Select class="w-full rounded-xl" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="exposureMode" @change="saveExposure" :popup-class-name="themeClasses.scopeSelector" :show-search="false">
-                  <SelectOption :class="[themeClasses.scopeSelector]" value="gated">{{ $t("Behind your HomeDock OS session") }}</SelectOption>
-                  <SelectOption :class="[themeClasses.scopeSelector]" value="direct">{{ $t("Open to anyone with the address") }}</SelectOption>
-                </Select>
-                <p class="text-[10px] mt-1.5 leading-snug" :class="[exposureMode === 'direct' ? 'text-amber-500 opacity-90' : `opacity-50 ${themeClasses.appPropsInfoLabel}`]">{{ exposureDescription }}</p>
-              </div>
-
               <div v-if="!isDependency" class="rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.appPropsUsageCardBgHover, themeClasses.appPropsUsageCardBorderHover, themeClasses.aeroExtraScope]">
                 <div class="flex items-center gap-2 mb-2.5">
                   <Icon :icon="dockWindowIcon" width="20" height="20" :class="[themeClasses.appPropsCardHeaderIcon]" />
@@ -402,8 +390,6 @@ import contentCopyIcon from "@iconify-icons/mdi/content-copy";
 import checkIcon from "@iconify-icons/mdi/check";
 import webIcon from "@iconify-icons/mdi/web";
 import dockWindowIcon from "@iconify-icons/mdi/dock-window";
-import shieldLockIcon from "@iconify-icons/mdi/shield-lock-outline";
-import earthIcon from "@iconify-icons/mdi/earth";
 
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
@@ -718,53 +704,6 @@ async function saveViewMode(mode: unknown) {
   }
 }
 
-// HDOS00112
-const exposureAvailable = ref(false);
-const exposureModes = ref<Record<string, string>>({});
-
-const exposureMode = computed(() => exposureModes.value[app.value?.slug ?? ""] ?? "gated");
-
-const exposureAddress = computed(() => {
-  const trail = subdomainTrail();
-
-  return app.value?.slug && trail ? `${app.value.slug}.${trail}` : "";
-});
-
-const exposureDescription = computed(() => {
-  if (exposureMode.value === "direct") return t("Anyone on the internet who knows the address {address} can reach the app. Its own login is the only thing left guarding it, so be careful with this one.", { address: exposureAddress.value });
-
-  return t("Only someone already signed in to HomeDock OS can reach the app via {address}. Phone apps like Jellyfin or Nextcloud only know how to log in to the app itself, never to HomeDock OS, so for those you need the other option.", { address: exposureAddress.value });
-});
-
-async function loadExposure() {
-  try {
-    const { data } = await axios.get("/api/app-exposure", { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-
-    exposureAvailable.value = Boolean(data?.available);
-    exposureModes.value = data?.modes ?? {};
-  } catch {
-    exposureAvailable.value = false;
-  }
-}
-
-async function saveExposure(mode: unknown) {
-  if (!app.value) return;
-
-  const value = String(mode);
-  const slug = app.value.slug ?? "";
-  const previous = exposureModes.value[slug];
-
-  if (!slug) return;
-
-  exposureModes.value = { ...exposureModes.value, [slug]: value };
-
-  try {
-    await axios.post("/api/app-exposure", { container: app.value.name, mode: value }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-  } catch {
-    exposureModes.value = { ...exposureModes.value, [slug]: previous ?? "gated" };
-  }
-}
-
 function openInControlHub() {
   if (!app.value) return;
 
@@ -829,7 +768,6 @@ watch(app, () => {
 });
 
 onMounted(() => {
-  loadExposure();
 
   if (appStore.apps.length === 0) {
     appStore.loadApps(csrfToken.value);

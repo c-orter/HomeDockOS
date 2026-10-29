@@ -132,7 +132,7 @@ def resolve_app_for_host(host_header):
         container, domain = found
         app = list_apps()[container]
 
-        return {"slug": app["slug"], "container": container, "port": domain["port"], "trail": domain["path"].strip("/"), "protocol": domain["protocol"], "host_trail": "", "fqdn": bare_host, "implicit": False}
+        return {"slug": app["slug"], "container": container, "port": domain["port"], "trail": domain["path"].strip("/"), "protocol": domain["protocol"], "mode": domain.get("mode", "gated"), "host_trail": "", "fqdn": bare_host, "implicit": False}
 
     slug, host_trail = split_host(host_header)
     if not slug or not host_trail:
@@ -148,7 +148,7 @@ def resolve_app_for_host(host_header):
         return None
 
     # HDOS00034
-    return {"slug": slug, "host_trail": host_trail, "protocol": "auto", "fqdn": bare_host, "implicit": True, **entry}
+    return {"slug": slug, "host_trail": host_trail, "protocol": "auto", "mode": "gated", "fqdn": bare_host, "implicit": True, **entry}
 
 
 # HDOS00131

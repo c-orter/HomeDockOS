@@ -17,8 +17,7 @@ domains_file = user_packages_domains_file
 
 PROTOCOLS = ("auto", "http", "https")
 
-# Only gated exists until per-domain access lands
-MODES = ("gated",)
+MODES = ("gated", "direct")
 
 LAN_SUFFIX = ".homedock.local"
 
@@ -165,7 +164,7 @@ def _validate_path(path):
 
 def _validate_mode(mode):
     if mode not in MODES:
-        raise DomainError("Access mode must be gated.")
+        raise DomainError("Access mode must be gated or direct.")
 
     return mode
 

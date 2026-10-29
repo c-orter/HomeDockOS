@@ -9,6 +9,7 @@ from flask import jsonify, request
 from flask_login import login_required
 
 from pymodules.hd_BackendResolver import installed_containers, reachability, sync_installed_apps, web_port
+from pymodules.hd_DomainAccess import direct_refusal
 from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, update_domain
 
 
@@ -19,7 +20,17 @@ def _error(error):
 def _app_json(container, app):
     reachable, reason = reachability(container)
 
-    return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "reachable": reachable, "unreachable_reason": reason, "domains": app["domains"]}
+    domains = [{**domain, "direct_refusal": direct_refusal(domain["fqdn"])} for domain in app["domains"]]
+
+    return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "reachable": reachable, "unreachable_reason": reason, "domains": domains}
+
+
+def _check_direct(fqdn, mode):
+    if mode == "direct":
+        reason = direct_refusal(str(fqdn or "").strip().lower().rstrip("."))
+
+        if reason:
+            raise DomainError(reason)
 
 
 def _known_container(container):
@@ -56,7 +67,9 @@ def api_domains_add():
 
     try:
         container = _known_container(str(data.get("container", "")))
-        domain = add_domain(container, data.get("fqdn"), data.get("port"), data.get("protocol", "auto"), data.get("path", ""))
+        mode = data.get("mode", "gated")
+        _check_direct(data.get("fqdn"), mode)
+        domain = add_domain(container, data.get("fqdn"), data.get("port"), data.get("protocol", "auto"), data.get("path", ""), mode)
     except DomainError as error:
         return _error(error)
 
@@ -69,7 +82,9 @@ def api_domains_update():
 
     try:
         container = _known_container(str(data.get("container", "")))
-        domain = update_domain(container, data.get("fqdn"), port=data.get("port"), protocol=data.get("protocol"), path=data.get("path"), primary=bool(data.get("primary")))
+        mode = data.get("mode")
+        _check_direct(data.get("fqdn"), mode)
+        domain = update_domain(container, data.get("fqdn"), port=data.get("port"), protocol=data.get("protocol"), path=data.get("path"), mode=mode, primary=bool(data.get("primary")))
     except DomainError as error:
         return _error(error)
 

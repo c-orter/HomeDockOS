@@ -76,10 +76,6 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/domains/remove", "api_domains_remove", CSRF_Protect(api_domains_remove), methods=["POST"])
     homedock_www.add_url_rule("/api/domains/web-port", "api_domains_web_port", CSRF_Protect(api_domains_web_port), methods=["POST"])
 
-    from pymodules.hd_AppExposure import api_app_exposure
-
-    homedock_www.add_url_rule("/api/app-exposure", "api_app_exposure", CSRF_Protect(api_app_exposure), methods=["GET", "POST"])
-
     from pymodules.hd_DesktopState import api_desktop_state, api_desktop_state_content, api_desktop_state_layout
 
     homedock_www.add_url_rule("/api/desktop-state", "api_desktop_state", CSRF_Protect(api_desktop_state), methods=["GET"])
@@ -94,9 +90,9 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/whats-new/seen", "api_whats_new_seen", CSRF_Protect(api_whats_new_seen), methods=["GET", "POST"])
 
-    from pymodules.hd_UIAppDenied import appdenied
+    from pymodules.hd_SubdomainAuth import app_auth
 
-    homedock_www.add_url_rule("/appdenied", "appdenied", appdenied)
+    homedock_www.add_url_rule("/app-auth", "app_auth", app_auth)
 
     from pymodules.hd_UIShieldMode import shieldmode
 

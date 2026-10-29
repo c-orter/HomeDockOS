@@ -5,7 +5,7 @@ See LICENSE.md or https://polyformproject.org/licenses/strict/1.0.0/
 https://www.banshee.pro
 """
 
-from flask import render_template, request, g
+from flask import redirect, render_template, request, session, g
 from flask_login import login_required
 
 from pymodules.hd_FunctionsConfig import read_config
@@ -26,6 +26,12 @@ from pymodules.hd_EnterpriseLoader import is_enterprise_loaded
 
 @login_required
 def desktop():
+    # Sent here to sign in on behalf of an app domain: carry on with that hand-off
+    pending = session.pop("post_login_return", None)
+
+    if isinstance(pending, str) and pending.startswith("/app-auth?"):
+        return redirect(pending)
+
     config = read_config()
     user_name = config["user_name"]
     interface_name = get_active_network_interface()

@@ -104,14 +104,16 @@ def proxy(tmp_path, monkeypatch, backend):
         except requests.RequestException:
             time.sleep(0.1)
 
-    yield {"url": f"http://127.0.0.1:{port}/", "cookie": {router.TOKEN_COOKIE_NAME: mint_app_token("web")}, "port": port}
+    yield {"url": f"http://127.0.0.1:{port}/", "mint": mint_app_token, "port": port}
 
     holder["loop"].call_soon_threadsafe(holder["stop"].set)
     thread.join(timeout=5)
 
 
 def get(proxy, host, cookie=True, **kwargs):
-    return requests.get(proxy["url"], headers={"Host": host, **kwargs.pop("headers", {})}, cookies=proxy["cookie"] if cookie else None, timeout=10, allow_redirects=False, **kwargs)
+    cookies = {router.TOKEN_COOKIE_NAME: proxy["mint"]("web", host)} if cookie else None
+
+    return requests.get(proxy["url"], headers={"Host": host, **kwargs.pop("headers", {})}, cookies=cookies, timeout=10, allow_redirects=False, **kwargs)
 
 
 def test_stored_domain_reaches_the_real_backend(proxy):
@@ -130,12 +132,10 @@ def test_window_route_reaches_the_backend_without_any_domain(proxy):
     assert "Welcome to nginx" in response.text
 
 
-def test_gated_domain_without_a_token_is_refused_not_redirected(proxy):
+def test_gated_domain_without_a_token_is_refused_for_non_documents(proxy):
     store.add_domain("web", "web.other.test", 80)
 
-    response = get(proxy, "web.other.test", cookie=False, headers={"Sec-Fetch-Dest": "document"})
-
-    assert response.status_code == 403
+    assert get(proxy, "web.other.test", cookie=False).status_code == 403
 
 
 def test_unknown_hosts_fall_through_and_the_namespace_gets_a_404(proxy):

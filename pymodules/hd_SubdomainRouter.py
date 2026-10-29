@@ -15,8 +15,8 @@ from urllib.parse import quote, unquote
 
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_TrustedProxy import is_trusted_peer
-from pymodules.hd_AppSubdomains import resolve_app_for_host, is_app_namespace, build_forwarding_headers
-from pymodules.hd_AppExposure import is_directly_exposed
+from pymodules.hd_AppSubdomains import resolve_app_for_host, is_app_namespace, build_forwarding_headers, get_desktop_hosts
+from pymodules.hd_DomainAccess import is_direct, dashboard_host_for
 from pymodules.hd_BackendResolver import resolve_backend, container_running
 from pymodules.hd_SubdomainAuth import TOKEN_COOKIE_NAME, TOKEN_QUERY_PARAM, HANDOFF_MAX_AGE, SESSION_MAX_AGE, verify_app_token
 
@@ -447,23 +447,76 @@ def _handoff_cookie(token, scheme, public_host):
     return cookie + "; SameSite=Lax"
 
 
+_NO_BASE_DOMAIN_PAGE = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Sign-in needed</title>
+<style>body{font-family:system-ui,sans-serif;background:#111;color:#e8e8e8;display:grid;place-items:center;min-height:100vh;margin:0}main{max-width:32rem;padding:1.5rem}h1{font-size:1.2rem;margin:0 0 .75rem}p{line-height:1.5;opacity:.85}code{background:#222;padding:.1rem .3rem;border-radius:4px}</style></head>
+<body><main><h1>HomeDock OS cannot sign you in here</h1>
+<p>This address belongs to an app on HomeDock OS, which asks you to sign in first. For that, HomeDock OS needs a <strong>base domain</strong>, and it is not set yet.</p>
+<p>Open HomeDock OS, go to Settings and set the base domain, then make sure the HomeDock OS dashboard can be opened on it. After that, this address will take you through the sign-in and back.</p>
+</main></body></html>"""
+
+
+async def _send_redirect(send, location):
+    await _send_simple_response(
+        send,
+        302,
+        [(b"location", location.encode("latin-1")), (b"referrer-policy", b"no-referrer"), (b"cache-control", b"no-store"), (b"content-length", b"0")],
+        b"",
+    )
+
+
+async def _send_forbidden(send, body=b"Not authorized.", content_type=b"text/plain; charset=utf-8"):
+    headers = [(b"content-type", content_type), (b"content-length", str(len(body)).encode("latin-1")), (b"cache-control", b"no-store")]
+
+    if content_type.startswith(b"text/html"):
+        headers.append((b"content-security-policy", b"default-src 'none'; style-src 'unsafe-inline'"))
+
+    await _send_simple_response(send, 403, headers, body)
+
+
+async def _send_to_login(scope, send, app, scheme, public_host):
+    """An unauthenticated browser visit to a gated name is taken to the dashboard to sign in, then handed back."""
+
+    port = public_host.partition(":")[2]
+    suffix = f":{port}" if port else ""
+
+    if app.get("implicit", True):
+        # The window address sits under the dashboard host itself; send the user to that host's dashboard
+        if app["host_trail"] in get_desktop_hosts():
+            await _send_redirect(send, f"{scheme}://{app['host_trail']}{suffix}/")
+        else:
+            await _send_forbidden(send)
+        return
+
+    dashboard = dashboard_host_for(app["fqdn"])
+
+    if dashboard is None:
+        await _send_forbidden(send, _NO_BASE_DOMAIN_PAGE.encode("utf-8"), b"text/html; charset=utf-8")
+        return
+
+    query_string = scope.get("query_string", b"").decode("latin-1")
+    returning = f"{scheme}://{app['fqdn']}{suffix}{_raw_path(scope)}" + (f"?{query_string}" if query_string else "")
+
+    await _send_redirect(send, f"{scheme}://{dashboard}{suffix}/app-auth?return={quote(returning, safe='')}")
+
+
 async def _authorize(scope, send, app, scheme, public_host):
-    slug = app["slug"]
+    container = app["container"]
+    fqdn = app["fqdn"]
 
     raw_headers = scope["headers"]
     cookies = _parse_cookies(_get_header(raw_headers, "cookie"))
 
-    # HDOS00112
-    if is_directly_exposed(slug, app["host_trail"], scheme):
+    if is_direct(app, scheme):
         return True
 
-    if verify_app_token(cookies.get(TOKEN_COOKIE_NAME), slug, SESSION_MAX_AGE):
+    if verify_app_token(cookies.get(TOKEN_COOKIE_NAME), container, fqdn, SESSION_MAX_AGE):
         return True
 
     query_string = scope.get("query_string", b"").decode("latin-1")
     token, remaining = _split_token(query_string)
 
-    if token and verify_app_token(token, slug, HANDOFF_MAX_AGE):
+    if token and verify_app_token(token, container, fqdn, HANDOFF_MAX_AGE):
         if scope["type"] == "websocket":
             return True
 
@@ -490,28 +543,11 @@ async def _authorize(scope, send, app, scheme, public_host):
         await send({"type": "websocket.close", "code": 1008})
         return False
 
-    # HDOS00056
-    if app.get("implicit", True) and _is_document_request(scope):
-        port = public_host.partition(":")[2]
-        target = f"{scheme}://{app['host_trail']}" + (f":{port}" if port else "") + f"/appdenied?app={quote(slug)}"
-
-        await _send_simple_response(
-            send,
-            302,
-            [(b"location", target.encode("latin-1")), (b"referrer-policy", b"no-referrer"), (b"cache-control", b"no-store"), (b"content-length", b"0")],
-            b"",
-        )
-
+    if _is_document_request(scope):
+        await _send_to_login(scope, send, app, scheme, public_host)
         return False
 
-    body = b"Not authorized."
-
-    await _send_simple_response(
-        send,
-        403,
-        [(b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("latin-1")), (b"cache-control", b"no-store")],
-        body,
-    )
+    await _send_forbidden(send)
 
     return False
 

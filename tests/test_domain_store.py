@@ -79,7 +79,7 @@ def test_protocol_path_and_mode_are_validated():
     assert store.get_app("one")["domains"][0]["protocol"] == "https"
     assert store.get_app("one")["domains"][0]["path"] == "/admin"
 
-    for bad in ({"protocol": "ftp"}, {"path": "no-slash"}, {"path": "/a b"}, {"path": "/../x"}, {"mode": "direct"}, {"mode": "wat"}):
+    for bad in ({"protocol": "ftp"}, {"path": "no-slash"}, {"path": "/a b"}, {"path": "/../x"}, {"mode": "wat"}):
         with pytest.raises(store.DomainError):
             store.add_domain("one", "b.example.com", 80, **bad)
 
