@@ -216,6 +216,16 @@ def _owner_of(apps, fqdn):
     return None
 
 
+def suggest_slug(container):
+    """The slug the app will get (or has), so a suggestion can be offered before it is installed."""
+
+    with _lock:
+        apps = _load()
+        app = apps.get(container)
+
+        return app["slug"] if app else _unique_slug(apps, container)
+
+
 def ensure_app(container):
     with _lock:
         apps = copy.deepcopy(_load())

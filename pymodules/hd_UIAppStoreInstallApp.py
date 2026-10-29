@@ -21,7 +21,7 @@ def app_store_install_container():
         return jsonify({"success": False, "message": "Missing container name"}), 400
 
     try:
-        enqueue_install(current_user.id.lower(), container_name, data.get("contentHash"))
+        enqueue_install(current_user.id.lower(), container_name, data.get("contentHash"), data.get("domains"))
     except InstallError as e:
         return jsonify(e.payload()), e.status
 

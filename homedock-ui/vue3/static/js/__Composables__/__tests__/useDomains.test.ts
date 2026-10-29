@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { domainHealth, errorMessage, nameProblem, normalizeName, openUrl } from "../useDomains";
+import { addressProblem, cleanNames, domainHealth, errorMessage, nameProblem, normalizeName, openUrl } from "../useDomains";
 
 const cert = (status: "covered" | "excluded" | "pending", reason = "") => ({ name: "x", status, reason });
 
@@ -46,5 +46,19 @@ describe("openUrl and errorMessage", () => {
   it("prefers the server's message", () => {
     expect(errorMessage({ response: { data: { message: "x is already used by immich." } } }, "fallback")).toBe("x is already used by immich.");
     expect(errorMessage(new Error("net"), "fallback")).toBe("fallback");
+  });
+});
+
+describe("install form names", () => {
+  it("sends each name once, trimmed and lower-cased, and never a blank", () => {
+    expect(cleanNames([" App.Example.com ", "", "app.example.com", "b.example.com."])).toEqual(["app.example.com", "b.example.com"]);
+    expect(cleanNames([])).toEqual([]);
+  });
+
+  it("reports the first bad row and ignores blank ones", () => {
+    expect(addressProblem(["", "  "])).toBe("");
+    expect(addressProblem(["ok.example.com", ""])).toBe("");
+    expect(addressProblem(["ok.example.com", "nope"])).toMatch(/full domain name/);
+    expect(addressProblem(["*.example.com"])).toMatch(/Wildcard/);
   });
 });

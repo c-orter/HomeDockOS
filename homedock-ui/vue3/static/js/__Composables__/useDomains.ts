@@ -111,3 +111,33 @@ export async function removeDomain(container: string, fqdn: string, csrf: string
 export async function checkDns(fqdn: string, csrf: string): Promise<DnsCheck> {
   return (await axios.post("/api/domains/check", { fqdn }, headers(csrf))).data;
 }
+
+export async function fetchSuggestion(container: string, csrf: string): Promise<{ base_domain: string; suggestion: string }> {
+  return (await axios.get("/api/domains/suggestion", { params: { container }, ...headers(csrf) })).data;
+}
+
+/** The names an install form would send: trimmed, lower-cased, blanks dropped, repeats kept once. */
+export function cleanNames(rows: string[]): string[] {
+  const names: string[] = [];
+
+  for (const row of rows) {
+    const name = normalizeName(row);
+
+    if (name && !names.includes(name)) names.push(name);
+  }
+
+  return names;
+}
+
+/** The first thing wrong with the rows, or an empty string; blank rows are not a problem, they are just not sent. */
+export function addressProblem(rows: string[]): string {
+  for (const row of rows) {
+    if (!row.trim()) continue;
+
+    const problem = nameProblem(row, []);
+
+    if (problem) return problem;
+  }
+
+  return "";
+}

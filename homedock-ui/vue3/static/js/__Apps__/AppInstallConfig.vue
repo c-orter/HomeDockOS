@@ -206,6 +206,10 @@
             </div>
           </div>
 
+          <div v-if="!editing && !app?.is_installed" class="pb-4">
+            <InstallAddressCard v-model:rows="addressRows" v-model:invalid="addressInvalid" :container="app.name" />
+          </div>
+
           <Transition name="fade-slide" mode="out-in">
             <div v-if="!isAdvancedMode" key="simple" class="space-y-4 pb-4">
               <!-- Screenshots -->
@@ -635,6 +639,8 @@ import { App } from "../__Types__/AppStoreApp";
 import { Select, SelectOption, Input, InputPassword, Switch, Tooltip } from "ant-design-vue";
 
 import { notifyError, notifySuccess, notifyWarning } from "../__Components__/Notifications.vue";
+import InstallAddressCard from "../__Components__/InstallAddressCard.vue";
+import { cleanNames } from "../__Composables__/useDomains";
 
 import { Icon } from "@iconify/vue";
 import downloadIcon from "@iconify-icons/mdi/download";
@@ -750,6 +756,8 @@ interface NetworkMapping {
 }
 
 const isAdvancedMode = ref(false);
+const addressRows = ref<string[]>([]);
+const addressInvalid = ref(false);
 const portMappings = ref<PortMapping[]>([]);
 const volumeMappings = ref<VolumeMapping[]>([]);
 const networkMappings = ref<NetworkMapping[]>([]);
@@ -1195,6 +1203,11 @@ async function handleInstall() {
     return;
   }
 
+  if (addressInvalid.value) {
+    notifyWarning("One of the addresses is not a valid domain name", themeClasses.value.scopeSelector);
+    return;
+  }
+
   if (noMatchingImage.value && !compatibilityConfirmed.value) {
     showCompatibilityWarning.value = true;
     return;
@@ -1263,6 +1276,7 @@ async function handleInstall() {
     await axios.post("/api/app-store-install-container", {
       containerName: app.value.name,
       contentHash,
+      domains: cleanNames(addressRows.value),
       homedock_csrf_token: currentToken,
     });
   } catch (error: any) {

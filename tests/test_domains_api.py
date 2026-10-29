@@ -27,6 +27,7 @@ def client(tmp_path, monkeypatch):
     app.add_url_rule("/api/domains/remove", "remove", api.api_domains_remove, methods=["POST"])
     app.add_url_rule("/api/domains/web-port", "web", api.api_domains_web_port, methods=["POST"])
     app.add_url_rule("/api/domains/check", "check", api.api_domains_check, methods=["POST"])
+    app.add_url_rule("/api/domains/suggestion", "suggestion", api.api_domains_suggestion)
 
     return app.test_client()
 
@@ -94,3 +95,16 @@ def test_dns_check_reports_where_the_name_points(client, monkeypatch):
 
     assert client.post("/api/domains/check", json={"fqdn": "A.Example.com."}).get_json() == {"fqdn": "a.example.com", "resolves": False, "reason": "its DNS name does not resolve"}
     assert client.post("/api/domains/check", json={}).status_code == 400
+
+
+def test_suggestion_uses_the_slug_the_app_will_get(client, monkeypatch):
+    monkeypatch.setattr(api, "read_config", lambda: {"base_domain": "Home.Example.com."})
+    store.ensure_app("my_app")
+
+    assert client.get("/api/domains/suggestion?container=my_app").get_json() == {"base_domain": "home.example.com", "suggestion": "my-app.home.example.com"}
+    assert client.get("/api/domains/suggestion?container=Fresh.App").get_json()["suggestion"] == "fresh-app.home.example.com"
+
+    monkeypatch.setattr(api, "read_config", lambda: {})
+
+    assert client.get("/api/domains/suggestion?container=web").get_json() == {"base_domain": "", "suggestion": ""}
+    assert client.get("/api/domains/suggestion").status_code == 400

@@ -79,6 +79,8 @@
       <Switch :checked="localHttp" @update:checked="(value: unknown) => emit('update:localHttp', Boolean(value))" name="FormInputLocalHttpAccess" id="FormInputLocalHttpAccess" />
     </SettingsItem>
   </SettingsGroup>
+
+  <SettingsCredentials v-if="domainIsUsable && !domainIsReserved" :status="status" @refresh="refresh" />
 </template>
 
 <script lang="ts" setup>
@@ -109,6 +111,7 @@ import loadingIcon from "@iconify-icons/mdi/loading";
 import SettingsGroup from "./SettingsGroup.vue";
 import SettingsItem from "./SettingsItem.vue";
 import SettingsHelpTooltip from "./SettingsHelpTooltip.vue";
+import SettingsCredentials from "./SettingsCredentials.vue";
 
 const InputPassword = Input.Password;
 const SelectOption = Select.Option;
@@ -141,6 +144,9 @@ interface AcmeStatus {
   provider_labels: Record<string, string>;
   provider: string;
   token_set: boolean;
+  credentials: { zone: string; provider: string }[];
+  names: { name: string; status: "covered" | "excluded" | "pending"; reason: string }[];
+  schedule: { failures: number; last_error: string | null; next_attempt: string | null; reissue_at: string | null };
   domain: string;
   host: string;
   certificate: CertificateState;

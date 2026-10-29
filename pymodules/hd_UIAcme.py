@@ -13,7 +13,7 @@ from flask_login import login_required
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_cert_domains_and_type, cert_covers_subdomains_of, restart_pending, ssl_context_active
 from pymodules.hd_ACMEProviders import provider_names, provider_labels, provider_syncs_ip
-from pymodules.hd_AcmeCredentials import stored_token, set_credential, match_credential, public_credentials, CredentialError
+from pymodules.hd_AcmeCredentials import stored_token, set_credential, remove_credential, match_credential, public_credentials, CredentialError
 from pymodules.hd_CertManager import issue_certificate, claim, release, get_state, days_until_expiry, is_reserved_domain, renewal_status, name_statuses
 from pymodules.hd_CertScheduler import get_schedule_state
 from pymodules.hd_BaseDomain import validate_base_domain
@@ -120,6 +120,71 @@ def api_acme_issue():
         threading.Thread(target=worker, daemon=True, name="hdos-acme").start()
     except RuntimeError as error:
         release(f"Could not start the certificate request: {error}")
+        return jsonify({"status": "error", "message": "Could not start the certificate request."}), 500
+
+    return jsonify({"status": "started", "domain": domain, "staging": staging}), 202
+
+
+def _start_worker(domain, staging):
+    def worker():
+        try:
+            issue_certificate(domain, staging=staging, claimed=True)
+        except Exception as error:
+            print(f" ! ACME: {error}")
+
+    try:
+        threading.Thread(target=worker, daemon=True, name="hdos-acme").start()
+    except RuntimeError as error:
+        release(f"Could not start the certificate request: {error}")
+        return False
+
+    return True
+
+
+@login_required
+def api_acme_credentials():
+    data = request.get_json(silent=True) or {}
+
+    try:
+        set_credential(str(data.get("zone", "")), str(data.get("provider", "")), str(data.get("token") or "").strip() or stored_token_for(str(data.get("zone", "")), str(data.get("provider", ""))))
+    except (CredentialError, OSError) as error:
+        return jsonify({"status": "bad_request", "message": str(error)}), 400
+
+    return jsonify({"status": "saved", "credentials": public_credentials()}), 200
+
+
+@login_required
+def api_acme_credentials_remove():
+    data = request.get_json(silent=True) or {}
+
+    if not remove_credential(str(data.get("zone", ""))):
+        return jsonify({"status": "error", "message": "No credential is saved for that zone."}), 404
+
+    return jsonify({"status": "removed", "credentials": public_credentials()}), 200
+
+
+@login_required
+def api_acme_reissue():
+    """Orders the certificate again for the base domain and every stored name, using the saved credentials."""
+
+    data = request.get_json(silent=True) or {}
+    staging = bool(data.get("staging"))
+
+    domain = (read_config().get("base_domain") or "").strip().lower().rstrip(".")
+
+    if not domain or "." not in domain:
+        return jsonify({"status": "bad_request", "message": "Set a base domain first."}), 400
+
+    if is_reserved_domain(domain):
+        return jsonify({"status": "bad_request", "message": f"{domain} belongs to HomeDock OS. Set your own domain as the hostname first."}), 400
+
+    if not match_credential(domain):
+        return jsonify({"status": "bad_request", "message": f"No saved DNS credential covers {domain}. Add one first."}), 400
+
+    if not claim(staging):
+        return jsonify({"status": "busy", "message": "A certificate request is already running."}), 409
+
+    if not _start_worker(domain, staging):
         return jsonify({"status": "error", "message": "Could not start the certificate request."}), 500
 
     return jsonify({"status": "started", "domain": domain, "staging": staging}), 202

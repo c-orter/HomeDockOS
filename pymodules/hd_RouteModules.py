@@ -59,21 +59,25 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/app-token", "api_app_token", CSRF_Protect(api_app_token), methods=["POST"])
     homedock_www.add_url_rule("/api/subdomain-diagnostics", "api_subdomain_diagnostics", CSRF_Protect(api_subdomain_diagnostics), methods=["GET"])
 
-    from pymodules.hd_UIAcme import api_acme_status, api_acme_issue
+    from pymodules.hd_UIAcme import api_acme_status, api_acme_issue, api_acme_credentials, api_acme_credentials_remove, api_acme_reissue
 
     homedock_www.add_url_rule("/api/acme/status", "api_acme_status", CSRF_Protect(api_acme_status), methods=["GET"])
     homedock_www.add_url_rule("/api/acme/issue", "api_acme_issue", CSRF_Protect(api_acme_issue), methods=["POST"])
+    homedock_www.add_url_rule("/api/acme/credentials", "api_acme_credentials", CSRF_Protect(api_acme_credentials), methods=["POST"])
+    homedock_www.add_url_rule("/api/acme/credentials/remove", "api_acme_credentials_remove", CSRF_Protect(api_acme_credentials_remove), methods=["POST"])
+    homedock_www.add_url_rule("/api/acme/reissue", "api_acme_reissue", CSRF_Protect(api_acme_reissue), methods=["POST"])
 
     from pymodules.hd_AppViewMode import api_app_view_mode
 
     homedock_www.add_url_rule("/api/app-view-mode", "api_app_view_mode", CSRF_Protect(api_app_view_mode), methods=["GET", "POST"])
 
-    from pymodules.hd_UIDomains import api_domains, api_domains_add, api_domains_update, api_domains_remove, api_domains_web_port, api_domains_check
+    from pymodules.hd_UIDomains import api_domains, api_domains_add, api_domains_update, api_domains_remove, api_domains_web_port, api_domains_check, api_domains_suggestion
 
     homedock_www.add_url_rule("/api/domains", "api_domains", CSRF_Protect(api_domains), methods=["GET"])
     homedock_www.add_url_rule("/api/domains/add", "api_domains_add", CSRF_Protect(api_domains_add), methods=["POST"])
     homedock_www.add_url_rule("/api/domains/update", "api_domains_update", CSRF_Protect(api_domains_update), methods=["POST"])
     homedock_www.add_url_rule("/api/domains/remove", "api_domains_remove", CSRF_Protect(api_domains_remove), methods=["POST"])
+    homedock_www.add_url_rule("/api/domains/suggestion", "api_domains_suggestion", CSRF_Protect(api_domains_suggestion), methods=["GET"])
     homedock_www.add_url_rule("/api/domains/check", "api_domains_check", CSRF_Protect(api_domains_check), methods=["POST"])
     homedock_www.add_url_rule("/api/domains/web-port", "api_domains_web_port", CSRF_Protect(api_domains_web_port), methods=["POST"])
 

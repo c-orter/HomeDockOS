@@ -332,3 +332,78 @@ def test_extraction_records_the_compose_signature(tmp_path, monkeypatch):
     stored = (tmp_path / "user_packages_available_folder" / "demo.yml").read_bytes()
     assert manifest["compose_sha256"] == hashlib.sha256(stored).hexdigest()
     assert json.loads((tmp_path / "user_packages_available_folder" / "demo.yml.metadata").read_text())["compose_sha256"] == manifest["compose_sha256"]
+
+
+# --- domains chosen in the install form ---
+
+
+@pytest.fixture
+def domains(env, monkeypatch):
+    from pymodules import hd_BackendResolver as resolver
+    from pymodules import hd_DomainStore as store
+    from pymodules import hd_RuntimeCompose as runtime
+
+    monkeypatch.setattr(resolver, "compose_folder", str(env.folders["links"]))
+    monkeypatch.setattr(store, "domains_file", str(env.tmp / "domains.json"))
+    monkeypatch.setattr(store, "reserved_hosts", lambda: {"homedock.local"})
+    monkeypatch.setattr(runtime, "suggested_port_for", lambda names: None)
+    store.reset_cache()
+    resolver.reset_cache()
+
+    return store
+
+
+def staged(env, name="alpha"):
+    env.bundled(name)
+
+    return pipeline.stage_config("admin", name, "simple", simple())
+
+
+def test_install_with_a_domain_attaches_it_on_the_web_port(env, domains):
+    content_hash = staged(env)
+
+    pipeline.enqueue_install("admin", "alpha", content_hash, ["Alpha.Example.com"])
+
+    app = domains.get_app("alpha")
+
+    assert [(d["fqdn"], d["port"], d["mode"]) for d in app["domains"]] == [("alpha.example.com", 80, "gated")]
+    assert pipeline.installation_status()["errors"] == {}
+
+
+def test_install_without_domains_creates_none(env, domains):
+    pipeline.enqueue_install("admin", "alpha", staged(env), [])
+
+    assert domains.get_app("alpha") is None or domains.get_app("alpha")["domains"] == []
+
+
+def test_a_bad_or_taken_name_stops_the_install_before_it_starts(env, domains):
+    content_hash = staged(env)
+    domains.ensure_app("other")
+    domains.add_domain("other", "taken.example.com", 80)
+
+    with pytest.raises(pipeline.InstallError) as bad:
+        pipeline.enqueue_install("admin", "alpha", content_hash, ["not a name"])
+
+    with pytest.raises(pipeline.InstallError) as taken:
+        pipeline.enqueue_install("admin", "alpha", content_hash, ["taken.example.com"])
+
+    assert bad.value.status == 400 and taken.value.status == 409 and "other" in taken.value.message
+    assert env.ups == [] and not (env.folders["links"] / "alpha.yml").exists()
+
+
+def test_failed_install_adds_no_domain(env, domains, monkeypatch):
+    content_hash = staged(env)
+    monkeypatch.setattr(pipeline.DockerComposeHelper, "get_instance", staticmethod(lambda: SimpleNamespace(up=lambda **kw: (False, "boom"))))
+
+    pipeline.enqueue_install("admin", "alpha", content_hash, ["alpha.example.com"])
+
+    assert domains.get_app("alpha") is None
+
+
+def test_http_install_carries_the_domain_list(env, domains, http):
+    env.bundled("alpha")
+    http.post("/process", json={"containerName": "alpha", "configType": "simple", **simple()})
+
+    assert http.post("/install", json={"containerName": "alpha", "domains": "nope"}).status_code == 400
+    assert http.post("/install", json={"containerName": "alpha", "domains": ["alpha.example.com"]}).status_code == 200
+    assert [d["fqdn"] for d in domains.get_app("alpha")["domains"]] == ["alpha.example.com"]

@@ -18,6 +18,8 @@ from pymodules.hd_ComposeDevHooks import process_devhooks
 from pymodules.hd_HDSPackageManager import normalize_app_slug
 from pymodules.hd_PortValidator import validate_ports
 from pymodules.hd_ClassDockerComposeHelper import DockerComposeHelper
+from pymodules.hd_DomainStore import DomainError, add_domain, list_apps, validate_fqdn
+from pymodules.hd_BackendResolver import container_ports, web_port
 
 # the enterprise loader (hd_EnterpriseLoader) only verifies and loads its own signed __Enterprise__ module at startup; it never touches this path
 
@@ -285,6 +287,58 @@ def discard_staged(content_hash: str, user_name: str, container_name: str):
             del _staged[(user_name, container_name)]
 
 
+# --- domains chosen in the install form ---
+
+
+def check_domains(container_name: str, domains) -> list:
+    """The names to attach once the app is up. Nothing is saved here: a bad or taken name stops the install before it starts."""
+
+    if domains is None:
+        return []
+
+    if not isinstance(domains, list):
+        raise InstallError("Domains must be a list of names.")
+
+    taken = list_apps()
+    names = []
+
+    for raw in domains:
+        try:
+            fqdn = validate_fqdn(str(raw or ""))
+        except DomainError as e:
+            raise InstallError(e.message, e.status)
+
+        owner = next((name for name, app in taken.items() if any(domain["fqdn"] == fqdn for domain in app["domains"])), None)
+
+        if owner is not None and owner != container_name:
+            raise InstallError(f"{fqdn} is already used by {owner}.", 409)
+
+        if fqdn not in names:
+            names.append(fqdn)
+
+    return names
+
+
+def _attach_domains(container_name: str, domains: list):
+    """Adds the chosen names to the app that just came up, on its web port; whatever cannot be added is reported, not fatal."""
+
+    if not domains:
+        return
+
+    port = web_port(container_name) or next(iter(container_ports(container_name)), None)
+
+    if port is None:
+        _record_error(container_name, "The app is installed, but its web port could not be found, so no domain was added. Add one from its Properties.")
+        return
+
+    for fqdn in domains:
+        try:
+            add_domain(container_name, fqdn, port)
+        except DomainError as e:
+            if e.status != 409:
+                _record_error(container_name, f"The app is installed, but {fqdn} was not added: {e.message}")
+
+
 # --- the queue ---
 
 _queue = []
@@ -335,6 +389,7 @@ def _install_one(job: dict):
 
         os.makedirs(compose_upload_folder, exist_ok=True)
         copy_file(compose_file, os.path.join(compose_upload_folder, f"{name}.yml"))
+        _attach_domains(name, job.get("domains", []))
     except Exception as e:
         print(f"[AppStore] Exception: {e}")
         _record_error(name, "Installation failed. Check terminal logs for details.")
@@ -342,19 +397,20 @@ def _install_one(job: dict):
         discard_staged(content_hash, user, name)
 
 
-def enqueue_install(user_name: str, container_name: str, content_hash=None):
+def enqueue_install(user_name: str, container_name: str, content_hash=None, domains=None):
     """Queues an install; the caller that finds no worker running becomes the worker and returns once the queue drains."""
 
     global _worker_running
 
     path = find_staged(user_name, container_name, content_hash)
     content_hash = os.path.basename(os.path.dirname(path))
+    domains = check_domains(container_name, domains)
 
     with _lock:
         if any(job["container"] == container_name for job in _queue):
             return
 
-        _queue.append({"container": container_name, "user": user_name, "hash": content_hash})
+        _queue.append({"container": container_name, "user": user_name, "hash": content_hash, "domains": domains})
 
         if _worker_running:
             return

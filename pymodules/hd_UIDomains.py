@@ -13,7 +13,7 @@ from pymodules.hd_DomainAccess import direct_refusal
 from pymodules.hd_CertManager import name_statuses, days_until_expiry
 from pymodules.hd_CertPlan import resolves_to_server
 from pymodules.hd_FunctionsConfig import read_config
-from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, update_domain
+from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, suggest_slug, update_domain
 
 
 def _error(error):
@@ -150,3 +150,17 @@ def api_domains_check():
     ok, reason = resolves_to_server(fqdn)
 
     return jsonify({"fqdn": fqdn, "resolves": ok, "reason": reason}), 200
+
+
+@login_required
+def api_domains_suggestion():
+    """The name the install form offers before the app exists: its slug under the base domain, empty when there is no base domain."""
+
+    container = str(request.args.get("container", "")).strip()
+
+    if not container:
+        return jsonify({"status": "bad_request", "message": "An application name is required."}), 400
+
+    base = (read_config().get("base_domain") or "").strip().lower().rstrip(".")
+
+    return jsonify({"base_domain": base, "suggestion": f"{suggest_slug(container)}.{base}" if base else ""}), 200
