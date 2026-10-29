@@ -57,14 +57,6 @@ def test_host_network_uses_docker_host(isolated, monkeypatch):
     assert resolver.resolve_backend("ha", 8123) == ("host.docker.internal", 8123)
 
 
-def test_native_mode_uses_published_port(isolated, monkeypatch):
-    monkeypatch.setattr(resolver, "is_docker", False)
-    monkeypatch.setattr(resolver, "docker_host", "localhost")
-    write(isolated, "web", WEB)
-
-    assert resolver.resolve_backend("web", 80) == ("localhost", 8080)
-
-
 def test_sync_registers_installed_containers_with_slugs(isolated):
     write(isolated, "web", WEB)
 
@@ -72,3 +64,35 @@ def test_sync_registers_installed_containers_with_slugs(isolated):
 
     assert store.get_app("web")["slug"] == "web"
     assert store.get_app("web-db")["slug"] == "web-db"
+
+
+def test_native_mode_dials_the_discovered_loopback_port(isolated, monkeypatch):
+    monkeypatch.setattr(resolver, "is_docker", False)
+    monkeypatch.setattr(resolver, "docker_host", "localhost")
+    monkeypatch.setattr(resolver, "published_port", lambda container, target: 49153 if (container, target) == ("web", 80) else None)
+    write(isolated, "web", WEB)
+
+    assert resolver.resolve_backend("web", 80) == ("localhost", 49153)
+
+
+def test_native_mode_never_guesses_a_port(isolated, monkeypatch):
+    monkeypatch.setattr(resolver, "is_docker", False)
+    monkeypatch.setattr(resolver, "published_port", lambda container, target: None)
+    write(isolated, "web", WEB)
+
+    assert resolver.resolve_backend("web", 80) is None
+
+
+def test_host_network_is_reachable_on_linux_but_not_docker_desktop(isolated, monkeypatch):
+    monkeypatch.setattr(resolver, "is_docker", False)
+    write(isolated, "ha", "services:\n  ha:\n    container_name: ha\n    network_mode: host\n")
+    write(isolated, "web", WEB)
+
+    monkeypatch.setattr(resolver, "running_OS", "Linux")
+    assert resolver.reachability("ha") == (True, "")
+
+    monkeypatch.setattr(resolver, "running_OS", "Darwin")
+    reachable, reason = resolver.reachability("ha")
+    assert reachable is False
+    assert "not reachable on this platform" in reason
+    assert resolver.reachability("web") == (True, "")

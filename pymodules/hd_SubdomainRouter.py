@@ -531,8 +531,20 @@ async def _stream_request_body(receive):
             break
 
 
+async def _send_not_running(send):
+    body = b"App not running."
+
+    await _send_simple_response(send, 502, [(b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("latin-1"))], body)
+
+
 async def _proxy_http(scope, receive, send, app, scheme, public_host):
-    host, port = resolve_backend(app["container"], app["port"])
+    backend = resolve_backend(app["container"], app["port"])
+
+    if backend is None:
+        await _send_not_running(send)
+        return
+
+    host, port = backend
     protocol = await _backend_protocol(app, host, port)
     backend_host = f"{host}:{port}"
 
@@ -651,7 +663,13 @@ async def _pump_backend_to_client(ws, send):
 
 
 async def _proxy_websocket(scope, receive, send, app, scheme, public_host):
-    host, port = resolve_backend(app["container"], app["port"])
+    backend = resolve_backend(app["container"], app["port"])
+
+    if backend is None:
+        await send({"type": "websocket.close", "code": 1011})
+        return
+
+    host, port = backend
     protocol = await _backend_protocol(app, host, port)
     backend_host = f"{host}:{port}"
 

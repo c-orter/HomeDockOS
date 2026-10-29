@@ -60,12 +60,13 @@ def proxy(tmp_path, monkeypatch, backend):
 
     folder = tmp_path / "compose-link"
     folder.mkdir()
-    (folder / "web.yml").write_text(f"services:\n  web:\n    container_name: web\n    ports: ['{backend['port']}:80']\n")
+    (folder / "web.yml").write_text("services:\n  web:\n    container_name: web\n    ports: ['80']\n")
 
     homedock_www.config["SECRET_KEY"] = "smoke-test-secret"
     monkeypatch.setattr(resolver, "compose_folder", str(folder))
     monkeypatch.setattr(resolver, "is_docker", False)
     monkeypatch.setattr(resolver, "docker_host", "127.0.0.1")
+    monkeypatch.setattr(resolver, "published_port", lambda container, target: backend["port"])
     monkeypatch.setattr(store, "domains_file", str(tmp_path / "domains.json"))
     monkeypatch.setattr(runtime, "suggested_port_for", lambda names: None)
     monkeypatch.setattr(subdomains, "get_desktop_hosts", lambda: {"dock.test", "localhost"})

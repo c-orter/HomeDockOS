@@ -91,6 +91,12 @@ def _strip_ports(service, targets):
         service.pop("ports", None)
 
 
+def _publish_on_loopback(service, targets):
+    _strip_ports(service, targets)
+
+    service["ports"] = service.get("ports", []) + [f"127.0.0.1::{target}" for target in sorted(targets)]
+
+
 def _join_network(service):
     networks = service.get("networks")
 
@@ -102,10 +108,11 @@ def _join_network(service):
         networks.append(NETWORK)
 
 
-def build_runtime_compose(compose, proxied):
+def build_runtime_compose(compose, proxied, loopback=False):
     """Copy of the compose file with proxied HTTP ports unpublished and their services on the shared network.
 
-    proxied maps a service name to the container ports HomeDock reaches over the network.
+    proxied maps a service name to the container ports HomeDock reaches. With loopback (HomeDock outside Docker, so
+    it cannot see the network) those ports are instead published on 127.0.0.1 only, on a port Docker picks.
     """
 
     result = copy.deepcopy(compose)
@@ -118,13 +125,17 @@ def build_runtime_compose(compose, proxied):
         if not targets or not isinstance(service, dict) or service.get("network_mode"):
             continue
 
+        if loopback:
+            _publish_on_loopback(service, targets)
+            continue
+
         _strip_ports(service, targets)
         _join_network(service)
         joined = True
 
     declared = isinstance(result.get("networks"), dict) and NETWORK in result["networks"]
 
-    if joined or declared:
+    if (joined or declared) and not loopback:
         networks = result.get("networks")
 
         if not isinstance(networks, dict):
@@ -189,20 +200,16 @@ def proxied_ports_for(compose_file, services):
 
 @contextlib.contextmanager
 def runtime_compose_file(compose_file):
-    """Yields (file to run, project name, project directory). The user's file is run as is unless HomeDock is containerised."""
+    """Yields (file to run, project name, project directory): a runtime copy, with the user's file left untouched."""
 
     project_name = project_name_for(compose_file)
     project_dir = os.path.dirname(os.path.abspath(compose_file))
-
-    if not is_docker:
-        yield compose_file, project_name, project_dir
-        return
 
     try:
         with open(compose_file, "r", encoding="utf-8") as f:
             compose = yaml.safe_load(f)
 
-        runtime = build_runtime_compose(compose, proxied_ports_for(compose_file, compose.get("services") or {}))
+        runtime = build_runtime_compose(compose, proxied_ports_for(compose_file, compose.get("services") or {}), loopback=not is_docker)
     except Exception as e:
         print(f"Warning: could not build the runtime compose for {compose_file}, using it as written: {e}")
         yield compose_file, project_name, project_dir

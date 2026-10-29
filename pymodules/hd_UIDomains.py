@@ -8,7 +8,7 @@ https://www.banshee.pro
 from flask import jsonify, request
 from flask_login import login_required
 
-from pymodules.hd_BackendResolver import installed_containers, sync_installed_apps, web_port
+from pymodules.hd_BackendResolver import installed_containers, reachability, sync_installed_apps, web_port
 from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, update_domain
 
 
@@ -17,7 +17,9 @@ def _error(error):
 
 
 def _app_json(container, app):
-    return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "domains": app["domains"]}
+    reachable, reason = reachability(container)
+
+    return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "reachable": reachable, "unreachable_reason": reason, "domains": app["domains"]}
 
 
 def _known_container(container):

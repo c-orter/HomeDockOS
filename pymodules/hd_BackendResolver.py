@@ -12,9 +12,10 @@ import threading
 import yaml
 
 from pymodules.hd_DomainStore import ensure_app, get_app
-from pymodules.hd_FunctionsGlobals import compose_upload_folder
+from pymodules.hd_FunctionsGlobals import compose_upload_folder, running_OS
 from pymodules.hd_FunctionsHostSelector import is_docker, docker_host
-from pymodules.hd_RuntimeCompose import parse_port_entry, web_ports_for
+from pymodules.hd_PortDiscovery import published_port
+from pymodules.hd_RuntimeCompose import web_ports_for
 
 compose_folder = compose_upload_folder
 
@@ -93,26 +94,37 @@ def web_port(container):
     return web_ports_for(info["file"], info["services"]).get(info["service"])
 
 
-def resolve_backend(container, port):
-    """(host, port) to dial for a container's internal port."""
-
+def _definition(container):
     info = _index().get(container)
-    definition = info["services"][info["service"]] if info else {}
 
-    if definition.get("network_mode") == "host":
+    return info["services"][info["service"]] if info else {}
+
+
+def resolve_backend(container, port):
+    """(host, port) to dial for a container's internal port, or None when it cannot be reached right now.
+
+    Containerised HomeDock reaches apps by name over the shared network. A native one dials the loopback port Docker
+    published; it never guesses, since the same number on localhost may be some other program.
+    """
+
+    if _definition(container).get("network_mode") == "host":
         return docker_host, port
 
     if is_docker:
         return container, port
 
-    # Replaced by the loopback-only publishing of native installs
-    for entry in definition.get("ports") or []:
-        parsed = parse_port_entry(entry)
+    host_port = published_port(container, port)
 
-        if parsed and parsed["protocol"] == "tcp" and parsed["target"] == port and parsed["published"]:
-            return docker_host, parsed["published"]
+    return (docker_host, host_port) if host_port else None
 
-    return docker_host, port
+
+def reachability(container):
+    """(reachable, reason). Host-network apps live on Docker Desktop's VM, which a native HomeDock cannot dial."""
+
+    if _definition(container).get("network_mode") == "host" and not is_docker and running_OS != "Linux":
+        return False, "Host-network apps are not reachable on this platform."
+
+    return True, ""
 
 
 def container_running(container):

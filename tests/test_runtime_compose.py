@@ -160,17 +160,6 @@ def test_runtime_file_in_container_mode_unpublishes_and_keeps_project(tmp_path, 
     assert open(path).read() == COMPOSE
 
 
-def test_runtime_file_outside_docker_runs_the_users_file(tmp_path, monkeypatch):
-    from pymodules import hd_RuntimeCompose as module
-
-    monkeypatch.setattr(module, "is_docker", False)
-    path = _write(tmp_path, COMPOSE)
-
-    with module.runtime_compose_file(path) as (run_file, project, _):
-        assert run_file == path
-        assert project == "compose-link"
-
-
 def test_runtime_file_falls_back_to_users_file_on_bad_yaml(tmp_path, monkeypatch):
     from pymodules import hd_RuntimeCompose as module
 
@@ -179,3 +168,46 @@ def test_runtime_file_falls_back_to_users_file_on_bad_yaml(tmp_path, monkeypatch
 
     with module.runtime_compose_file(path) as (run_file, _, _):
         assert run_file == path
+
+
+def test_loopback_mode_publishes_only_on_localhost_and_skips_the_network():
+    original = compose(web={"ports": ["8080:80", "53:53/udp"]})
+
+    result = build_runtime_compose(original, {"web": {80}}, loopback=True)
+
+    assert result["services"]["web"]["ports"] == ["53:53/udp", "127.0.0.1::80"]
+    assert "networks" not in result["services"]["web"]
+    assert "networks" not in result
+
+
+def test_loopback_mode_adds_a_port_the_file_only_exposes():
+    result = build_runtime_compose(compose(web={"image": "x"}), {"web": {3000}}, loopback=True)
+
+    assert result["services"]["web"]["ports"] == ["127.0.0.1::3000"]
+
+
+def test_loopback_mode_collapses_duplicate_entries_for_one_port():
+    original = compose(web={"ports": ["8080:80", {"target": 80, "published": 9090}]})
+
+    result = build_runtime_compose(original, {"web": {80}}, loopback=True)
+
+    assert result["services"]["web"]["ports"] == ["127.0.0.1::80"]
+
+
+def test_loopback_mode_leaves_host_network_services_alone():
+    original = compose(web={"network_mode": "host"})
+
+    assert build_runtime_compose(original, {"web": {80}}, loopback=True) == original
+
+
+def test_runtime_file_outside_docker_publishes_on_loopback(tmp_path, monkeypatch):
+    import yaml
+
+    from pymodules import hd_RuntimeCompose as module
+
+    monkeypatch.setattr(module, "is_docker", False)
+    path = _write(tmp_path, COMPOSE)
+
+    with module.runtime_compose_file(path) as (run_file, project, _):
+        assert run_file != path
+        assert yaml.safe_load(open(run_file))["services"]["web"]["ports"] == ["53:53/udp", "127.0.0.1::80"]
