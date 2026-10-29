@@ -124,7 +124,9 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/view-container-logs/download-ticket", "create_download_ticket", CSRF_Protect(create_download_ticket), methods=["POST"])
     homedock_www.add_url_rule("/api/view-container-logs/download", "download_container_logs", download_container_logs, methods=["GET"])
 
-    from pymodules.hd_UIContainerTerminal import api_container_terminal_session
+    from pymodules.hd_UIContainerTerminal import api_container_terminal_session, api_container_terminal_targets
+
+    homedock_www.add_url_rule("/api/container-terminal/targets", "api_container_terminal_targets", CSRF_Protect(api_container_terminal_targets), methods=["GET"])
 
     homedock_www.add_url_rule("/api/container-terminal/session", "api_container_terminal_session", CSRF_Protect(api_container_terminal_session), methods=["POST"])
 

@@ -23,6 +23,8 @@ from flask import jsonify, request
 from flask_login import login_required
 
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
+from pymodules.hd_HomedockNetwork import own_container
+from pymodules.hd_FunctionsHostSelector import is_docker
 
 TERMINAL_WS_PATH = "/api/container-terminal/ws"
 
@@ -253,6 +255,22 @@ def _consume_ticket(ticket):
 def _active_session_count():
     with _sessions_lock:
         return len(_sessions)
+
+
+@login_required
+def api_container_terminal_targets():
+    """What the terminal picker offers: HomeDock's own container (when it runs in one) and every container."""
+
+    try:
+        client = _client()
+        listed = client.containers.list(all=True)
+        own = own_container(client) if is_docker else None
+    except docker.errors.DockerException as e:
+        return jsonify({"success": False, "code": "docker_error", "detail": str(e)}), 500
+
+    containers = sorted(({"name": c.name, "status": c.status} for c in listed), key=lambda item: item["name"].lower())
+
+    return jsonify({"success": True, "homedock": own.name if own else None, "containers": containers})
 
 
 @login_required

@@ -35,22 +35,30 @@ def _connect(network, container):
             raise
 
 
-def join_self(client):
-    """Puts the HomeDock container itself on the shared network. Its hostname is its container id; the compose name is the fallback."""
-
-    network = ensure_network(client)
+def own_container(client):
+    """The container HomeDock itself runs in: its hostname is its container id, the compose name is the fallback. None when not containerised."""
 
     for ref in (socket.gethostname(), OWN_CONTAINER_NAME):
         try:
-            container = client.containers.get(ref)
+            return client.containers.get(ref)
         except docker.errors.NotFound:
             continue
 
-        _connect(network, container)
+    return None
 
-        return True
 
-    return False
+def join_self(client):
+    """Puts the HomeDock container itself on the shared network."""
+
+    network = ensure_network(client)
+    container = own_container(client)
+
+    if container is None:
+        return False
+
+    _connect(network, container)
+
+    return True
 
 
 def connect_apps(client, compose_folder):

@@ -12,8 +12,8 @@ const AppLogs = defineAsyncComponent({
   loadingComponent: WindowLoading,
   delay: 200,
 });
-const AppDockerTerminal = defineAsyncComponent({
-  loader: () => import("../__Apps__/AppDockerTerminal.vue"),
+const AppTerminal = defineAsyncComponent({
+  loader: () => import("../__Apps__/AppTerminal.vue"),
   loadingComponent: WindowLoading,
   delay: 200,
 });
@@ -112,10 +112,11 @@ export const AUXILIARY_APPS: SystemApp[] = [
   {
     id: "terminal",
     name: "Terminal",
-    description: "Open an interactive shell inside a container",
+    description: "Open an interactive shell in HomeDock OS or any container",
     icon: consoleLineIcon,
     iconOverlay: true,
-    component: AppDockerTerminal,
+    color: "#334155",
+    component: AppTerminal,
     defaultWidth: 1024,
     defaultHeight: 768,
     minWidth: 400,
@@ -125,8 +126,8 @@ export const AUXILIARY_APPS: SystemApp[] = [
     minimizable: true,
     closeable: true,
     category: "tools",
-    showInStartMenu: false,
-    showInFinderApp: false,
+    showInStartMenu: true,
+    showInFinderApp: true,
     showInMyHomeApp: false,
   },
   {
