@@ -14,7 +14,6 @@ from flask import request
 from flask_login import login_required
 
 from pymodules.hd_FunctionsGlobals import compose_upload_folder
-from pymodules.hd_ThreadAutoPortRouting import update_event
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_ClassDockerComposeHelper import DockerComposeHelper
@@ -50,13 +49,9 @@ def update_containers():
     updated_containers = []
     containers_data = []
 
-    update_event.clear()  # Stop port autorouting
-
     for name in containers_with_updates:
         if name not in missing_compose_files:
             process_container_update(name, client, updated_containers, containers_data, delete_old_image_containers_after_update)
-
-    update_event.set()  # Resume port autorouting
 
     skipped = [name for name in container_names if name not in updated_containers]
 

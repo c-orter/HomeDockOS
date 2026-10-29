@@ -242,8 +242,8 @@ const rows = computed(() => {
 });
 
 const groups = computed(() => {
-  const foreground = rows.value.filter((row) => Boolean(row.app.service_url));
-  const background = rows.value.filter((row) => !row.app.service_url);
+  const foreground = rows.value.filter((row) => Boolean(row.app.openable));
+  const background = rows.value.filter((row) => !row.app.openable);
 
   return [
     { id: "apps", label: "Apps", rows: foreground },

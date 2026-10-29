@@ -29,7 +29,6 @@
             <div :class="['relative w-16 h-16 shrink-0 flex items-center justify-center transition-transform duration-200 pointer-events-none', themeClasses.desktopIconContainerScaleHover]">
               <AppIconGraphic :image-src="getAppImagePath(item)" :size="APP_ICON_SIZE" :status="getAppStatus(item)" />
               <AppBusyOverlay :visible="isBusy(item.id)" />
-              <PortScanningOverlay :visible="getAppStatus(item) === 'running' && isPortScanning(item) && !isBusy(item.id)" />
               <Transition name="status-pop" type="animation">
                 <div v-if="stoppedDependencies(item).length" :class="['absolute bottom-1 left-1 flex items-center justify-center w-4 h-4 rounded z-[3] pointer-events-none', themeClasses.desktopDependencyBadge]">
                   <Icon :icon="dependencyOffIcon" class="w-3 h-3" />
@@ -80,7 +79,6 @@ import { useBusyApps } from "../__Composables__/useBusyApps";
 import { useTheme } from "../__Themes__/ThemeSelector";
 
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
-import PortScanningOverlay from "../__Components__/PortScanningOverlay.vue";
 import AppBusyOverlay from "../__Components__/AppBusyOverlay.vue";
 
 import ShortcutGraphic from "../__Components__/ShortcutGraphic.vue";
@@ -882,15 +880,6 @@ function getStatusBadgeClass(status: string): string {
     restarting: themeClasses.value.statusBadgeRestarting,
   };
   return statusClasses[status] || themeClasses.value.statusBadgeCreated;
-}
-
-function isPortScanning(item: any): boolean {
-  const ports = item.ports;
-  if (!ports || ports.length === 0) return false;
-  if (ports.includes("disabled")) return true;
-  if (ports.includes("hostmode")) return false;
-  const unique = new Set(ports);
-  return unique.size !== ports.length;
 }
 
 const APP_ICON_SIZE = 52;

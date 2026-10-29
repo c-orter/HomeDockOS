@@ -42,7 +42,6 @@ RUN mkdir -p logs compose-link dropzone _user_packages config
 
 # Symlinks
 RUN ln -sf /homedock/config/homedock_server.conf /homedock/homedock_server.conf && \
-    ln -sf /homedock/config/homedock_ports.conf /homedock/homedock_ports.conf && \
     ln -sf /homedock/config/homedock_dropzone.conf /homedock/homedock_dropzone.conf
 
 # Execpoint

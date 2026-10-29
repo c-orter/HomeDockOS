@@ -74,7 +74,7 @@ import { requestAppToken, buildAppSubdomainUrl } from "../__Composables__/useApp
 // HDOS00105
 
 interface Props {
-  port: number;
+  container: string;
   subpath?: string;
   slug: string;
   displayName: string;
@@ -125,7 +125,7 @@ const currentStep = computed(() => {
 });
 
 const statusText = computed(() => {
-  if (isError.value) return t("App not available on port {port}", { port: props.port });
+  if (isError.value) return t("App not available");
   if (retryCount.value > 0) return t("Retrying {n}/{total}", { n: retryCount.value, total: MAX_RETRIES });
   if (!isChecking.value) return t("Connection established");
 
@@ -169,7 +169,7 @@ const check = async () => {
   let proxyRejected = false;
 
   try {
-    const { data } = await axios.post("/api/check-port", { port: props.port, subpath: props.subpath ?? "", via_proxy: true }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
+    const { data } = await axios.post("/api/check-app", { container: props.container, subpath: props.subpath ?? "", via_proxy: true }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
 
     if (!data?.available) throw new Error("unavailable");
 

@@ -13,7 +13,6 @@ from flask import request
 from flask_login import login_required
 
 from pymodules.hd_FunctionsGlobals import current_directory, compose_upload_folder
-from pymodules.hd_ThreadAutoPortRouting import update_event
 
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_ClassDockerComposeHelper import DockerComposeHelper
@@ -22,7 +21,6 @@ from pymodules.hd_ClassDockerComposeHelper import DockerComposeHelper
 @login_required
 def recreate_container():
 
-    update_event.clear()
     manager = DockerClientManager.get_instance()
     client = manager.get_client()
     container_name = request.json.get("container_name", None)
@@ -41,7 +39,6 @@ def recreate_container():
             time.sleep(1)
             dep_container.remove()
             time.sleep(1)
-            mark_container_as_disabled(dep_container_name)
 
         container = client.containers.get(container_name)
         container.stop()
@@ -62,43 +59,12 @@ def recreate_container():
         if not success:
             return {"message": f"Failed to recreate container: {message}"}, 500
 
-        mark_container_as_disabled(container_name)
-        time.sleep(1)
-
-        update_event.set()
-
         return {"message": "Container recreated successfully."}, 200
 
     except docker.errors.NotFound:
         return {"message": f"Container {container_name} not found."}, 404
     except Exception as e:
         return {"message": f"An error occurred: {e}"}, 500
-
-
-def mark_container_as_disabled(container_name):
-    ports_file_name = os.path.join(current_directory, "homedock_ports.conf")
-    try:
-
-        with open(ports_file_name, "r") as file:
-            lines = file.readlines()
-
-        new_lines = []
-        for line in lines:
-            parts = line.strip().split("*")
-            if parts[0] == container_name:
-                new_lines.append(f"{container_name}*disabled\n")
-            else:
-                new_lines.append(line)
-
-        with open(ports_file_name, "w") as file:
-            file.writelines(new_lines)
-            file.flush()
-            os.fsync(file.fileno())
-
-    except FileNotFoundError:
-        print(f"The file {ports_file_name} was not found.")
-    except Exception as e:
-        print(f"An error occurred while marking the container as disabled: {e}")
 
 
 def get_dependent_containers(main_container_name, docker_client):

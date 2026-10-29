@@ -19,7 +19,7 @@
           <button v-else :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors cursor-pointer" @click="blocker = null">
             {{ $t("Try anyway") }}
           </button>
-          <button v-if="serviceUrl" :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors cursor-pointer" @click="blocker === 'untrusted' ? openInNewTab() : openPortInNewTab()">
+          <button v-if="blocker === 'untrusted' || serviceUrl" :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors cursor-pointer" @click="blocker === 'untrusted' ? openInNewTab() : openDomainInNewTab()">
             {{ $t("Open in a new tab") }}
           </button>
           <a href="https://docs.homedock.cloud/homedock-os/desktop/#on-screen-apps" target="_blank" rel="noopener noreferrer" :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors">
@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <OnScreenAppProxyNotice v-else-if="proxyRejected" :display-name="displayName" :icon="appIcon" :can-open-externally="!!serviceUrl" @open-external="openPortInNewTab" />
+      <OnScreenAppProxyNotice v-else-if="proxyRejected" :display-name="displayName" :icon="appIcon" :can-open-externally="false" />
 
       <div v-else-if="errorMessage" class="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
         <AppIconGraphic :image-src="appIcon" :size="56" />
@@ -36,7 +36,7 @@
           <p :class="[themeClasses.hubCardTextAppName]" class="font-bold text-sm">{{ displayName }}</p>
           <p :class="[themeClasses.hubCardTextRepo]" class="text-xs max-w-sm">{{ errorMessage }}</p>
         </div>
-        <button v-if="serviceUrl" :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors cursor-pointer" @click="openInNewTab">
+        <button v-if="openable" :class="[themeClasses.explorerActionButton, themeClasses.explorerActionButtonHover]" class="rounded-lg px-3 py-1.5 text-xs transition-colors cursor-pointer" @click="openInNewTab">
           {{ $t("Open in a new tab") }}
         </button>
       </div>
@@ -44,9 +44,9 @@
       <div v-else class="relative flex-1 min-h-0">
         <OnScreenAppsBackdrop v-if="frameReady" />
 
-        <iframe v-if="appUrl || !appPort" :src="appUrl ?? 'about:blank'" :title="displayName" class="absolute inset-0 w-full h-full border-0" :class="frameReady ? 'opacity-100' : 'opacity-0 pointer-events-none'" allow="clipboard-read; clipboard-write; fullscreen; autoplay; camera; microphone; display-capture" @load="onFrameLoad" />
+        <iframe v-if="appUrl || !openable" :src="appUrl ?? 'about:blank'" :title="displayName" class="absolute inset-0 w-full h-full border-0" :class="frameReady ? 'opacity-100' : 'opacity-0 pointer-events-none'" allow="clipboard-read; clipboard-write; fullscreen; autoplay; camera; microphone; display-capture" @load="onFrameLoad" />
 
-        <OnScreenAppsLoader v-if="appPort && !loaderGone" class="absolute inset-0 transition-opacity duration-500 ease-out" :class="frameReady ? 'opacity-0 pointer-events-none' : 'opacity-100'" :port="appPort" :subpath="''" :slug="app?.slug || appName" :display-name="displayName" :icon="appIcon" :can-open-externally="!!serviceUrl" @ready="onLoaderReady" @failed="loaderFailed = $event" @proxy-rejected="proxyRejected = true" @open-external="openInNewTab" />
+        <OnScreenAppsLoader v-if="openable && !loaderGone" class="absolute inset-0 transition-opacity duration-500 ease-out" :class="frameReady ? 'opacity-0 pointer-events-none' : 'opacity-100'" :container="appName" :subpath="''" :slug="app?.slug || appName" :display-name="displayName" :icon="appIcon" :can-open-externally="true" @ready="onLoaderReady" @failed="loaderFailed = $event" @proxy-rejected="proxyRejected = true" @open-external="openInNewTab" />
       </div>
     </Transition>
 
@@ -65,7 +65,7 @@
           <button :class="['flex items-center justify-center w-5 h-5 rounded-full transition-colors cursor-pointer border-0 bg-transparent', themeClasses.statusBarHelpButton]" :title="$t('Terminal')" @click="openTerminal">
             <Icon :icon="terminalIcon" class="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
           </button>
-          <button v-if="serviceUrl" :class="['flex items-center justify-center w-5 h-5 rounded-full transition-colors cursor-pointer border-0 bg-transparent', themeClasses.statusBarHelpButton]" :title="$t('Open in a new tab')" @click="openInNewTab">
+          <button v-if="openable" :class="['flex items-center justify-center w-5 h-5 rounded-full transition-colors cursor-pointer border-0 bg-transparent', themeClasses.statusBarHelpButton]" :title="$t('Open in a new tab')" @click="openInNewTab">
             <Icon :icon="newTabIcon" class="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity" />
           </button>
         </div>
@@ -81,7 +81,7 @@
           <div :class="['text-[10px] md:text-xs md:leading-4 space-y-2 leading-relaxed', themeClasses.statusBarInfo]">
             <p>{{ $t("This application is served at its own address. HomeDock OS matches that name to the port the container listens on and forwards the connection untouched, so the app behaves exactly as it would on its own port.") }}</p>
             <p>{{ $t("Its port stays closed to the outside: every request passes through HomeDock OS and requires your session.") }}</p>
-            <p v-if="serviceUrl" class="flex items-start gap-1.5">
+            <p v-if="openable" class="flex items-start gap-1.5">
               <Icon :icon="newTabIcon" class="w-3.5 h-3.5 flex-shrink-0 mt-px opacity-70" />
               <span>{{ $t("This button opens the same address in a new tab. The direct port route is still listed under the app's Properties.") }}</span>
             </p>
@@ -139,6 +139,7 @@ const app = computed(() => desktopStore.mainDockerApps.find((candidate) => candi
 const displayName = computed(() => app.value?.display_name || appName.value || "Unknown");
 const appIcon = computed(() => app.value?.image_path || fallbackIcon);
 const serviceUrl = computed(() => app.value?.service_url || null);
+const openable = computed(() => Boolean(app.value?.openable));
 
 const errorMessage = ref<string | null>(null);
 const frameHost = ref<string | null>(null);
@@ -166,12 +167,6 @@ let frameTimer: ReturnType<typeof setTimeout> | null = null;
 let loaderTimer: ReturnType<typeof setTimeout> | null = null;
 let floorTimer: ReturnType<typeof setTimeout> | null = null;
 let readyAt = 0;
-
-const appPort = computed(() => {
-  const match = /\/app\/(\d+)/.exec(serviceUrl.value || "");
-
-  return match ? Number(match[1]) : null;
-});
 
 // HDOS00105
 const revealFrame = () => {
@@ -253,7 +248,7 @@ const goToAlternative = () => {
   window.location.href = `https://${blockerAlternative.value}${port}/`;
 };
 
-const openPortInNewTab = () => {
+const openDomainInNewTab = () => {
   if (serviceUrl.value) window.open(serviceUrl.value, "_blank", "noopener,noreferrer");
 };
 
@@ -354,7 +349,7 @@ onMounted(async () => {
     return;
   }
 
-  if (!serviceUrl.value) {
+  if (!openable.value) {
     errorMessage.value = t("This application has no routable port, so it cannot be embedded.");
     return;
   }

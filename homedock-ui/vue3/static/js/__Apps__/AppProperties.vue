@@ -183,32 +183,6 @@
                   <p class="text-[10px] mt-0.5 opacity-50 leading-snug" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Served through HomeDock OS, it works with the app port closed to the outside.") }}</p>
                 </div>
 
-                <div v-if="directRoutes.length > 0">
-                  <div class="h-px my-3 opacity-60" :class="[themeClasses.hubSeparator]"></div>
-                  <span class="block text-[10px] uppercase tracking-wide opacity-50" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Direct access") }}</span>
-                  <p class="text-[10px] mt-0.5 mb-1 opacity-50 leading-snug" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Legacy access modes, kept for when you need them.") }}</p>
-                  <div v-for="route in directRoutes" :key="route.url" class="py-0.5">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-3">
-                      <span class="text-xs font-medium break-all opacity-70" :class="[themeClasses.appPropsInfoValue]">{{ route.url }}</span>
-                      <div class="flex items-center gap-1 flex-shrink-0 -ml-1.5 sm:ml-0">
-                        <button @click="copyCredential(route.url, `direct-${route.url}`)" class="p-1.5 rounded-md transition-colors cursor-pointer" :class="[copiedField === `direct-${route.url}` ? themeClasses.installConfigDefaultCredsCopied : themeClasses.appPropsInfoLink, copiedField === `direct-${route.url}` ? '' : 'opacity-50 hover:opacity-100']" :title="$t('Copy')">
-                          <Icon :icon="copiedField === `direct-${route.url}` ? checkIcon : contentCopyIcon" width="14" height="14" />
-                        </button>
-                        <button @click="openDirectRoute(route.url)" class="p-1.5 rounded-md transition-colors opacity-50 hover:opacity-100 cursor-pointer" :class="[themeClasses.appPropsInfoLink]" :title="$t('Open in a new tab')">
-                          <Icon :icon="openIcon" width="14" height="14" />
-                        </button>
-                      </div>
-                    </div>
-                    <span class="block text-[10px] opacity-40 leading-snug" :class="[themeClasses.appPropsInfoLabel]">{{ route.note }}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div v-if="appAddresses.length > 0 || directRoutes.length > 0" class="h-px my-3 opacity-60" :class="[themeClasses.hubSeparator]"></div>
-                  <span class="block text-[10px] uppercase tracking-wide opacity-50" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Port routing") }}</span>
-                  <p class="text-[10px] mt-0.5 mb-1.5 opacity-50 leading-snug" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Which container port these addresses route to.") }}</p>
-                  <PortRouter :key="app.ports.join(':')" :containerId="app.name" :initialPorts="app.ports.join(':')" :containerStatus="app.status" @update="handlePortsUpdate" />
-                </div>
               </div>
 
               <div v-if="exposureAvailable" class="rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.appPropsUsageCardBgHover, themeClasses.appPropsUsageCardBorderHover, themeClasses.aeroExtraScope]">
@@ -229,18 +203,11 @@
                   <span class="text-[15px] font-semibold m-0" :class="[themeClasses.appPropsCardHeaderText]">{{ $t("Opening behavior") }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Select v-if="viewMode === 'port'" class="w-[104px] flex-shrink-0 rounded-xl" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="viewScheme" @change="saveViewScheme" :popup-class-name="themeClasses.scopeSelector" :show-search="false">
-                    <SelectOption :class="[themeClasses.scopeSelector]" value="http">http://</SelectOption>
-                    <SelectOption :class="[themeClasses.scopeSelector]" value="https">https://</SelectOption>
-                  </Select>
                   <Select class="flex-1 min-w-0 rounded-xl" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="viewMode" @change="saveViewMode" :popup-class-name="themeClasses.scopeSelector" :show-search="false">
                     <SelectOption :class="[themeClasses.scopeSelector]" value="window"
                       >{{ $t("As a window") }}<span v-if="!appWindowsSupported" class="opacity-50"> — {{ $t("Not available here") }}</span></SelectOption
                     >
                     <SelectOption :class="[themeClasses.scopeSelector]" value="tab">{{ $t("In a new tab") }}</SelectOption>
-                    <SelectOption :class="[themeClasses.scopeSelector]" value="port"
-                      >{{ $t("Straight to its port") }}<span v-if="!directPortSupported" class="opacity-50"> — {{ $t("Not available here") }}</span></SelectOption
-                    >
                   </Select>
                 </div>
                 <p class="text-[10px] mt-1.5 opacity-50 leading-snug" :class="[themeClasses.appPropsInfoLabel]">{{ viewModeDescription }}</p>
@@ -398,7 +365,7 @@ import { useTheme } from "../__Themes__/ThemeSelector";
 import { useResponsive } from "../__Composables__/useResponsive";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
 import { useDesktopStore } from "../__Stores__/desktopStore";
-import { subdomainTrail, requestAppToken, buildAppSubdomainUrl, hostSupportsAppWindows, appWindowsAvailable, isLocalNetworkHost, isAddressLiteral, isMulticastTrail, buildDirectPortUrl } from "../__Composables__/useAppSubdomain";
+import { subdomainTrail, requestAppToken, buildAppSubdomainUrl, hostSupportsAppWindows, appWindowsAvailable, isAddressLiteral, isMulticastTrail } from "../__Composables__/useAppSubdomain";
 import type { DockerApp } from "../__Stores__/desktopStore";
 import { useWindowStore } from "../__Stores__/windowStore";
 import { useAppQuickActions } from "../__Composables__/useAppQuickActions";
@@ -439,7 +406,6 @@ import shieldLockIcon from "@iconify-icons/mdi/shield-lock-outline";
 import earthIcon from "@iconify-icons/mdi/earth";
 
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
-import PortRouter from "../__Components__/PortRouter.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
 
@@ -616,16 +582,6 @@ function formatBytes(bytes: number): string {
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${units[i]}`;
 }
 
-function handlePortsUpdate(newPorts: string) {
-  if (!app.value) return;
-
-  const portsArray = newPorts.split(":");
-  desktopStore.updateDockerApp(app.value.id, {
-    ports: portsArray,
-    service_url: portsArray.length > 0 && portsArray[0] !== "disabled" && portsArray[0] !== "hostmode" ? `/app/${portsArray[0]}` : null,
-  });
-}
-
 async function handleStart() {
   if (!app.value || isProcessing.value) return;
   isProcessing.value = true;
@@ -687,7 +643,7 @@ async function handleUnpause() {
 }
 
 const appAddresses = computed(() => {
-  if (!app.value?.service_url) return [];
+  if (!app.value?.openable) return [];
 
   const port = window.location.port ? `:${window.location.port}` : "";
   const entries: { host: string; trail: string; current: boolean }[] = [];
@@ -701,26 +657,6 @@ const appAddresses = computed(() => {
   }
 
   return entries;
-});
-
-// HDOS00115
-const directRoutes = computed(() => {
-  const routes: { url: string; note: string }[] = [];
-
-  if (!app.value) return routes;
-
-  if (app.value.service_url) {
-    routes.push({ url: `${window.location.origin}${app.value.service_url}`, note: t("Goes through HomeDock OS and needs your session.") });
-  }
-
-  const port = app.value.ports?.find((value: string) => value && value !== "disabled" && value !== "hostmode");
-
-  // HDOS00115
-  if (port && directPortSupported.value) {
-    routes.push({ url: buildDirectPortUrl(port, viewScheme.value), note: t("Reaches the app port directly.") });
-  }
-
-  return routes;
 });
 
 // HDOS00119
@@ -742,9 +678,6 @@ const viewMode = computed(() => (app.value ? (desktopStore.appViewModes[app.valu
 // HDOS00103
 const appWindowsSupported = computed(() => appWindowsAvailable(desktopStore.certificateBlocksAppWindows));
 
-// HDOS00115
-const directPortSupported = computed(() => isLocalNetworkHost());
-
 // HDOS00116
 const onScreenRequirement = computed(() => {
   if (isAddressLiteral()) return t("Open HomeDock OS by name instead of by IP address and OnScreen Apps come back.");
@@ -763,12 +696,6 @@ const viewModeDescription = computed(() => {
   if (onScreenRequirement.value) return onScreenRequirement.value;
 
   if (viewMode.value === "tab") return t("Some apps refuse to run inside a frame. This one opens outside the desktop. Must open the port on your router for remote access.");
-  if (viewMode.value === "port") {
-    if (!directPortSupported.value) return t("The container port is only reachable from the same network as HomeDock OS, not from {host}.", { host: window.location.hostname });
-
-    return t("Goes to the container port, skipping HomeDock OS and its session check. Must open the port on your router for remote access.");
-  }
-
   // HDOS00116
   if (window.location.protocol === "http:") return t("Opens as an OnScreen App inside HomeDock OS, like the rest.");
 
@@ -781,32 +708,13 @@ async function saveViewMode(mode: unknown) {
   const value = String(mode);
   const previous = desktopStore.appViewModes[app.value.name];
 
-  desktopStore.appViewModes[app.value.name] = value as "window" | "tab" | "port";
+  desktopStore.appViewModes[app.value.name] = value as "window" | "tab";
 
   try {
     await axios.post("/api/app-view-mode", { container: app.value.name, mode: value }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
   } catch {
     if (previous) desktopStore.appViewModes[app.value.name] = previous;
     else delete desktopStore.appViewModes[app.value.name];
-  }
-}
-
-// HDOS00118
-const viewScheme = computed(() => (app.value ? (desktopStore.appViewSchemes[app.value.name] ?? "http") : "http"));
-
-async function saveViewScheme(scheme: unknown) {
-  if (!app.value) return;
-
-  const value = String(scheme);
-  const previous = desktopStore.appViewSchemes[app.value.name];
-
-  desktopStore.appViewSchemes[app.value.name] = value as "http" | "https";
-
-  try {
-    await axios.post("/api/app-view-mode", { container: app.value.name, mode: viewMode.value, scheme: value }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-  } catch {
-    if (previous) desktopStore.appViewSchemes[app.value.name] = previous;
-    else delete desktopStore.appViewSchemes[app.value.name];
   }
 }
 
@@ -855,10 +763,6 @@ async function saveExposure(mode: unknown) {
   } catch {
     exposureModes.value = { ...exposureModes.value, [slug]: previous ?? "gated" };
   }
-}
-
-function openDirectRoute(url: string) {
-  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function openInControlHub() {

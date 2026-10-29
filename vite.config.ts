@@ -51,7 +51,6 @@ export default defineConfig(({ mode }) => ({
         __shieldmode__: resolve(import.meta.dirname, "homedock-ui/vue3/static/js/MountPoints/__shieldmode__.ts"),
         __errorcode__: resolve(import.meta.dirname, "homedock-ui/vue3/static/js/MountPoints/__errorcode__.ts"),
         __appdenied__: resolve(import.meta.dirname, "homedock-ui/vue3/static/js/MountPoints/__appdenied__.ts"),
-        __app__: resolve(import.meta.dirname, "homedock-ui/vue3/static/js/MountPoints/__app__.ts"),
       },
       output: {
         comments: { legal: true },

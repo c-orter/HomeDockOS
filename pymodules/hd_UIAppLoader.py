@@ -10,14 +10,12 @@ import requests
 import socket
 import re
 
-from flask import jsonify, render_template, g, request
+from flask import jsonify, request
 from flask_login import login_required
 
-from pymodules.hd_FunctionsConfig import read_config
-from pymodules.hd_FunctionsGlobals import version_hash
-from pymodules.hd_FunctionsHostSelector import docker_host, is_docker
+from pymodules.hd_FunctionsHostSelector import is_docker
+from pymodules.hd_BackendResolver import resolve_backend, web_port
 from pymodules.hd_AppSubdomains import get_emittable_hosts, get_slug_map, resolve_app_for_host, build_forwarding_headers
-from pymodules.hd_DockerAPIContainerData import get_container_name_by_port_direct, get_display_name_for_container
 from pymodules.hd_FunctionsNetwork import local_ip, internet_ip, get_local_ip, get_internet_ip
 
 
@@ -121,9 +119,9 @@ def _rejects_proxied_requests(url, headers, public_host):
         return False
 
 
-def _available_response(url, hostname, port, headers, via_proxy, container_name):
-    protocol = url.split("://")[0]
-    payload = {"available": True, "url": f"{protocol}://{hostname}:{port}"}
+def _available_response(hostname, port, headers, via_proxy, container_name, url):
+
+    payload = {"available": True}
 
     # HDOS00129
     if via_proxy:
@@ -138,14 +136,16 @@ def _available_response(url, hostname, port, headers, via_proxy, container_name)
 
 
 @login_required
-def check_port():
-    data = request.json
-    port = data.get("port")
-    subpath = sanitize_subpath(data.get("subpath", "").lstrip("/"))
+def check_app():
+    data = request.json or {}
+    container_name = str(data.get("container") or "")
+    subpath = sanitize_subpath(str(data.get("subpath", "")).lstrip("/"))
     via_proxy = data.get("via_proxy") is True
 
-    if not isinstance(port, int) or port < 1 or port > 65535:
-        return jsonify({"error": "Invalid port. Must be an integer between 1 and 65535."}), 400
+    port = web_port(container_name) if container_name else None
+
+    if port is None:
+        return jsonify({"error": "This application has no web port."}), 404
 
     # HDOS00008
     hostname = get_safe_hostname()
@@ -153,16 +153,16 @@ def check_port():
     if hostname is None:
         return jsonify({"error": "Invalid or unauthorized hostname."}), 403
 
-    # HDOS00010
-    container_name = get_container_name_by_port_direct(port)
-    if container_name is None:
-        return jsonify({"error": "Port not associated with any container."}), 403
+    backend = resolve_backend(container_name, port)
+
+    if backend is None:
+        return jsonify({"available": False}), 404
 
     path_part = f"/{subpath}" if subpath else ""
 
     # HDOS00046
-    internal_host = docker_host
-    urls = [f"https://{internal_host}:{port}{path_part}", f"http://{internal_host}:{port}{path_part}"]
+    internal_host, internal_port = backend
+    urls = [f"https://{internal_host}:{internal_port}{path_part}", f"http://{internal_host}:{internal_port}{path_part}"]
 
     # HDOS00005
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
@@ -176,7 +176,7 @@ def check_port():
                 response = requests.head(url, timeout=5, allow_redirects=True, headers=headers, verify=False)
 
             if response.status_code < 400 or response.status_code in [401, 301, 302, 308]:
-                return _available_response(url, hostname, port, headers, via_proxy, container_name)
+                return _available_response(hostname, port, headers, via_proxy, container_name, url)
 
             if response.status_code in [404, 405]:
                 try:
@@ -188,23 +188,9 @@ def check_port():
                     available = response.status_code < 400 or response.status_code in [401, 301, 302, 308]
 
                 if available:
-                    return _available_response(url, hostname, port, headers, via_proxy, container_name)
+                    return _available_response(hostname, port, headers, via_proxy, container_name, url)
 
         except requests.RequestException:
             continue
 
     return jsonify({"available": False}), 404
-
-
-@login_required
-def app_loader(port, subpath=""):
-    config = read_config()
-    selected_theme = config["selected_theme"]
-    selected_back = config["selected_back"]
-    selected_language = config["selected_language"]
-
-    container_name = get_container_name_by_port_direct(port)
-    app_slug = container_name if container_name else None
-    app_display_name = get_display_name_for_container(container_name) if container_name else None
-
-    return render_template("app.html", version_hash=version_hash, selected_theme=selected_theme, selected_back=selected_back, selected_language=selected_language, nonce=g.get("nonce", ""), port=port, subpath=subpath, app_slug=app_slug, app_display_name=app_display_name)

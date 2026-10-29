@@ -33,7 +33,6 @@ from pymodules.hd_FunctionsMain import validate_docker_installation, validate_do
 from pymodules.hd_FunctionsInitUserFolders import init_all_directories
 
 from pymodules.hd_ThreadContainerResourceUsage import start_resource_usage_thread
-from pymodules.hd_ThreadAutoPortRouting import start_auto_port_routing_thread
 from pymodules.hd_ThreadAppUpdatesChecker import start_app_updates_checker_thread
 from pymodules.hd_ThreadNotificationsFetcher import start_notifications_fetcher_thread
 from pymodules.hd_ThreadCertRenewal import start_cert_renewal_thread
@@ -96,7 +95,6 @@ if __name__ == "__main__":
     else:
         start_port_events_thread()
 
-    start_auto_port_routing_thread()
     start_resource_usage_thread()
     start_app_updates_checker_thread()
     start_notifications_fetcher_thread()

@@ -22,7 +22,8 @@ interface Application {
   statusColor: string;
   image_path: string;
   checked: boolean;
-  service_url: string;
+  service_url: string | null;
+  openable?: boolean;
   HDGroup: string;
   HDRole?: string;
   isProcessing: boolean;

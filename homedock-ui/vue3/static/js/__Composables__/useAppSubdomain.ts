@@ -90,11 +90,6 @@ export function buildAppSubdomainUrl(handoff: AppTokenResponse, path: string = "
   return `${protocol}//${handoff.slug}.${trail}${portPart}${subpath}?${param}=${encodeURIComponent(handoff.token)}`;
 }
 
-// HDOS00118
-export function buildDirectPortUrl(port: string | number, scheme: string = "http", hostname: string = window.location.hostname): string {
-  return `${scheme}://${hostname}:${port}`;
-}
-
 // HDOS00106
 const reachability = new Map<string, Promise<boolean | null>>();
 

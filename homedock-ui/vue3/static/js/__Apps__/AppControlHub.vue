@@ -449,7 +449,7 @@ const contextMenuItems = computed<ContextMenuItem[]>(() => {
 
   const items: ContextMenuItem[] = [];
 
-  if (isRunning && app.service_url && !isDependency) {
+  if (isRunning && app.openable && !isDependency) {
     items.push({ label: "Open", icon: openIcon, action: () => desktopStore.launchDockerApp(app) });
     items.push({ divider: true });
   }

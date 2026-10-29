@@ -4,13 +4,14 @@
 // https://www.banshee.pro
 
 import axios from "axios";
+import { message } from "ant-design-vue";
 
 import { defineStore } from "pinia";
 import { useWindowStore } from "./windowStore";
 import { useAppUpdateMarksStore } from "./useAppUpdateMarksStore";
 import { useDesktopSyncStore, appLayoutKey, MAX_RECENT_APPS, type DesktopContent, type DesktopMode, type LayoutItems, type SystemIconMeta } from "./useDesktopSyncStore";
 import { appExists, getAppById } from "../__Config__/WindowDefaultDetails";
-import { appWindowsAvailable, isLocalNetworkHost, buildDirectPortUrl } from "../__Composables__/useAppSubdomain";
+import { appWindowsAvailable, requestAppToken, buildAppSubdomainUrl } from "../__Composables__/useAppSubdomain";
 import { DESKTOP_GRID } from "../__Composables__/desktopLayoutFit";
 
 import type { FileExplorerLocation } from "./useFileExplorerStore";
@@ -62,6 +63,8 @@ export interface DockerApp {
   status: "running" | "exited" | "paused" | "created" | "restarting" | "removing" | "dead";
   statusColor: string;
   service_url: string | null;
+  openable?: boolean;
+  domains?: string[];
   host: string;
   ports: string[];
   usagePercent: number;
@@ -196,8 +199,7 @@ export const useDesktopStore = defineStore("desktop", {
     dockerApps: [] as DockerApp[],
     desktopFolders: [] as DesktopFolder[],
     systemDesktopIcons: [] as SystemDesktopIcon[],
-    appViewModes: {} as Record<string, "window" | "tab" | "port">,
-    appViewSchemes: {} as Record<string, "http" | "https">,
+    appViewModes: {} as Record<string, "window" | "tab">,
     subdomainCertificate: { ssl: false, selfSigned: false, coversApps: false },
     desktopLayout: "grid" as "grid" | "list",
     iconSize: "medium" as "small" | "medium" | "large",
@@ -304,12 +306,11 @@ export const useDesktopStore = defineStore("desktop", {
 
     async loadAppViewModes(csrfToken: string) {
       try {
-        const { data } = await axios.get<{ modes: Record<string, "window" | "tab" | "port">; schemes: Record<string, "http" | "https"> }>("/api/app-view-mode", {
+        const { data } = await axios.get<{ modes: Record<string, "window" | "tab"> }>("/api/app-view-mode", {
           headers: { "X-HomeDock-CSRF-Token": csrfToken },
         });
 
         this.appViewModes = data?.modes ?? {};
-        this.appViewSchemes = data?.schemes ?? {};
       } catch {
         // Halp!
       }
@@ -328,31 +329,36 @@ export const useDesktopStore = defineStore("desktop", {
     },
 
     launchDockerApp(app: DockerApp) {
-      if (!app.service_url) return;
+      if (!app.openable) return;
 
       this.markUpdateSeen(app);
 
       const mode = this.appViewModes[app.name] ?? "window";
 
-      // HDOS00115
-      if (mode === "port" && isLocalNetworkHost()) {
-        const port = app.ports?.find((value) => value && value !== "disabled" && value !== "hostmode");
-
-        if (port) {
-          // HDOS00118
-          const scheme = this.appViewSchemes[app.name] ?? "http";
-
-          window.open(buildDirectPortUrl(port, scheme), "_blank", "noopener,noreferrer");
-          return;
-        }
-      }
-
       if (mode === "tab" || !appWindowsAvailable(this.certificateBlocksAppWindows)) {
-        window.open(app.service_url, "_blank", "noopener,noreferrer");
+        this.openDockerTab(app);
         return;
       }
 
       this.openDockerWindow(app);
+    },
+
+    // The app's first domain, or its window address when it has none. A window address needs a name-based host.
+    async openDockerTab(app: DockerApp) {
+      if (app.service_url) {
+        window.open(app.service_url, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (!appWindowsAvailable(this.certificateBlocksAppWindows)) {
+        message.warning("This app has no domain, and its window address needs HomeDock OS opened by name, such as homedock.local, instead of by IP address.");
+        return;
+      }
+
+      const csrfToken = document.querySelector('meta[name="homedock_csrf_token"]')?.getAttribute("content") || "";
+      const handoff = await requestAppToken(app.name, csrfToken);
+
+      if (handoff) window.open(buildAppSubdomainUrl(handoff), "_blank", "noopener,noreferrer");
     },
 
     // HDOS00119
@@ -367,7 +373,7 @@ export const useDesktopStore = defineStore("desktop", {
     },
 
     openDockerApp(app: DockerApp) {
-      if (app.service_url && app.status === "running") {
+      if (app.openable && app.status === "running") {
         this.launchDockerApp(app);
       } else {
         const windowStore = useWindowStore();

@@ -16,6 +16,8 @@ from flask_login import login_required, current_user
 from pymodules.hd_FunctionsGlobals import compose_upload_folder, current_directory, user_packages_available_folder
 from pymodules.hd_FunctionsSanitize import sanitize_container_name
 from pymodules.hd_AppSubdomains import slugify_container_name
+from pymodules.hd_BackendResolver import web_port
+from pymodules.hd_DomainStore import get_app
 from pymodules.hd_ThreadContainerResourceUsage import cpu_usage, memory_usage, memory_bytes, memory_limit_bytes, network_rx_bytes, network_tx_bytes
 
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
@@ -35,6 +37,21 @@ def invalidate_external_apps_cache():
     _app_store_external_cache = None
     _suggested_ports_cache = None
     _suggested_trails_cache = None
+
+
+def _port_suffix():
+    _, separator, host_port = request.host.rpartition(":")
+
+    return f":{host_port}" if separator and host_port.isdigit() and not request.host.startswith("[") else ""
+
+
+def primary_domain_url(domains, scheme, port_suffix):
+    """Where "open in a tab" goes: the app's first domain, or None when it has none."""
+
+    if not domains:
+        return None
+
+    return f"{scheme}://{domains[0]['fqdn']}{port_suffix}{domains[0]['path']}"
 
 
 def load_suggested_ports():
@@ -149,53 +166,6 @@ def get_display_name_for_container(container_name: str) -> str:
     return sanitized
 
 
-def get_container_name_by_port_direct(port):
-    try:
-        manager = DockerClientManager.get_instance()
-        client = manager.get_client()
-
-        for container in client.containers.list(all=True):
-            if container.ports:
-                for container_port, host_bindings in container.ports.items():
-                    if host_bindings:
-                        for binding in host_bindings:
-                            if binding.get("HostPort") == str(port):
-                                return sanitize_container_name(container.name)
-
-        # HDOS00011
-        try:
-            containers_response = get_docker_containers()
-            containers_data = containers_response.get_json()
-
-            for container in containers_data:
-                if "ports" in container and container["ports"]:
-                    for container_port in container["ports"]:
-                        if container_port not in ["hostmode", "disabled", ""] and container_port == str(port):
-                            try:
-                                docker_container = client.containers.get(container["name"])
-                                if docker_container.status == "running":
-                                    return sanitize_container_name(container["name"])
-                            except:
-                                continue
-        except Exception:
-            pass
-
-    except Exception:
-        pass
-
-    return None
-
-
-@login_required
-def get_container_by_port(port):
-    container_name = get_container_name_by_port_direct(port)
-
-    if container_name:
-        return jsonify({"sanitized_name": container_name})
-
-    return jsonify({"error": "Container not found for port"}), 404
-
-
 @login_required
 def get_docker_containers():
 
@@ -208,13 +178,8 @@ def get_docker_containers():
     updates_dict = get_updates_state()
     unseen_updates = get_unseen_updates(current_user.id)
 
-    ports_file_name = os.path.join(current_directory, "homedock_ports.conf")
-    try:
-        with open(ports_file_name, "r") as file:
-            config_lines = file.readlines()
-    except FileNotFoundError:
-        config_lines = []
-    ports_config = {sanitize_container_name(line.strip().split("*")[0]): line.strip().split("*")[1].split(":") for line in config_lines}
+    port_suffix = _port_suffix()
+    scheme = "https" if request.is_secure else "http"
 
     for container in containers:
         try:
@@ -259,28 +224,17 @@ def get_docker_containers():
             if host_display.startswith("www."):
                 host_display = host_display[4:]
 
-            if container.name in ports_config:
-                ports_list = ports_config[container.name]
-                if "" in ports_list or "hostmode" in ports_list:
-                    service_url = None
-                else:
-                    sanitized_port = sanitize_port(ports_list[0])
-                    service_url = f"/app/{sanitized_port}" if sanitized_port else None
-            else:
-                ports = container.attrs["NetworkSettings"]["Ports"]
-                ports_list = []
-                for port in ports:
-                    if ports[port] is not None:
-                        for item in ports[port]:
-                            host_port = sanitize_port(item["HostPort"])
-                            if host_port:
-                                ports_list.append(host_port)
+            # Published host ports are informational only: apps open through their domains or their window address
+            ports_list = []
+            for port, bindings in (container.attrs["NetworkSettings"]["Ports"] or {}).items():
+                for item in bindings or []:
+                    host_port = sanitize_port(item["HostPort"])
+                    if host_port and host_port not in ports_list:
+                        ports_list.append(host_port)
 
-                if ports_list and ports_list[0] not in ["hostmode", ""]:
-                    sanitized_port = sanitize_port(ports_list[0])
-                    service_url = f"/app/{sanitized_port}" if sanitized_port else None
-                else:
-                    service_url = None
+            stored = get_app(container.name) or {"domains": []}
+            service_url = primary_domain_url(stored["domains"], scheme, port_suffix)
+            openable = web_port(container.name) is not None
 
             display_name = get_display_name_for_container(container.name)
 
@@ -305,6 +259,8 @@ def get_docker_containers():
                 "composeLink": file_status,
                 "ports": ports_list,
                 "service_url": service_url,
+                "openable": openable,
+                "domains": [domain["fqdn"] for domain in stored["domains"]],
                 "startedAt": started_at,
                 "has_update": updates_dict.get(container.name, False),
                 "recently_updated": unseen_updates.get(container.name) == container.id,

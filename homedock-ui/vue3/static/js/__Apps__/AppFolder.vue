@@ -27,7 +27,6 @@
           <div :class="['relative w-16 h-16 flex items-center justify-center transition-transform duration-200 pointer-events-none', themeClasses.desktopIconContainerScaleHover]">
             <AppIconGraphic :image-src="app.image_path" :size="APP_ICON_SIZE" :status="app.status" />
             <AppBusyOverlay :visible="isBusy(app.id)" />
-            <PortScanningOverlay :visible="app.status === 'running' && isPortScanning(app) && !isBusy(app.id)" />
             <Transition name="status-pop" type="animation">
               <div v-if="app.status !== 'running'" :class="['status-badge', getStatusBadgeClass(app.status), themeClasses.desktopStatusBadgeBorder]"></div>
             </Transition>
@@ -101,7 +100,6 @@ import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import ContextMenu, { type ContextMenuItem } from "../__Components__/ContextMenu.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
-import PortScanningOverlay from "../__Components__/PortScanningOverlay.vue";
 import AppBusyOverlay from "../__Components__/AppBusyOverlay.vue";
 import UpdatedDot from "../__Components__/UpdatedDot.vue";
 import ShortcutEditModal, { type ShortcutModalResult } from "../__Components__/ShortcutEditModal.vue";
@@ -409,14 +407,6 @@ function calculateMaxCols() {
   maxCols.value = Math.max(1, Math.floor((containerWidth - ICON_PADDING.value * 2) / GRID_SIZE_X.value));
 }
 
-function isPortScanning(app: DockerApp): boolean {
-  if (!app.ports || app.ports.length === 0) return false;
-  if (app.ports.includes("disabled")) return true;
-  if (app.ports.includes("hostmode")) return false;
-  const unique = new Set(app.ports);
-  return unique.size !== app.ports.length;
-}
-
 const APP_ICON_SIZE = 52;
 
 function handleClick(app: DockerApp, e?: MouseEvent) {
@@ -606,7 +596,7 @@ function handleDoubleClick(app: DockerApp, fromMobileGesture = false) {
 
   const isRunning = app.status === "running";
 
-  if (isRunning && app.service_url) {
+  if (isRunning && app.openable) {
     desktopStore.launchDockerApp(app);
   } else {
     windowStore.openUniqueWindow("properties", app.id, {
@@ -990,12 +980,12 @@ const contextMenuItems = computed<ContextMenuItem[]>(() => {
 
   const items: ContextMenuItem[] = [];
 
-  if (isRunning && app.service_url) {
+  if (isRunning && app.openable) {
     items.push({
       label: "Open",
       icon: openIcon,
       action: () => {
-        if (contextMenuApp.value?.service_url) {
+        if (contextMenuApp.value?.openable) {
           desktopStore.launchDockerApp(contextMenuApp.value);
         }
       },

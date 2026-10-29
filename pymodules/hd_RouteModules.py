@@ -50,11 +50,9 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/limited", "limited", limited)
 
-    from pymodules.hd_UIAppLoader import app_loader, check_port
+    from pymodules.hd_UIAppLoader import check_app
 
-    homedock_www.add_url_rule("/app/<int:port>", "app_loader_port", app_loader)
-    homedock_www.add_url_rule("/app/<int:port>/<path:subpath>", "app_loader_subpath", app_loader)
-    homedock_www.add_url_rule("/api/check-port", "check_port", CSRF_Protect(check_port), methods=["POST"])
+    homedock_www.add_url_rule("/api/check-app", "check_app", CSRF_Protect(check_app), methods=["POST"])
 
     from pymodules.hd_SubdomainAuth import api_app_token, api_subdomain_diagnostics
 
@@ -124,10 +122,6 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/system-logs/serve_disk_usage", "serve_disk_usage", CSRF_Protect(serve_disk_usage), methods=["GET"])
     homedock_www.add_url_rule("/api/system-logs/serve_external_disk_usage", "serve_external_disk_usage", CSRF_Protect(serve_external_disk_usage), methods=["GET"])
 
-    from pymodules.hd_UIDashboardPortRouting import port_route_function
-
-    homedock_www.add_url_rule("/api/port_route", "port_route", CSRF_Protect(port_route_function), methods=["POST"])
-
     from pymodules.hd_UIControlHubViewLogs import view_container_logs, create_download_ticket, download_container_logs
 
     homedock_www.add_url_rule("/api/view-container-logs", "view_container_logs", CSRF_Protect(view_container_logs), methods=["GET"])
@@ -166,10 +160,9 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/stream/stats", "stats_stream", CSRF_Protect(stats_stream))
 
-    from pymodules.hd_DockerAPIContainerData import get_docker_containers, get_container_by_port
+    from pymodules.hd_DockerAPIContainerData import get_docker_containers
 
     homedock_www.add_url_rule("/api/containers", "get_docker_containers", CSRF_Protect(get_docker_containers))
-    homedock_www.add_url_rule("/api/container-by-port/<int:port>", "get_container_by_port", CSRF_Protect(get_container_by_port))
 
     from pymodules.hd_DockerAPIStartContainer import start_containers
 

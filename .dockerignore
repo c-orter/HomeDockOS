@@ -24,7 +24,6 @@ homedock-data/
 
 # Config
 homedock_server.conf
-homedock_ports.conf
 homedock_dropzone.conf
 
 # Arts
