@@ -5,44 +5,22 @@ See LICENSE.md or https://polyformproject.org/licenses/strict/1.0.0/
 https://www.banshee.pro
 """
 
-import os
 import threading
-import configparser
 
 from flask import jsonify, request
 from flask_login import login_required
 
-from pymodules.hd_FunctionsGlobals import current_directory
-from pymodules.hd_FunctionsConfig import read_config, write_config
+from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_cert_domains_and_type, cert_covers_subdomains_of, restart_pending, ssl_context_active
 from pymodules.hd_ACMEProviders import provider_names, provider_labels, provider_syncs_ip
+from pymodules.hd_AcmeCredentials import stored_token, set_credential, match_credential, public_credentials, CredentialError
 from pymodules.hd_CertManager import issue_certificate, claim, release, get_state, days_until_expiry, is_reserved_domain, renewal_status
 from pymodules.hd_BaseDomain import validate_base_domain
 from pymodules.hd_ThreadDynamicDNS import get_dynamic_dns_state
 
-# HDOS00066
-_config_path = os.path.join(current_directory, "homedock_server.conf")
-
-
-def _persist(provider, token):
-    config = configparser.ConfigParser()
-    config.read(_config_path)
-
-    if not config.has_section("Config"):
-        return
-
-    config.set("Config", "acme_provider", provider)
-    config.set("Config", "acme_token", token)
-
-    write_config(config, _config_path)
-
-
 # HDOS00083
-def stored_token_for(config, provider):
-    if (config.get("acme_provider") or "").strip().lower() != (provider or "").strip().lower():
-        return ""
-
-    return config.get("acme_token", "") or ""
+def stored_token_for(domain, provider):
+    return stored_token(domain, provider)
 
 
 def _certificate_snapshot(host, domain):
@@ -70,21 +48,23 @@ def api_acme_status():
     config = read_config()
     host = request.host.split(":")[0].strip().lower().rstrip(".")
     domain = (config.get("base_domain") or "").strip().lower().rstrip(".")
+    credential = match_credential(domain) if domain else None
 
     return (
         jsonify(
             {
                 "providers": provider_names(),
                 "provider_labels": provider_labels(),
-                "provider": config.get("acme_provider", ""),
-                "token_set": bool(config.get("acme_token", "")),
+                "provider": credential["provider"] if credential else "",
+                "token_set": bool(credential),
+                "credentials": public_credentials(),
                 "domain": config.get("base_domain", ""),
                 "host": host,
                 "certificate": _certificate_snapshot(host, domain),
                 "state": get_state(),
                 # HDOS00109
                 "ip_sync": {
-                    "available": renewal_status()["managed"] and provider_syncs_ip(config.get("acme_provider", "")),
+                    "available": renewal_status()["managed"] and provider_syncs_ip(credential["provider"] if credential else ""),
                     "enabled": bool(config.get("dynamic_dns_sync")),
                     **get_dynamic_dns_state(),
                 },
@@ -111,7 +91,7 @@ def api_acme_issue():
     if is_reserved_domain(domain):
         return jsonify({"status": "bad_request", "message": f"{domain} belongs to HomeDock OS. Set your own domain as the hostname first."}), 400
 
-    token = str(data.get("token") or "").strip() or stored_token_for(config, provider)
+    token = str(data.get("token") or "").strip() or stored_token_for(domain, provider)
     if not token:
         return jsonify({"status": "bad_request", "message": "A DNS provider token is required."}), 400
 
@@ -122,14 +102,14 @@ def api_acme_issue():
         return jsonify({"status": "busy", "message": "A certificate request is already running."}), 409
 
     try:
-        _persist(provider, token)
-    except OSError as error:
-        release(f"Could not save the configuration: {error}")
-        return jsonify({"status": "error", "message": f"Could not save the configuration: {error}"}), 500
+        set_credential(domain, provider, token)
+    except (CredentialError, OSError) as error:
+        release(f"Could not save the credentials: {error}")
+        return jsonify({"status": "error", "message": f"Could not save the credentials: {error}"}), 500
 
     def worker():
         try:
-            issue_certificate(domain, provider, token, staging=staging, claimed=True)
+            issue_certificate(domain, staging=staging, claimed=True)
         except Exception as error:
             print(f" ! ACME: {error}")
 

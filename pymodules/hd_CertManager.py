@@ -20,6 +20,8 @@ from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_FunctionsNativeSSL import get_ssl_cert_directory, get_cert_domains_and_type, cert_covers_subdomains_of, reload_ssl_context, ssl_enabled
 from pymodules.hd_ACMEClient import ACMEClient, DIRECTORY_PRODUCTION, DIRECTORY_STAGING, generate_certificate_key, ACMEError
 from pymodules.hd_ACMEProviders import get_provider, ProviderError
+from pymodules.hd_AcmeCredentials import match_credential, load_credentials
+from pymodules.hd_CertPlan import plan_names
 from pymodules.hd_DNSProbe import wait_for_txt
 
 # HDOS00065
@@ -45,7 +47,7 @@ MULTI_RECORD = {"cloudflare"}
 
 _lock = threading.Lock()
 
-_state = {"running": False, "step": "", "error": None, "finished_at": None, "staging": False}
+_state = {"running": False, "step": "", "error": None, "finished_at": None, "staging": False, "plan": None}
 
 
 def get_state():
@@ -59,7 +61,7 @@ def claim(staging=False):
         if _state["running"]:
             return False
 
-        _state.update(running=True, step="starting", error=None, finished_at=None, staging=bool(staging))
+        _state.update(running=True, step="starting", error=None, finished_at=None, staging=bool(staging), plan=None)
 
         return True
 
@@ -136,10 +138,9 @@ def renewal_status():
     config = read_config()
 
     domain = (config.get("base_domain") or "").strip().lower().rstrip(".")
-    provider = (config.get("acme_provider") or "").strip().lower()
-    token = config.get("acme_token") or ""
+    credential = match_credential(domain) if domain else None
 
-    if not provider or not token:
+    if not credential and not load_credentials():
         return {"managed": False, "reason": "no DNS provider configured", "domain": domain}
 
     if not domain or "." not in domain:
@@ -148,13 +149,16 @@ def renewal_status():
     if is_reserved_domain(domain):
         return {"managed": False, "reason": "HomeDock Cloud renews this one", "domain": domain}
 
+    if not credential:
+        return {"managed": False, "reason": "no DNS provider covers the base domain", "domain": domain}
+
     if not ssl_enabled():
         return {"managed": False, "reason": "no certificate installed", "domain": domain}
 
     if not cert_covers_subdomains_of(domain):
         return {"managed": False, "reason": "the installed certificate is not the one we issue", "domain": domain}
 
-    return {"managed": True, "reason": "", "domain": domain, "provider": provider, "token": token}
+    return {"managed": True, "reason": "", "domain": domain, "provider": credential["provider"], "token": credential["token"]}
 
 
 def renew_if_needed(force=False, log=print):
@@ -169,7 +173,7 @@ def renew_if_needed(force=False, log=print):
     remaining = days_until_expiry()
     log(f" * ACME: renewing {status['domain']}, {remaining} day(s) left")
 
-    return issue_certificate(status["domain"], status["provider"], status["token"], log=log)
+    return issue_certificate(status["domain"], log=log)
 
 
 def _write_bundle(cert_dir, chain_pem, key):
@@ -198,20 +202,91 @@ def _write_bundle(cert_dir, chain_pem, key):
     return sorted(payloads)
 
 
-def issue_certificate(domain, provider_name, token, staging=False, cert_dir=None, log=print, claimed=False):
+def _clear_quietly(live):
+    for provider, identifier, token in live:
+        try:
+            provider["clear"](identifier, token)
+        except Exception:
+            pass
+
+    live.clear()
+
+
+def _validate_dns(client, pending, entries, log):
+    """Answers each dns-01 challenge with the provider whose zone covers that authorization's own name."""
+
+    work = []
+
+    for item in pending:
+        credential = match_credential(item[3], entries)
+
+        if credential is None:
+            raise ACMEError(f"No DNS provider covers {item[3]}")
+
+        work.append((item, credential, get_provider(credential["provider"])))
+
+    live = []
+
+    try:
+        batched = [entry for entry in work if entry[1]["provider"] in MULTI_RECORD]
+
+        if batched:
+            _set_state(step="dns")
+
+            for identifier in dict.fromkeys(entry[0][3] for entry in batched):
+                credential = next(entry[1] for entry in batched if entry[0][3] == identifier)
+
+                try:
+                    get_provider(credential["provider"])["clear"](identifier, credential["token"])
+                except ProviderError:
+                    pass
+
+            for (_, _, txt, identifier), credential, provider in batched:
+                provider["set"](identifier, credential["token"], txt)
+                live.append((provider, identifier, credential["token"]))
+                log(f" * ACME: TXT published for {identifier}")
+
+        for index, ((authorization_url, challenge_url, txt, identifier), credential, provider) in enumerate(work, start=1):
+            _set_state(step=f"challenge {index}/{len(work)}")
+
+            is_batched = credential["provider"] in MULTI_RECORD
+
+            entry = (provider, identifier, credential["token"])
+
+            if not is_batched:
+                provider["set"](identifier, credential["token"], txt)
+                live.append(entry)
+                log(f" * ACME: TXT published for {identifier}")
+
+            if not wait_for_txt(identifier, txt, timeout=DNS_TIMEOUT, interval=DNS_INTERVAL, log=log):
+                raise ACMEError(f"The TXT record for {identifier} never appeared on the authoritative servers within {DNS_TIMEOUT}s")
+
+            client.answer_challenge(challenge_url)
+            client.wait_for_authorization(authorization_url)
+
+            log(f" * ACME: {identifier} validated")
+
+            if not is_batched:
+                _clear_quietly([entry])
+                live.remove(entry)
+    finally:
+        _clear_quietly(live)
+
+
+def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=False, plan=None, directory_url=None, verify=True, account_key=None):
+    """Issues one SAN certificate for the base domain, its wildcard and every stored name that passes the pre-check."""
 
     # HDOS00082
     if not claimed and not claim(staging):
         raise ACMEError("A certificate request is already running")
 
-    provider = None
     domain = (domain or "").strip().lower().rstrip(".")
 
     try:
         if not domain or "." not in domain:
             raise ACMEError("A domain name is required")
 
-        provider = get_provider(provider_name)
+        entries = load_credentials()
         cert_dir = cert_dir or get_ssl_cert_directory()
 
         # HDOS00067
@@ -219,13 +294,24 @@ def issue_certificate(domain, provider_name, token, staging=False, cert_dir=None
             cert_dir = STAGING_DIR
             log(f" * ACME: test run, writing to {cert_dir} instead of the live directory")
 
-        domains = [domain, f"*.{domain}"]
+        _set_state(step="planning")
+        plan = plan or plan_names(domain, entries=entries)
+
+        _set_state(plan={"covered": plan["covered"], "excluded": plan["excluded"]})
+
+        for item in plan["excluded"]:
+            log(f" * ACME: not covered: {item['name']} ({item['reason']})")
+
+        domains = list(plan["covered"])
+
+        if domain not in domains:
+            raise ACMEError(f"The base domain {domain} cannot be certified: {next((i['reason'] for i in plan['excluded'] if i['name'] == domain), 'no DNS provider covers it')}")
 
         migrate_legacy_acme(log=log)
 
-        log(f" * ACME: requesting {domains[0]} and {domains[1]}")
+        log(f" * ACME: requesting {', '.join(domains)}")
 
-        client = ACMEClient(ACCOUNT_KEY, directory_url=DIRECTORY_STAGING if staging else DIRECTORY_PRODUCTION, log=log)
+        client = ACMEClient(account_key or ACCOUNT_KEY, directory_url=directory_url or (DIRECTORY_STAGING if staging else DIRECTORY_PRODUCTION), log=log, verify=verify)
 
         _set_state(step="account")
         client.register()
@@ -236,46 +322,7 @@ def issue_certificate(domain, provider_name, token, staging=False, cert_dir=None
         pending = client.dns_challenges(order)
 
         if pending:
-            batched = provider_name.strip().lower() in MULTI_RECORD
-
-            if batched:
-                _set_state(step="dns")
-
-                try:
-                    provider["clear"](domain, token)
-                except ProviderError:
-                    pass
-
-                for _, _, txt, identifier in pending:
-                    provider["set"](domain, token, txt)
-                    log(f" * ACME: TXT published for {identifier}")
-
-            for index, (authorization_url, challenge_url, txt, identifier) in enumerate(pending, start=1):
-                _set_state(step=f"challenge {index}/{len(pending)}")
-
-                if not batched:
-                    provider["set"](domain, token, txt)
-                    log(f" * ACME: TXT published for {identifier}")
-
-                if not wait_for_txt(domain, txt, timeout=DNS_TIMEOUT, interval=DNS_INTERVAL, log=log):
-                    raise ACMEError(f"The TXT record for {identifier} never appeared on the authoritative servers within {DNS_TIMEOUT}s")
-
-                client.answer_challenge(challenge_url)
-                client.wait_for_authorization(authorization_url)
-
-                log(f" * ACME: {identifier} validated")
-
-                if not batched:
-                    try:
-                        provider["clear"](domain, token)
-                    except ProviderError:
-                        pass
-
-            if batched:
-                try:
-                    provider["clear"](domain, token)
-                except ProviderError:
-                    pass
+            _validate_dns(client, pending, entries, log)
 
         _set_state(step="finalizing")
 
@@ -297,17 +344,11 @@ def issue_certificate(domain, provider_name, token, staging=False, cert_dir=None
 
         _set_state(running=False, step="done", finished_at=datetime.now(timezone.utc).isoformat())
 
-        return {"domains": domains, "directory": cert_dir, "files": written}
+        return {"domains": domains, "excluded": plan["excluded"], "directory": cert_dir, "files": written}
 
     except Exception as error:
         detail = str(error) if isinstance(error, (ACMEError, ProviderError)) else f"{type(error).__name__}: {error}"
 
         _set_state(running=False, step="failed", error=detail, finished_at=datetime.now(timezone.utc).isoformat())
-
-        if provider is not None:
-            try:
-                provider["clear"](domain, token)
-            except Exception:
-                pass
 
         raise

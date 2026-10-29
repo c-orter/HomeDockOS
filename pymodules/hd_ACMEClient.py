@@ -25,6 +25,7 @@ DIRECTORY_STAGING = "https://acme-staging-v02.api.letsencrypt.org/directory"
 TIMEOUT = 30
 POLL_INTERVAL = 5
 POLL_ATTEMPTS = 60
+BAD_NONCE_RETRIES = 3
 
 
 class ACMEError(Exception):
@@ -37,8 +38,9 @@ def b64(data):
 
 class ACMEClient:
 
-    def __init__(self, account_key_path, directory_url=DIRECTORY_PRODUCTION, log=print):
+    def __init__(self, account_key_path, directory_url=DIRECTORY_PRODUCTION, log=print, verify=True):
         self.directory_url = directory_url
+        self.verify = verify
         self.log = log
         self.account_key = self._load_or_create_key(account_key_path)
         self.kid = None
@@ -86,7 +88,7 @@ class ACMEClient:
     @property
     def directory(self):
         if self._directory is None:
-            response = requests.get(self.directory_url, timeout=TIMEOUT)
+            response = requests.get(self.directory_url, timeout=TIMEOUT, verify=self.verify)
 
             if response.status_code != 200:
                 raise ACMEError(f"Directory unavailable: HTTP {response.status_code}")
@@ -100,7 +102,7 @@ class ACMEClient:
             nonce, self._nonce = self._nonce, None
             return nonce
 
-        response = requests.head(self.directory["newNonce"], timeout=TIMEOUT)
+        response = requests.head(self.directory["newNonce"], timeout=TIMEOUT, verify=self.verify)
 
         return response.headers["Replay-Nonce"]
 
@@ -125,20 +127,25 @@ class ACMEClient:
         return {"protected": protected_b64, "payload": payload_b64, "signature": b64(signature)}
 
     def _post(self, url, payload):
-        response = requests.post(url, json=self._sign(url, payload), headers={"Content-Type": "application/jose+json"}, timeout=TIMEOUT)
+        # a server may refuse a nonce it already used or expired; it hands back a fresh one with the refusal
+        for attempt in range(BAD_NONCE_RETRIES + 1):
+            response = requests.post(url, json=self._sign(url, payload), headers={"Content-Type": "application/jose+json"}, timeout=TIMEOUT, verify=self.verify)
 
-        self._nonce = response.headers.get("Replay-Nonce")
+            self._nonce = response.headers.get("Replay-Nonce")
 
-        if response.status_code >= 400:
+            if response.status_code < 400:
+                return response
+
             try:
                 problem = response.json()
                 detail = problem.get("detail", response.text)
             except ValueError:
-                detail = response.text
+                problem, detail = {}, response.text
+
+            if str(problem.get("type", "")).endswith("badNonce") and attempt < BAD_NONCE_RETRIES:
+                continue
 
             raise ACMEError(f"{url.rsplit('/', 1)[-1]}: {detail}"[:400])
-
-        return response
 
     def _post_as_get(self, url):
         return self._post(url, None)
