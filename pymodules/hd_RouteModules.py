@@ -136,6 +136,11 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/get-compose-info", "get_compose_info", CSRF_Protect(get_compose_info), methods=["GET"])
     homedock_www.add_url_rule("/api/update-yml-config", "update_yml_config", CSRF_Protect(update_yml_config), methods=["POST"])
 
+    from pymodules.hd_InstalledConfig import get_installed_config, update_installed_config_view
+
+    homedock_www.add_url_rule("/api/get-installed-config", "get_installed_config", CSRF_Protect(get_installed_config), methods=["GET"])
+    homedock_www.add_url_rule("/api/update-installed-config", "update_installed_config", CSRF_Protect(update_installed_config_view), methods=["POST"])
+
     from pymodules.hd_UIControlHubRecreateContainer import recreate_container
 
     homedock_www.add_url_rule("/api/recreate-container", "recreate_container", CSRF_Protect(recreate_container), methods=["POST"])

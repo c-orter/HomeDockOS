@@ -19,6 +19,11 @@
       </div>
 
       <div class="edit-actions flex items-center gap-2 flex-shrink-0">
+        <button @click="openFormEditor" :disabled="isBusy" :class="[themeClasses.dropZoneSortButton]" class="edit-action h-7 px-2.5 rounded transition-colors flex items-center justify-center gap-1.5 text-xs disabled:opacity-40 disabled:pointer-events-none cursor-pointer disabled:cursor-default" :title="$t('Edit with a form')">
+          <Icon :icon="formIcon" class="w-4 h-4 flex-shrink-0" />
+          <span class="truncate">{{ $t("Form") }}</span>
+        </button>
+
         <button @click="revertChanges" :disabled="!isDirty || isBusy" :class="[themeClasses.dropZoneSortButton]" class="edit-action edit-action-square h-7 w-7 rounded transition-colors flex items-center justify-center flex-shrink-0 disabled:opacity-40 disabled:pointer-events-none cursor-pointer disabled:cursor-default" :title="$t('Revert')">
           <Icon :icon="undoIcon" class="w-4 h-4" />
         </button>
@@ -87,10 +92,13 @@ import refreshIcon from "@iconify-icons/mdi/refresh";
 import alertIcon from "@iconify-icons/mdi/alert-circle-outline";
 import fileHiddenIcon from "@iconify-icons/mdi/file-hidden";
 import pencilIcon from "@iconify-icons/mdi/pencil";
+import formIcon from "@iconify-icons/mdi/form-select";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
 import { useDesktopStore } from "../__Stores__/desktopStore";
+import { useWindowStore } from "../__Stores__/windowStore";
+import { useAppStoreActions } from "../__Composables__/useAppStoreActions";
 
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
@@ -116,6 +124,8 @@ const props = defineProps<Props>();
 const { t } = useI18n();
 const { themeClasses } = useTheme();
 const desktopStore = useDesktopStore();
+const windowStore = useWindowStore();
+const { findStoreApp } = useAppStoreActions();
 const csrfToken = useCsrfToken();
 
 const appName = computed(() => props.appName || props.data?.appName || "Unknown");
@@ -141,6 +151,16 @@ const statusInfo = computed(() => {
   if (state.value !== "ready") return `${t("Editing")} ${displayName.value}`;
   return `${t("Ln")} ${cursor.value.line}, ${t("Col")} ${cursor.value.column} · YAML`;
 });
+
+function openFormEditor() {
+  const name = appName.value;
+  const storeApp = findStoreApp(name) ?? { name, display_name: displayName.value, is_installed: true };
+
+  windowStore.openUniqueWindow("installconfig", `edit:${name}`, {
+    title: t("Edit {name}", { name: displayName.value }),
+    data: { app: storeApp, mode: "edit" },
+  });
+}
 
 const fetchComposeInfo = async () => {
   state.value = "loading";

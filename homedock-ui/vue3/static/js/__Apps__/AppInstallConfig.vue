@@ -40,7 +40,8 @@
 
               <div class="flex items-center gap-2.5">
                 <Transition name="button-fade" mode="out-in">
-                  <button v-if="app?.is_installed" key="installed" :class="[themeClasses.storeCardInstalledPill]" class="install-pill px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer">{{ $t("Installed") }}</button>
+                  <button v-if="editing" key="save" :disabled="isReviewing || unrepresentable.length === allSections" :class="[themeClasses.storeCardGetPill]" class="install-pill px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 disabled:opacity-40 cursor-pointer disabled:cursor-default" @click="reviewChanges">{{ $t("Save") }}</button>
+                  <button v-else-if="app?.is_installed" key="installed" :class="[themeClasses.storeCardInstalledPill]" class="install-pill px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer">{{ $t("Installed") }}</button>
                   <button v-else-if="installationStore.currentlyInstalling === app?.name" key="installing" :class="[themeClasses.storeCardInstallingPill]" class="install-pill px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer">
                     <Icon :icon="loadingIcon" class="w-3 h-3 animate-spin" />
                     {{ $t("Installing") }}
@@ -56,7 +57,7 @@
                   <Icon :icon="earthIcon" class="w-4 h-4" />
                 </a>
 
-                <Switch v-model:checked="isAdvancedMode" @change="handleAdvancedModeToggle">
+                <Switch v-if="!editing" v-model:checked="isAdvancedMode" @change="handleAdvancedModeToggle">
                   <template #checkedChildren>
                     <span class="flex items-center">
                       <Icon :icon="emoticonHappyOutlineIcon" class="h-4 w-4" />
@@ -268,12 +269,13 @@
 
               <!-- Ports Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('ports')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center gap-2">
                     <Icon :icon="portIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                     <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Ports") }}</h3>
                   </div>
-                  <button :disabled="app?.is_installed" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addPort">{{ $t("+ Add") }}</button>
+                  <button :disabled="fieldLocked('ports')" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addPort">{{ $t("+ Add") }}</button>
                 </div>
                 <div v-if="portMappings.length > 0" class="space-y-2">
                   <div class="grid grid-cols-[1fr_1fr_auto] gap-2 text-[10px]">
@@ -282,9 +284,9 @@
                     <span class="w-7"></span>
                   </div>
                   <div v-for="(port, index) in portMappings" :key="'port-' + index" class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="portMappings[index].host" placeholder="8080" />
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="portMappings[index].container" placeholder="80" />
-                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="app?.is_installed" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removePort(index)">
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('ports')" v-model:value="portMappings[index].host" placeholder="8080" />
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('ports')" v-model:value="portMappings[index].container" placeholder="80" />
+                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="fieldLocked('ports')" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removePort(index)">
                       <Icon :icon="deleteIcon" class="h-4 w-4" />
                     </button>
                   </div>
@@ -302,12 +304,13 @@
 
               <!-- Volumes Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('volumes')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center gap-2">
                     <Icon :icon="folderIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                     <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Volumes") }}</h3>
                   </div>
-                  <button :disabled="app?.is_installed" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addVolume">{{ $t("+ Add") }}</button>
+                  <button :disabled="fieldLocked('volumes')" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addVolume">{{ $t("+ Add") }}</button>
                 </div>
                 <div v-if="volumeMappings.length > 0" class="space-y-2">
                   <div class="grid grid-cols-[1fr_1fr_auto] gap-2 text-[10px]">
@@ -316,13 +319,13 @@
                     <span class="w-7"></span>
                   </div>
                   <div v-for="(volume, index) in volumeMappings" :key="'volume-' + index" class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="volumeMappings[index].host" placeholder="/host/path">
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('volumes')" v-model:value="volumeMappings[index].host" placeholder="/host/path">
                       <template #prefix v-if="isSSLCertPath(volume.host)">
                         <Icon :icon="lockIcon" :class="[themeClasses.installConfigSSLVolumeIcon]" class="h-3.5 w-3.5 -translate-x-0.5" />
                       </template>
                     </Input>
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="volumeMappings[index].container" placeholder="/container/path" />
-                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="app?.is_installed" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removeVolume(index)">
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('volumes')" v-model:value="volumeMappings[index].container" placeholder="/container/path" />
+                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="fieldLocked('volumes')" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removeVolume(index)">
                       <Icon :icon="deleteIcon" class="h-4 w-4" />
                     </button>
                   </div>
@@ -340,12 +343,14 @@
 
               <!-- Network Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('networks')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center gap-2 mb-3">
                   <Icon :icon="networkIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                   <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Network") }}</h3>
                 </div>
                 <div v-if="networkMappings.length > 0" class="flex items-center gap-2">
-                  <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="app?.is_installed" v-model:value="networkMappings[0].type" class="w-full" @change="handleNetworkTypeChange(0)">
+                  <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="fieldLocked('networks')" v-model:value="networkMappings[0].type" class="w-full" @change="handleNetworkTypeChange(0)">
+                    <SelectOption v-if="editing" :class="[themeClasses.scopeSelector]" value="default">{{ $t("Default") }}</SelectOption>
                     <SelectOption :class="[themeClasses.scopeSelector]" value="host">{{ $t("Host") }}</SelectOption>
                     <SelectOption :class="[themeClasses.scopeSelector]" value="bridge">{{ $t("Bridge") }}</SelectOption>
                     <SelectOption :class="[themeClasses.scopeSelector]" value="homedock_network">{{ $t("HomeDock OS Network") }}</SelectOption>
@@ -353,17 +358,18 @@
                     <SelectOption :class="[themeClasses.scopeSelector]" value="other">{{ $t("Other") }}</SelectOption>
                   </Select>
                 </div>
-                <Input v-if="networkMappings.length > 0 && networkMappings[0].type === 'other'" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="networkMappings[0].customName" placeholder="custom-network-name" class="w-full mt-2" />
+                <Input v-if="networkMappings.length > 0 && networkMappings[0].type === 'other'" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('networks')" v-model:value="networkMappings[0].customName" placeholder="custom-network-name" class="w-full mt-2" />
               </div>
 
               <!-- Environment Variables Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('environment')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center gap-2">
                     <Icon :icon="envIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                     <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Environment") }}</h3>
                   </div>
-                  <button :disabled="app?.is_installed" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addEnvVar">{{ $t("+ Add") }}</button>
+                  <button :disabled="fieldLocked('environment')" :class="[themeClasses.installConfigSectionAddBtn]" class="text-xs font-medium disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default" @click="addEnvVar">{{ $t("+ Add") }}</button>
                 </div>
                 <div v-if="envVars.length > 0" class="space-y-2">
                   <div class="grid grid-cols-[1fr_1fr_auto] gap-2 text-[10px]">
@@ -373,9 +379,9 @@
                   </div>
 
                   <div v-for="(envVar, index) in envVars" :key="'env-' + index" class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="envVars[index].key" :placeholder="$t('VARIABLE_NAME')" />
-                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="app?.is_installed" v-model:value="envVars[index].value" :placeholder="$t('value')" />
-                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="app?.is_installed" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removeEnvVar(index)">
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('environment')" v-model:value="envVars[index].key" :placeholder="$t('VARIABLE_NAME')" />
+                    <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :disabled="fieldLocked('environment')" v-model:value="envVars[index].value" :placeholder="$t('value')" />
+                    <button :class="[themeClasses.storeCardSubtitle]" :disabled="fieldLocked('environment')" class="p-1.5 rounded-lg transition-all duration-150 hover:opacity-70 disabled:opacity-30 cursor-pointer disabled:cursor-default" @click="removeEnvVar(index)">
                       <Icon :icon="deleteIcon" class="h-4 w-4" />
                     </button>
                   </div>
@@ -393,10 +399,11 @@
 
               <!-- Restart Policy Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('restartPolicy')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center gap-2 mb-3">
                   <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Restart Policy") }}</h3>
                 </div>
-                <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="app?.is_installed" v-model:value="restartPolicy" class="w-full">
+                <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="fieldLocked('restartPolicy')" v-model:value="restartPolicy" class="w-full">
                   <SelectOption :class="[themeClasses.scopeSelector]" value="always">{{ $t("Always") }}</SelectOption>
                   <SelectOption :class="[themeClasses.scopeSelector]" value="unless-stopped">{{ $t("Unless Stopped") }}</SelectOption>
                   <SelectOption :class="[themeClasses.scopeSelector]" value="no">{{ $t("No") }}</SelectOption>
@@ -405,11 +412,12 @@
 
               <!-- Capabilities Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('capabilities')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center gap-2 mb-3">
                   <Icon :icon="capabilityIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                   <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Capabilities") }}</h3>
                 </div>
-                <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="app?.is_installed" v-model:value="capabilities" mode="multiple" :placeholder="$t('Select capabilities')" class="w-full">
+                <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :disabled="fieldLocked('capabilities')" v-model:value="capabilities" mode="multiple" :placeholder="$t('Select capabilities')" class="w-full">
                   <SelectOption :class="[themeClasses.scopeSelector]" value="NET_ADMIN">NET_ADMIN (Network administration)</SelectOption>
                   <SelectOption :class="[themeClasses.scopeSelector]" value="NET_RAW">NET_RAW (Raw sockets)</SelectOption>
                   <SelectOption :class="[themeClasses.scopeSelector]" value="SYS_ADMIN">SYS_ADMIN (System administration)</SelectOption>
@@ -432,12 +440,13 @@
 
               <!-- Privileged Mode Card -->
               <div :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <p v-if="unrepresentable.includes('privileged')" :class="[themeClasses.installConfigLabel]" class="mb-2 text-[10px]">{{ $t("This section uses a format the form cannot edit safely. Use the YAML editor.") }}</p>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <Icon :icon="privilegedIcon" class="h-4 w-4" :class="[themeClasses.installConfigSectionTitle]" />
                     <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold">{{ $t("Privileged Mode") }}</h3>
                   </div>
-                  <Switch :disabled="app?.is_installed" :checked="privilegedMode" @change="handlePrivilegedModeChange">
+                  <Switch :disabled="fieldLocked('privileged')" :checked="privilegedMode" @change="handlePrivilegedModeChange">
                     <template #checkedChildren>
                       <span>{{ $t("On") }}</span>
                     </template>
@@ -465,14 +474,14 @@
                     <span :class="[themeClasses.dropZoneTotalSizeScope]" class="rounded-full px-2 py-0.5 font-medium">YAML</span>
                   </div>
                 </div>
-                <ComposeEditor v-model="advancedCompose" :readonly="app?.is_installed" class="advanced-editor" @cursor="composeCursor = $event" />
+                <ComposeEditor v-model="advancedCompose" :readonly="locked" class="advanced-editor" @cursor="composeCursor = $event" />
               </div>
             </div>
           </Transition>
         </div>
       </div>
 
-      <StatusBar :icon="downloadIcon" :message="$t('Install App')" :info="app?.name ? t('Install {name}', { name: app.display_name || app.name }) : t('Configure application')" :showHelp="true">
+      <StatusBar :icon="downloadIcon" :message="editing ? $t('Edit App') : $t('Install App')" :info="app?.name ? t(editing ? 'Edit {name}' : 'Install {name}', { name: app.display_name || app.name }) : t('Configure application')" :showHelp="true">
         <template #help>
           <div class="space-y-2.5 max-w-sm">
             <div class="flex items-center gap-2">
@@ -563,6 +572,18 @@
       </div>
     </AppDialog>
 
+    <AppDialog v-model:visible="showChanges" type="confirm" title="Review changes" ok-text="Save and Recreate" dismiss-text="Save only" cancel-text="Cancel" :width="520" @ok="applyChanges(true)" @dismiss="applyChanges(false)" @cancel="showChanges = false">
+      <div class="space-y-3">
+        <div v-for="group in groupedChanges" :key="group.section">
+          <p :class="[themeClasses.installConfigSectionTitle]" class="text-xs font-semibold mb-1">{{ $t(group.section) }}</p>
+          <ul :class="[themeClasses.notTextDown]" class="text-xs font-mono space-y-0.5 m-0 pl-0 list-none break-all">
+            <li v-for="(line, index) in group.lines" :key="index">{{ line }}</li>
+          </ul>
+        </div>
+        <p :class="[themeClasses.installConfigLabel]" class="text-[10px] m-0">{{ $t("Saving updates the configuration file. Recreating also restarts the app so the changes take effect.") }}</p>
+      </div>
+    </AppDialog>
+
     <ScreenshotViewer v-model:open="showScreenshotModal" v-model:index="currentScreenshotModal" :images="screenshots" :title="app?.display_name || app?.name || ''" :icon="appIconPath" :origin="screenshotOrigin" />
 
     <AppDialog v-model:visible="showPrivilegedWarning" type="warning" title="Privileged Mode Warning" ok-text="I Understand, Enable" cancel-text="Cancel" @ok="handlePrivilegedWarningConfirm" @cancel="handlePrivilegedWarningCancel" :icon="alertIcon" :width="480" :reverse-buttons="true">
@@ -597,13 +618,14 @@ import { useI18n } from "vue-i18n";
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
 import { COMPOSE_WARNINGS } from "../__Composables__/usePackager";
+import { parseMapping, parseVolume, formatMappings, envRows, envObject, networkRows, networkList, describeChange, type Change } from "../__Composables__/useComposeForm";
 import { useAppStore } from "../__Stores__/useAppStore";
 import { useInstallationStore } from "../__Stores__/useInstallationStore";
 import { App } from "../__Types__/AppStoreApp";
 
 import { Select, SelectOption, Input, InputPassword, Switch, Tooltip } from "ant-design-vue";
 
-import { notifyError, notifyWarning } from "../__Components__/Notifications.vue";
+import { notifyError, notifySuccess, notifyWarning } from "../__Components__/Notifications.vue";
 
 import { Icon } from "@iconify/vue";
 import downloadIcon from "@iconify-icons/mdi/download";
@@ -652,9 +674,16 @@ import ComposeEditor, { type ComposeCursor } from "../__Components__/ComposeEdit
 
 interface Props {
   app?: App;
+  mode?: "install" | "edit";
 }
 
 const props = defineProps<Props>();
+
+const editing = computed(() => props.mode === "edit");
+const locked = computed(() => Boolean(app.value?.is_installed) && !editing.value);
+const unrepresentable = ref<string[]>([]);
+const allSections = 7;
+const fieldLocked = (section: string) => locked.value || unrepresentable.value.includes(section);
 
 const { themeClasses } = useTheme();
 const { t, locale } = useI18n();
@@ -901,6 +930,8 @@ async function fetchAppInfo() {
 
   hasLoadedConfig.value = true;
 
+  if (editing.value) return fetchInstalledConfig();
+
   try {
     const response = await axios.get("/api/get-appstore-info", {
       params: { containerName: app.value.name },
@@ -960,6 +991,104 @@ async function fetchAppInfo() {
   } catch (error) {
     console.error("Error fetching app info:", error);
     hasLoadedConfig.value = false;
+  }
+}
+
+async function fetchInstalledConfig() {
+  try {
+    const response = await axios.get("/api/get-installed-config", {
+      params: { containerName: app.value!.name },
+      headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
+    });
+    const data = response.data.data;
+
+    portMappings.value = (data.ports as string[]).map(parseMapping);
+    volumeMappings.value = (data.volumes as string[]).map(parseVolume);
+    envVars.value = envRows(data.environment);
+    networkMappings.value = networkRows(data.networks);
+    capabilities.value = data.capabilities;
+    privilegedMode.value = Boolean(data.privileged);
+    restartPolicy.value = data.restartPolicy;
+    composeWarnings.value = data.warnings || [];
+    unrepresentable.value = data.unrepresentable || [];
+    advancedCompose.value = data.ymlContent || "";
+  } catch (error) {
+    console.error("Error fetching installed config:", error);
+    hasLoadedConfig.value = false;
+    notifyWarning(t("Could not load the installed configuration."), themeClasses.value.scopeSelector);
+  }
+}
+
+const isReviewing = ref(false);
+const showChanges = ref(false);
+const pendingChanges = ref<Change[]>([]);
+
+const groupedChanges = computed(() => {
+  const groups: { section: string; lines: string[] }[] = [];
+  for (const change of pendingChanges.value) {
+    const { section, text } = describeChange(change);
+    const group = groups.find((entry) => entry.section === section) ?? groups[groups.push({ section, lines: [] }) - 1];
+    group.lines.push(text);
+  }
+  return groups;
+});
+
+function editedForm() {
+  const form: Record<string, unknown> = {};
+  const skip = (section: string) => unrepresentable.value.includes(section);
+
+  if (!skip("ports")) form.ports = formatMappings(portMappings.value);
+  if (!skip("volumes")) form.volumes = formatMappings(volumeMappings.value);
+  if (!skip("environment")) form.environment = envObject(envVars.value);
+  if (!skip("networks")) form.networks = networkList(networkMappings.value);
+  if (!skip("capabilities")) form.capabilities = capabilities.value;
+  if (!skip("privileged")) form.privileged = privilegedMode.value;
+  if (!skip("restartPolicy")) form.restartPolicy = restartPolicy.value;
+  return form;
+}
+
+function reportEditFailure(error: any) {
+  const data = error.response?.data;
+  if (data?.messages) notifyWarning(data.messages.map((m: any) => t(m.key, m.params || {})).join("\n"), themeClasses.value.scopeSelector, 10);
+  else if (data?.message) notifyWarning(t(data.message), themeClasses.value.scopeSelector, 10);
+  else if (error.response) notifyError(error, themeClasses.value.scopeSelector);
+  else notifyWarning(t("An unexpected error occurred"), themeClasses.value.scopeSelector);
+}
+
+async function reviewChanges() {
+  if (!app.value?.name || isReviewing.value) return;
+  isReviewing.value = true;
+
+  try {
+    const response = await axios.post("/api/update-installed-config", { containerName: app.value.name, form: editedForm(), apply: false, homedock_csrf_token: csrfToken.value });
+    pendingChanges.value = response.data.changes;
+
+    if (pendingChanges.value.length === 0) notifySuccess(t("No changes to save."), undefined, themeClasses.value.scopeSelector);
+    else showChanges.value = true;
+  } catch (error) {
+    reportEditFailure(error);
+  } finally {
+    isReviewing.value = false;
+  }
+}
+
+async function applyChanges(recreate: boolean) {
+  showChanges.value = false;
+  if (!app.value?.name) return;
+
+  try {
+    const saved = await axios.post("/api/update-installed-config", { containerName: app.value.name, form: editedForm(), apply: true, homedock_csrf_token: csrfToken.value });
+
+    if (!recreate) {
+      notifySuccess(t("Configuration saved successfully!"), undefined, themeClasses.value.scopeSelector);
+    } else {
+      await axios.post("/api/recreate-container", { container_name: app.value.name, yml_content: saved.data.ymlContent, homedock_csrf_token: csrfToken.value });
+      notifySuccess(t("Application recreated successfully!"), undefined, themeClasses.value.scopeSelector);
+    }
+
+    await fetchInstalledConfig();
+  } catch (error) {
+    reportEditFailure(error);
   }
 }
 
