@@ -228,6 +228,13 @@
                   <span>{{ dependenciesText }}</span>
                 </div>
               </div>
+              <!-- Compose warnings -->
+              <div v-if="composeWarnings.length" class="flex flex-col gap-1.5" role="status">
+                <div v-for="code in composeWarnings" :key="code" :class="[themeClasses.warningBg, themeClasses.warningText]" class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium">
+                  <Icon :icon="alertIcon" class="w-4 h-4 flex-shrink-0" />
+                  <span>{{ $t(COMPOSE_WARNINGS[code] || code) }}</span>
+                </div>
+              </div>
               <!-- Credentials Card -->
               <div v-if="userName !== undefined || userPassword !== undefined" :class="[themeClasses.installConfigSectionCard]" class="p-4">
                 <div class="flex items-center gap-2 mb-3">
@@ -589,6 +596,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
+import { COMPOSE_WARNINGS } from "../__Composables__/usePackager";
 import { useAppStore } from "../__Stores__/useAppStore";
 import { useInstallationStore } from "../__Stores__/useInstallationStore";
 import { App } from "../__Types__/AppStoreApp";
@@ -708,6 +716,7 @@ const networkMappings = ref<NetworkMapping[]>([]);
 const envVars = ref<EnvVar[]>([]);
 const capabilities = ref<string[]>([]);
 const privilegedMode = ref(false);
+const composeWarnings = ref<string[]>([]);
 const restartPolicy = ref("unless-stopped");
 const advancedCompose = ref("");
 const composeCursor = ref<ComposeCursor>({ line: 1, column: 1 });
@@ -929,6 +938,7 @@ async function fetchAppInfo() {
 
       capabilities.value = Array.isArray(capabilitiesData) ? capabilitiesData : [];
       privilegedMode.value = Boolean(privilegedData);
+      composeWarnings.value = response.data.data.warnings || [];
 
       advancedCompose.value = response.data.data.ymlContent || "";
       restartPolicy.value = "unless-stopped";

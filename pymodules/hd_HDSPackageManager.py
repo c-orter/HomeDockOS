@@ -24,10 +24,11 @@ from flask import jsonify, request, send_file
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 
-from pymodules.hd_FunctionsGlobals import user_packages_hds_folder, user_packages_images_folder, user_packages_available_folder
+from pymodules.hd_FunctionsGlobals import compose_upload_folder, user_packages_hds_folder, user_packages_images_folder, user_packages_available_folder
 from pymodules.hd_ComposeDevHooks import extract_devhook_placeholders, DEVHOOK_PLACEHOLDERS
 from pymodules.hd_DockerAPIContainerData import invalidate_external_apps_cache
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
+from pymodules.hd_ComposeWarnings import compose_warnings
 from pymodules.hd_MIMETypeValidation import validate_file_mime
 
 MAX_HDSTORE_PACKAGES = 999  # Items
@@ -539,96 +540,186 @@ def install_hds_app():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+class PackageFormError(Exception):
+    def __init__(self, message, status=400):
+        super().__init__(message)
+        self.message = message
+        self.status = status
+
+
+def _hds_from_request():
+    """Builds a signed .hds from the Packager's create form; returns (bytes, slug) or raises PackageFormError."""
+
+    if "compose" not in request.files or "icon" not in request.files:
+        raise PackageFormError("Missing compose or icon file")
+
+    compose_file = request.files["compose"]
+    icon_file = request.files["icon"]
+
+    app_slug = request.form.get("slug")
+    display_name = request.form.get("display_name")
+    category = request.form.get("category")
+    app_type = request.form.get("type")
+    description = request.form.get("description")
+    docker_image = request.form.get("docker_image")
+    author = request.form.get("author")
+    version = request.form.get("version", "latest")
+
+    if not all([app_slug, display_name, category, app_type, description, docker_image, author]):
+        raise PackageFormError("Missing required metadata fields")
+
+    if not compose_file.filename or not icon_file.filename:
+        raise PackageFormError("Invalid file names")
+
+    if not compose_file.filename.endswith((".yml", ".yaml")):
+        raise PackageFormError("Compose file must be .yml or .yaml")
+
+    icon_ext = os.path.splitext(icon_file.filename)[1].lower()
+    if icon_ext not in ALLOWED_ICON_EXTENSIONS:
+        raise PackageFormError("Icon must be .jpg, or .png")
+
+    compose_content = compose_file.read().decode("utf-8")
+    icon_bytes = icon_file.read()
+
+    if len(compose_content.encode("utf-8")) > MAX_COMPOSE_FILE_SIZE:
+        raise PackageFormError(get_error_message("FILE_TOO_LARGE", max_size=MAX_COMPOSE_FILE_SIZE // (1024 * 1024)))
+
+    if len(icon_bytes) > MAX_ICON_FILE_SIZE:
+        raise PackageFormError(get_error_message("FILE_TOO_LARGE", max_size=MAX_ICON_FILE_SIZE // (1024 * 1024)))
+
+    try:
+        validate_file_mime(compose_content.encode("utf-8"), compose_file.filename, allowed_types=["text/yaml"])
+    except ValueError as e:
+        raise PackageFormError(f"Invalid compose file type: {str(e)}")
+
+    try:
+        validate_file_mime(icon_bytes, icon_file.filename, allowed_types=["image/jpeg", "image/png"])
+    except ValueError as e:
+        raise PackageFormError(f"Invalid icon file type: {str(e)}")
+
+    if not validate_slug_format(app_slug):
+        raise PackageFormError(get_error_message("INVALID_SLUG_FORMAT"))
+
+    if not validate_category(category):
+        raise PackageFormError(get_error_message("INVALID_CATEGORY", categories=", ".join(ALLOWED_CATEGORIES)))
+
+    compose_content = _inject_hd_group_labels(compose_content, app_slug)
+
+    manifest = {"name": app_slug, "display_name": display_name, "category": category, "type": app_type, "description": description, "docker_image": docker_image, "icon": f"icon{icon_ext}", "author": author, "version": version, "hds_version": HDS_VERSION, "dependencies": [], "is_group": False, "is_new": False, "new_until": False}
+
+    default_username = request.form.get("default_username")
+    default_password = request.form.get("default_password")
+    if default_username and default_password:
+        manifest["default_credentials"] = {"username": default_username, "password": default_password}
+
+    suggested_port = request.form.get("suggested_port")
+    if suggested_port:
+        try:
+            manifest["suggested_port"] = int(suggested_port)
+        except ValueError:
+            pass
+
+    suggested_trail = request.form.get("suggested_trail")
+    if suggested_trail:
+        manifest["suggested_trail"] = suggested_trail.strip().lstrip("/")
+
+    manifest_content = json.dumps(manifest, indent=2)
+
+    signature = calculate_content_hash(manifest_content, icon_bytes, compose_content)
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_ref:
+        zip_ref.writestr("manifest.json", manifest_content)
+        zip_ref.writestr(f"icon{icon_ext}", icon_bytes)
+        zip_ref.writestr("docker-compose.yml", compose_content)
+        zip_ref.writestr(".hds_signature", signature)
+
+    return buffer.getvalue(), app_slug
+
+
 @login_required
 def create_hds_from_files():
     try:
-        if "compose" not in request.files or "icon" not in request.files:
-            return jsonify({"success": False, "message": "Missing compose or icon file"}), 400
+        hds_bytes, app_slug = _hds_from_request()
+    except PackageFormError as e:
+        return jsonify({"success": False, "message": e.message}), e.status
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
-        compose_file = request.files["compose"]
-        icon_file = request.files["icon"]
+    return send_file(io.BytesIO(hds_bytes), as_attachment=True, download_name=f"{app_slug}.hds", mimetype="application/zip")
 
-        app_slug = request.form.get("slug")
-        display_name = request.form.get("display_name")
-        category = request.form.get("category")
-        app_type = request.form.get("type")
-        description = request.form.get("description")
-        docker_image = request.form.get("docker_image")
-        author = request.form.get("author")
-        version = request.form.get("version", "latest")
 
-        if not all([app_slug, display_name, category, app_type, description, docker_image, author]):
-            return jsonify({"success": False, "message": "Missing required metadata fields"}), 400
+def is_app_installed(app_slug: str) -> bool:
+    """True when a container or an installed compose link carries this app's name."""
 
-        if not compose_file.filename or not icon_file.filename:
-            return jsonify({"success": False, "message": "Invalid file names"}), 400
+    if os.path.exists(os.path.join(compose_upload_folder, f"{app_slug}.yml")):
+        return True
 
-        if not compose_file.filename.endswith((".yml", ".yaml")):
-            return jsonify({"success": False, "message": "Compose file must be .yml or .yaml"}), 400
+    try:
+        return any(container.name == app_slug for container in DockerClientManager.get_instance().get_client().containers.list(all=True))
+    except Exception:
+        return False
 
-        icon_ext = os.path.splitext(icon_file.filename)[1].lower()
-        if icon_ext not in ALLOWED_ICON_EXTENSIONS:
-            return jsonify({"success": False, "message": "Icon must be .jpg, or .png"}), 400
 
-        compose_content = compose_file.read().decode("utf-8")
-        icon_bytes = icon_file.read()
+def remove_package(app_slug: str):
+    """Removes a registered package: its stored .hds files, compose, metadata and icon."""
 
-        if len(compose_content.encode("utf-8")) > MAX_COMPOSE_FILE_SIZE:
-            return jsonify({"success": False, "message": get_error_message("FILE_TOO_LARGE", max_size=MAX_COMPOSE_FILE_SIZE // (1024 * 1024))}), 400
+    real_hds = os.path.realpath(user_packages_hds_folder)
 
-        if len(icon_bytes) > MAX_ICON_FILE_SIZE:
-            return jsonify({"success": False, "message": get_error_message("FILE_TOO_LARGE", max_size=MAX_ICON_FILE_SIZE // (1024 * 1024))}), 400
+    if os.path.isdir(user_packages_hds_folder):
+        for filename in os.listdir(user_packages_hds_folder):
+            path = os.path.join(user_packages_hds_folder, filename)
 
-        try:
-            validate_file_mime(compose_content.encode("utf-8"), compose_file.filename, allowed_types=["text/yaml"])
-        except ValueError as e:
-            return jsonify({"success": False, "message": f"Invalid compose file type: {str(e)}"}), 400
+            if not filename.endswith(".hds") or not os.path.realpath(path).startswith(real_hds + os.sep):
+                continue
 
-        try:
-            validate_file_mime(icon_bytes, icon_file.filename, allowed_types=["image/jpeg", "image/png"])
-        except ValueError as e:
-            return jsonify({"success": False, "message": f"Invalid icon file type: {str(e)}"}), 400
+            _, _, manifest = validate_hds_package(path)
 
-        if not validate_slug_format(app_slug):
-            return jsonify({"success": False, "message": get_error_message("INVALID_SLUG_FORMAT")}), 400
+            if manifest and manifest.get("name") == app_slug:
+                os.remove(path)
 
-        if not validate_category(category):
-            return jsonify({"success": False, "message": get_error_message("INVALID_CATEGORY", categories=", ".join(ALLOWED_CATEGORIES))}), 400
+    for path in (os.path.join(user_packages_available_folder, f"{app_slug}.yml"), os.path.join(user_packages_available_folder, f"{app_slug}.yml.metadata")):
+        if os.path.exists(path):
+            os.remove(path)
 
-        compose_content = _inject_hd_group_labels(compose_content, app_slug)
+    for ext in (".jpg", ".jpeg", ".png"):
+        path = os.path.join(user_packages_images_folder, f"{app_slug}{ext}")
 
-        manifest = {"name": app_slug, "display_name": display_name, "category": category, "type": app_type, "description": description, "docker_image": docker_image, "icon": f"icon{icon_ext}", "author": author, "version": version, "hds_version": HDS_VERSION, "dependencies": [], "is_group": False, "is_new": False, "new_until": False}
+        if os.path.exists(path):
+            os.remove(path)
 
-        default_username = request.form.get("default_username")
-        default_password = request.form.get("default_password")
-        if default_username and default_password:
-            manifest["default_credentials"] = {"username": default_username, "password": default_password}
 
-        suggested_port = request.form.get("suggested_port")
-        if suggested_port:
-            try:
-                manifest["suggested_port"] = int(suggested_port)
-            except ValueError:
-                pass
+def _package_exists(app_slug: str) -> bool:
+    return os.path.exists(os.path.join(user_packages_available_folder, f"{app_slug}.yml")) or os.path.exists(os.path.join(user_packages_hds_folder, f"{app_slug}.hds"))
 
-        suggested_trail = request.form.get("suggested_trail")
-        if suggested_trail:
-            manifest["suggested_trail"] = suggested_trail.strip().lstrip("/")
 
-        manifest_content = json.dumps(manifest, indent=2)
+@login_required
+def register_hds_from_files():
+    """Creates the package from the Packager form and registers it as a local package, without a download or upload."""
 
-        signature = calculate_content_hash(manifest_content, icon_bytes, compose_content)
+    try:
+        hds_bytes, app_slug = _hds_from_request()
 
-        buffer = io.BytesIO()
-        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_ref:
-            zip_ref.writestr("manifest.json", manifest_content)
-            zip_ref.writestr(f"icon{icon_ext}", icon_bytes)
-            zip_ref.writestr("docker-compose.yml", compose_content)
-            zip_ref.writestr(".hds_signature", signature)
-        buffer.seek(0)
+        if is_app_installed(app_slug):
+            return jsonify({"success": False, "code": "APP_INSTALLED", "message": f"An app named '{app_slug}' is already installed. Uninstall it first, or change its settings in the editor.", "app_slug": app_slug}), 409
 
-        return send_file(buffer, as_attachment=True, download_name=f"{app_slug}.hds", mimetype="application/zip")
+        if _package_exists(app_slug):
+            if request.form.get("overwrite") != "true":
+                return jsonify({"success": False, "code": "PACKAGE_EXISTS", "message": f"A package named '{app_slug}' already exists.", "app_slug": app_slug}), 409
 
+            remove_package(app_slug)
+
+        result = _install_hds_from_buffer(hds_bytes, f"{app_slug}.hds")
+
+        if not result["ok"]:
+            return jsonify({"success": False, "message": result["reason"]}), 500
+
+        invalidate_external_apps_cache()
+
+        return jsonify({"success": True, "app_slug": result["slug"], "display_name": result["display_name"]})
+
+    except PackageFormError as e:
+        return jsonify({"success": False, "message": e.message}), e.status
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -808,6 +899,8 @@ def parse_compose():
 
         if "error" in parsed_data and parsed_data["error"]:
             return jsonify({"success": False, "message": f"Parse error: {parsed_data['error']}"}), 400
+
+        parsed_data["warnings"] = compose_warnings(compose_content)
 
         return jsonify({"success": True, "data": parsed_data})
 

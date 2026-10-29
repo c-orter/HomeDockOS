@@ -195,13 +195,14 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/app-update-seen", "api_app_update_seen", CSRF_Protect(api_app_update_seen), methods=["POST"])
 
-    from pymodules.hd_HDSPackageManager import list_external_apps, upload_hds_package, install_hds_app, delete_external_app, create_hds_from_files, list_imported_apps, export_imported_app, get_external_apps_for_store, parse_compose, export_hdstore, preview_hdstore, import_hdstore, preview_third_party_url, import_third_party_selected, migrate_single_compose, third_party_progress
+    from pymodules.hd_HDSPackageManager import list_external_apps, upload_hds_package, install_hds_app, delete_external_app, create_hds_from_files, register_hds_from_files, list_imported_apps, export_imported_app, get_external_apps_for_store, parse_compose, export_hdstore, preview_hdstore, import_hdstore, preview_third_party_url, import_third_party_selected, migrate_single_compose, third_party_progress
 
     homedock_www.add_url_rule("/api/pkg/list", "list_external_apps", CSRF_Protect(list_external_apps), methods=["GET"])
     homedock_www.add_url_rule("/api/pkg/upload", "upload_hds_package", CSRF_Protect(upload_hds_package), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/install", "install_hds_app", CSRF_Protect(install_hds_app), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/delete", "delete_external_app", CSRF_Protect(delete_external_app), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/create", "create_hds_from_files", CSRF_Protect(create_hds_from_files), methods=["POST"])
+    homedock_www.add_url_rule("/api/pkg/register", "register_hds_from_files", CSRF_Protect(register_hds_from_files), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/imported", "list_imported_apps", CSRF_Protect(list_imported_apps), methods=["GET"])
     homedock_www.add_url_rule("/api/pkg/export-imported", "export_imported_app", CSRF_Protect(export_imported_app), methods=["GET"])
     homedock_www.add_url_rule("/api/pkg/external-apps", "get_external_apps_for_store", CSRF_Protect(get_external_apps_for_store), methods=["GET"])

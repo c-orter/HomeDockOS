@@ -148,10 +148,23 @@
           </template>
         </div>
 
-        <div class="flex justify-end mt-4">
-          <button type="button" :disabled="!canCreate || isCreating" class="flex items-center gap-2 h-8 px-5 rounded-full bg-blue-600 text-white text-xs font-semibold cursor-pointer transition-colors duration-150 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-default disabled:hover:bg-blue-600" @click="createPackage">
+        <div v-if="warnings.length" class="flex flex-col gap-1.5 mt-4" role="status">
+          <div v-for="code in warnings" :key="code" :class="[themeClasses.warningBg, themeClasses.warningText]" class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium">
+            <Icon :icon="alertIcon" class="w-4 h-4 flex-shrink-0" />
+            <span>{{ $t(COMPOSE_WARNINGS[code] || code) }}</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-2 mt-4">
+          <button type="button" :disabled="!canCreate || isCreating" :class="[themeClasses.storeCardSubtitle]" class="h-8 px-4 rounded-full border border-current text-xs font-semibold cursor-pointer bg-transparent transition-opacity duration-150 hover:opacity-70 disabled:opacity-40 disabled:cursor-default" @click="createPackage('download')">
+            {{ $t("Download .hds") }}
+          </button>
+          <button type="button" :disabled="!canCreate || isCreating" :class="[themeClasses.storeCardSubtitle]" class="h-8 px-4 rounded-full border border-current text-xs font-semibold cursor-pointer bg-transparent transition-opacity duration-150 hover:opacity-70 disabled:opacity-40 disabled:cursor-default" @click="createPackage('save')">
+            {{ $t("Save to my packages") }}
+          </button>
+          <button type="button" :disabled="!canCreate || isCreating" class="flex items-center gap-2 h-8 px-5 rounded-full bg-blue-600 text-white text-xs font-semibold cursor-pointer transition-colors duration-150 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-default disabled:hover:bg-blue-600" @click="createPackage('install')">
             <Icon v-if="isCreating" :icon="loadingIcon" class="w-3.5 h-3.5 animate-spin" />
-            <span>{{ isCreating ? $t("Creating Package...") : $t("Create & Download .hds Package") }}</span>
+            <span>{{ isCreating ? $t("Creating Package...") : $t("Install now") }}</span>
           </button>
         </div>
       </div>
@@ -187,7 +200,7 @@
 import { computed } from "vue";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
-import { usePackager, isValidSlug } from "../__Composables__/usePackager";
+import { usePackager, isValidSlug, COMPOSE_WARNINGS } from "../__Composables__/usePackager";
 
 import { Select, SelectOption, Switch } from "ant-design-vue";
 
@@ -198,6 +211,7 @@ import editIcon from "@iconify-icons/mdi/pencil-outline";
 import refreshIcon from "@iconify-icons/mdi/refresh";
 import loadingIcon from "@iconify-icons/mdi/loading";
 import packageIcon from "@iconify-icons/mdi/package-variant";
+import alertIcon from "@iconify-icons/mdi/alert-outline";
 
 import AppIconGraphic from "./AppIconGraphic.vue";
 
@@ -209,6 +223,8 @@ const CATEGORIES = ["AI", "Developer Tools", "Files & Productivity", "Gaming", "
 
 const { themeClasses } = useTheme();
 const { newPackage, iconFile, iconPreview, composeFile, parsedData, hasDefaultCredentials, hasSuggestedPort, hasSuggestedTrail, canCreate, isCreating, loadIconFile, loadComposeFile, openComposeEditor, createPackage } = usePackager();
+
+const warnings = computed<string[]>(() => parsedData.value?.warnings || []);
 
 const groupTitleClass = computed(() => [themeClasses.value.storeCardSubtitle, "m-0 mt-5 first:mt-0 mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider"]);
 const groupClass = computed(() => [themeClasses.value.storeInfoBar, "rounded-xl border overflow-hidden"]);

@@ -17,6 +17,7 @@ from pymodules.hd_FunctionsGlobals import current_directory
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled
 from pymodules.hd_ComposeDevHooks import process_devhooks, extract_devhook_placeholders, DEVHOOK_USER_NAME_KEY, DEVHOOK_PASSWORD_KEY, DEVHOOK_SYSTEM_PASSWORD_KEY, DEVHOOK_RANDOM_STRING_KEY
 from pymodules.hd_HDSPackageManager import normalize_app_slug
+from pymodules.hd_ComposeWarnings import compose_warnings
 from pymodules.hd_InstallPipeline import InstallError, stage_config
 from pymodules.hd_ImageDownloadSize import compose_images, host_architecture, images_download_size
 
@@ -133,7 +134,7 @@ def get_appstore_info():
 
         yml_str, _ = process_devhooks(yml_str)
 
-        return jsonify({"success": True, "data": {"ports": ports, "volumes": volumes, "environment": environment, "networks": networks, "capabilities": cap_add, "privileged": privileged, "ymlContent": yml_str, "dependencies": dependencies, "hd_group": hd_group, "hd_role": hd_role, "user_name": devhook_values["user_name"] if user_placeholder_present else None, "password": devhook_values["password"] if password_placeholder_present else None, "random_string": devhook_values["random_string"] if random_string_placeholder_present else None, "ssl_enabled": use_ssl}})
+        return jsonify({"success": True, "data": {"ports": ports, "volumes": volumes, "environment": environment, "networks": networks, "capabilities": cap_add, "privileged": privileged, "ymlContent": yml_str, "dependencies": dependencies, "hd_group": hd_group, "hd_role": hd_role, "user_name": devhook_values["user_name"] if user_placeholder_present else None, "password": devhook_values["password"] if password_placeholder_present else None, "random_string": devhook_values["random_string"] if random_string_placeholder_present else None, "ssl_enabled": use_ssl, "warnings": compose_warnings(yml_str)}})
 
 
 @login_required

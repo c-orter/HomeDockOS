@@ -13,6 +13,7 @@ import { useCsrfToken } from "./useCsrfToken";
 import { useDialog } from "./useDialog";
 import { useAppStore } from "../__Stores__/useAppStore";
 import { useInstallationStore } from "../__Stores__/useInstallationStore";
+import { useAppStoreActions } from "./useAppStoreActions";
 
 export type PackagerView = "packages" | "stores" | "create" | "transfer";
 
@@ -77,6 +78,48 @@ function downloadBlob(data: BlobPart, filename: string) {
   window.URL.revokeObjectURL(url);
 }
 
+export type PackageAction = "download" | "save" | "install";
+
+export interface PackageFormInput {
+  pkg: Record<string, string>;
+  compose: File;
+  icon: File;
+  credentials: boolean;
+  port: boolean;
+  trail: boolean;
+  overwrite?: boolean;
+}
+
+export function buildPackageForm({ pkg, compose, icon, credentials, port, trail, overwrite }: PackageFormInput): FormData {
+  const formData = new FormData();
+  formData.append("compose", compose);
+  formData.append("icon", icon);
+  for (const key of ["slug", "display_name", "category", "type", "description", "docker_image", "author", "version"]) formData.append(key, pkg[key]);
+  if (credentials && pkg.default_username && pkg.default_password) {
+    formData.append("default_username", pkg.default_username);
+    formData.append("default_password", pkg.default_password);
+  }
+  if (port && pkg.suggested_port) formData.append("suggested_port", pkg.suggested_port);
+  if (trail && pkg.suggested_trail) formData.append("suggested_trail", pkg.suggested_trail);
+  if (overwrite) formData.append("overwrite", "true");
+  return formData;
+}
+
+export type RegisterFailure = "installed" | "exists" | "failed";
+
+export function registerFailure(error: any): RegisterFailure {
+  const code = error?.response?.data?.code;
+  if (code === "APP_INSTALLED") return "installed";
+  if (code === "PACKAGE_EXISTS") return "exists";
+  return "failed";
+}
+
+export const COMPOSE_WARNINGS: Record<string, string> = {
+  privileged: "Runs in privileged mode with unrestricted access to the host",
+  docker_socket: "Mounts the Docker socket, which gives it control of every container",
+  host_root: "Mounts the host's root filesystem",
+};
+
 export function formatFileSize(bytes: number): string {
   if (!bytes) return "";
   if (bytes < 1024) return `${bytes} B`;
@@ -102,6 +145,7 @@ function createPackager() {
   const { confirm } = useDialog();
   const appStore = useAppStore();
   const installationStore = useInstallationStore();
+  const { openAppDetails } = useAppStoreActions();
 
   const headers = () => ({ "X-HomeDock-CSRF-Token": csrfToken.value });
 
@@ -447,30 +491,66 @@ function createPackager() {
     hasSuggestedTrail.value = false;
   };
 
-  const createPackage = async () => {
-    if (!canCreate.value) return;
+  const composeForUpload = () => (composeContent.value ? new File([new Blob([composeContent.value], { type: "text/yaml" })], composeFile.value?.name || "docker-compose.yml", { type: "text/yaml" }) : composeFile.value!);
+
+  const packageForm = (overwrite = false) => buildPackageForm({ pkg: newPackage.value, compose: composeForUpload(), icon: iconFile.value!, credentials: hasDefaultCredentials.value, port: hasSuggestedPort.value, trail: hasSuggestedTrail.value, overwrite });
+
+  const registerPackage = async (action: "save" | "install", overwrite = false) => {
+    const slug = newPackage.value.slug;
+    try {
+      await axios.post("/api/pkg/register", packageForm(overwrite), { headers: headers() });
+    } catch (error: any) {
+      const failure = registerFailure(error);
+      if (failure === "installed") {
+        message.error(t("An app named {name} is already installed. Uninstall it first, or change its settings in the editor.", { name: slug }));
+      } else if (failure === "exists") {
+        confirm({
+          title: t("Package already exists"),
+          content: t("A package named {name} already exists. Replace it with this one?", { name: slug }),
+          okText: t("Replace"),
+          cancelText: t("Cancel"),
+          onOk: async () => {
+            isCreating.value = true;
+            try {
+              await registerPackage(action, true);
+            } finally {
+              isCreating.value = false;
+            }
+          },
+        });
+      } else {
+        console.error("Register error:", error);
+        message.error(t("Creation failed. Please try again."));
+      }
+      return;
+    }
+
+    await refreshAll();
+    resetNewPackage();
+
+    if (action === "install") {
+      const app = appStore.apps.find((candidate) => candidate.name === slug);
+      if (app) openAppDetails(app);
+      else message.warning(t("Saved to your packages, but it is not in the App Store list yet."));
+    } else {
+      message.success(t("Saved {name} to your packages", { name: slug }));
+      view.value = "packages";
+    }
+  };
+
+  const createPackage = async (action: PackageAction = "download") => {
+    if (!canCreate.value || isCreating.value) return;
     isCreating.value = true;
     try {
-      const pkg = newPackage.value;
-      const formData = new FormData();
-      if (composeContent.value) {
-        formData.append("compose", new File([new Blob([composeContent.value], { type: "text/yaml" })], composeFile.value?.name || "docker-compose.yml", { type: "text/yaml" }));
+      if (action === "download") {
+        const slug = newPackage.value.slug;
+        const response = await axios.post("/api/pkg/create", packageForm(), { headers: headers(), responseType: "blob" });
+        downloadBlob(response.data, `${slug}.hds`);
+        message.success(t("Successfully created {name}.hds", { name: slug }));
+        resetNewPackage();
       } else {
-        formData.append("compose", composeFile.value!);
+        await registerPackage(action);
       }
-      formData.append("icon", iconFile.value!);
-      for (const key of ["slug", "display_name", "category", "type", "description", "docker_image", "author", "version"] as const) formData.append(key, pkg[key]);
-      if (hasDefaultCredentials.value && pkg.default_username && pkg.default_password) {
-        formData.append("default_username", pkg.default_username);
-        formData.append("default_password", pkg.default_password);
-      }
-      if (hasSuggestedPort.value && pkg.suggested_port) formData.append("suggested_port", pkg.suggested_port);
-      if (hasSuggestedTrail.value && pkg.suggested_trail) formData.append("suggested_trail", pkg.suggested_trail);
-
-      const response = await axios.post("/api/pkg/create", formData, { headers: headers(), responseType: "blob" });
-      downloadBlob(response.data, `${pkg.slug}.hds`);
-      message.success(t("Successfully created {name}.hds", { name: pkg.slug }));
-      resetNewPackage();
     } catch (error) {
       console.error("Creation error:", error);
       message.error(t("Creation failed. Please try again."));
