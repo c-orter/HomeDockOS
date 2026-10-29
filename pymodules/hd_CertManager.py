@@ -7,6 +7,7 @@ https://www.banshee.pro
 
 import os
 import re
+import json
 import shutil
 import threading
 
@@ -21,7 +22,7 @@ from pymodules.hd_FunctionsNativeSSL import get_ssl_cert_directory, get_cert_dom
 from pymodules.hd_ACMEClient import ACMEClient, DIRECTORY_PRODUCTION, DIRECTORY_STAGING, generate_certificate_key, ACMEError
 from pymodules.hd_ACMEProviders import get_provider, ProviderError
 from pymodules.hd_AcmeCredentials import match_credential, load_credentials
-from pymodules.hd_CertPlan import plan_names
+from pymodules.hd_CertPlan import plan_names, stored_names as plan_stored_names
 from pymodules.hd_AcmeChallenges import publish as publish_challenge, withdraw as withdraw_challenge
 from pymodules.hd_DNSProbe import wait_for_txt
 
@@ -203,6 +204,66 @@ def _write_bundle(cert_dir, chain_pem, key):
     return sorted(payloads)
 
 
+STATUS_FILE = os.path.join(user_packages_acme_folder, "status.json")
+
+
+def load_last_run():
+    try:
+        with open(STATUS_FILE, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return {}
+
+    return data if isinstance(data, dict) else {}
+
+
+def _save_last_run(**fields):
+    """What the last order decided, kept across restarts so the domain list can still say why a name is left out."""
+
+    data = load_last_run()
+    data.update(fields, at=datetime.now(timezone.utc).isoformat())
+
+    try:
+        os.makedirs(os.path.dirname(STATUS_FILE), exist_ok=True)
+
+        with open(STATUS_FILE, "w", encoding="utf-8") as handle:
+            json.dump(data, handle)
+    except OSError:
+        pass
+
+
+def _in_certificate(name, certificate_names):
+    if name in certificate_names:
+        return True
+
+    head, _, rest = name.partition(".")
+
+    return bool(rest) and f"*.{rest}" in certificate_names
+
+
+def name_statuses(names=None):
+    """Per-name certificate status: covered, excluded (with the reason) or pending the next order."""
+
+    base = (read_config().get("base_domain") or "").strip().lower().rstrip(".")
+    excluded = {item["name"]: item["reason"] for item in load_last_run().get("excluded", [])}
+    certificate_names = {name.strip().lower() for name in get_cert_domains_and_type().get("domains", [])} if ssl_enabled() else set()
+
+    wanted = ([base, f"*.{base}"] if base else []) + list(names if names is not None else plan_stored_names())
+    result = []
+
+    for name in dict.fromkeys(wanted):
+        if _in_certificate(name, certificate_names):
+            result.append({"name": name, "status": "covered", "reason": ""})
+        elif name.endswith(".local") or name.endswith(".localhost"):
+            result.append({"name": name, "status": "excluded", "reason": "local names cannot get a public certificate"})
+        elif name in excluded:
+            result.append({"name": name, "status": "excluded", "reason": excluded[name]})
+        else:
+            result.append({"name": name, "status": "pending", "reason": ""})
+
+    return result
+
+
 def _clear_quietly(live):
     for provider, identifier, token in live:
         try:
@@ -302,6 +363,7 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
         raise ACMEError("A certificate request is already running")
 
     domain = (domain or "").strip().lower().rstrip(".")
+    record = False
 
     try:
         if not domain or "." not in domain:
@@ -315,8 +377,14 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
             cert_dir = STAGING_DIR
             log(f" * ACME: test run, writing to {cert_dir} instead of the live directory")
 
+        # a test run writes elsewhere and must not change what the domain list says about the live certificate
+        record = os.path.abspath(cert_dir) == os.path.abspath(get_ssl_cert_directory())
+
         _set_state(step="planning")
         plan = plan or plan_names(domain, entries=entries)
+
+        if record:
+            _save_last_run(excluded=plan["excluded"])
 
         _set_state(plan={"covered": plan["covered"], "excluded": plan["excluded"]})
 
@@ -388,6 +456,8 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
                 log(" * ACME: could not reload the SSL context, a restart will pick it up")
 
         _set_state(running=False, step="done", finished_at=datetime.now(timezone.utc).isoformat())
+        if record:
+            _save_last_run(covered=domains, excluded=excluded, error=None)
 
         return {"domains": domains, "excluded": excluded, "directory": cert_dir, "files": written}
 
@@ -395,5 +465,7 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
         detail = str(error) if isinstance(error, (ACMEError, ProviderError)) else f"{type(error).__name__}: {error}"
 
         _set_state(running=False, step="failed", error=detail, finished_at=datetime.now(timezone.utc).isoformat())
+        if record:
+            _save_last_run(error=detail)
 
         raise

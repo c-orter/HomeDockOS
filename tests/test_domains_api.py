@@ -41,7 +41,7 @@ def test_add_list_update_remove_roundtrip(client):
 
     client.post("/api/domains/update", json={"container": "web", "fqdn": "b.example.com", "primary": True, "port": 8080})
 
-    assert client.get("/api/domains?container=web").get_json()["domains"][0] == {"fqdn": "b.example.com", "port": 8080, "protocol": "auto", "path": "", "mode": "gated", "direct_refusal": api.direct_refusal("b.example.com")}
+    assert client.get("/api/domains?container=web").get_json()["domains"][0] == {"fqdn": "b.example.com", "port": 8080, "protocol": "auto", "path": "", "mode": "gated", "direct_refusal": api.direct_refusal("b.example.com"), "certificate": {"name": "b.example.com", "status": "pending", "reason": ""}}
 
     assert client.post("/api/domains/remove", json={"container": "web", "fqdn": "a.example.com"}).status_code == 200
     assert len(client.get("/api/domains?container=web").get_json()["domains"]) == 1

@@ -10,6 +10,7 @@ from flask_login import login_required
 
 from pymodules.hd_BackendResolver import installed_containers, reachability, sync_installed_apps, web_port
 from pymodules.hd_DomainAccess import direct_refusal
+from pymodules.hd_CertManager import name_statuses
 from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, update_domain
 
 
@@ -20,7 +21,9 @@ def _error(error):
 def _app_json(container, app):
     reachable, reason = reachability(container)
 
-    domains = [{**domain, "direct_refusal": direct_refusal(domain["fqdn"])} for domain in app["domains"]]
+    certificate = {item["name"]: item for item in name_statuses([domain["fqdn"] for domain in app["domains"]])}
+
+    domains = [{**domain, "direct_refusal": direct_refusal(domain["fqdn"]), "certificate": certificate.get(domain["fqdn"], {"status": "pending", "reason": ""})} for domain in app["domains"]]
 
     return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "reachable": reachable, "unreachable_reason": reason, "domains": domains}
 

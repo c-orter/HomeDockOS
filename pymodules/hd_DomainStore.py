@@ -51,6 +51,23 @@ def reserved_hosts():
     return get_desktop_hosts()
 
 
+_listeners = []
+
+
+def on_names_changed(callback):
+    """Registers a callback run after a domain is added or removed (the certificate's name list may need to change)."""
+
+    _listeners.append(callback)
+
+
+def _names_changed():
+    for callback in list(_listeners):
+        try:
+            callback()
+        except Exception as error:
+            print(f" ! Domain change listener failed: {error}")
+
+
 def reset_cache():
     with _lock:
         _cache["signature"] = None
@@ -235,6 +252,7 @@ def add_domain(container, fqdn, port, protocol="auto", path="", mode="gated"):
 
         _ensure(apps, container)["domains"].append(entry)
         _save(apps)
+        _names_changed()
 
         return copy.deepcopy(entry)
 
@@ -282,6 +300,7 @@ def remove_domain(container, fqdn):
 
         apps[container]["domains"] = remaining
         _save(apps)
+        _names_changed()
 
 
 def set_web_port(container, port):
@@ -297,6 +316,7 @@ def delete_app(container):
 
         if apps.pop(container, None) is not None:
             _save(apps)
+            _names_changed()
 
 
 def lookup_domain(host):

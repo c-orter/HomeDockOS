@@ -120,3 +120,21 @@ def test_failed_http_01_drops_only_that_name(issue, pebble_dns, port_80):
     assert san == sorted([BASE, f"*.{BASE}", "app.web.test"])
     assert [item["name"] for item in result["excluded"]] == ["dead.web.test"]
     assert result["excluded"][0]["reason"].startswith("http-01 failed")
+
+
+def test_failed_order_leaves_the_serving_certificate_untouched(issue, pebble_dns, tmp_path, monkeypatch):
+    out = tmp_path / "out"
+    out.mkdir()
+    for name in ("fullchain.pem", "cert.pem", "chain.pem", "privkey.pem"):
+        (out / name).write_text("previous")
+
+    def refuse(identifier, token, value):
+        raise manager.ProviderError("provider is down")
+
+    monkeypatch.setattr(manager, "get_provider", lambda name: {"set": refuse, "clear": lambda *a: None})
+
+    with pytest.raises(manager.ProviderError):
+        issue([entry(BASE)], [], lambda name: [])
+
+    assert {(out / name).read_text() for name in ("fullchain.pem", "cert.pem", "chain.pem", "privkey.pem")} == {"previous"}
+    assert manager.get_state()["error"] == "provider is down"

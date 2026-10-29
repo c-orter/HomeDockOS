@@ -14,7 +14,8 @@ from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_cert_domains_and_type, cert_covers_subdomains_of, restart_pending, ssl_context_active
 from pymodules.hd_ACMEProviders import provider_names, provider_labels, provider_syncs_ip
 from pymodules.hd_AcmeCredentials import stored_token, set_credential, match_credential, public_credentials, CredentialError
-from pymodules.hd_CertManager import issue_certificate, claim, release, get_state, days_until_expiry, is_reserved_domain, renewal_status
+from pymodules.hd_CertManager import issue_certificate, claim, release, get_state, days_until_expiry, is_reserved_domain, renewal_status, name_statuses
+from pymodules.hd_CertScheduler import get_schedule_state
 from pymodules.hd_BaseDomain import validate_base_domain
 from pymodules.hd_ThreadDynamicDNS import get_dynamic_dns_state
 
@@ -62,6 +63,8 @@ def api_acme_status():
                 "host": host,
                 "certificate": _certificate_snapshot(host, domain),
                 "state": get_state(),
+                "names": name_statuses(),
+                "schedule": get_schedule_state(),
                 # HDOS00109
                 "ip_sync": {
                     "available": renewal_status()["managed"] and provider_syncs_ip(credential["provider"] if credential else ""),
