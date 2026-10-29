@@ -20,12 +20,12 @@
     </div>
 
     <div class="relative flex-1 min-h-0">
-      <AppDockerTerminal v-for="tab in tabs" v-show="tab.id === activeId && !picking && !authTab" :key="tab.id" class="absolute inset-0" :app-name="tab.container" :host="tab.host" :attempt="tab.attempt" :take-credentials="() => takeCredentials(tab.id)" :dependency-of="!tab.host && tab.container === initialContainer ? dependencyOf : undefined" @reauth="askForCredentials(tab.id)" />
+      <AppDockerTerminal v-for="tab in tabs" v-show="tab.id === activeId && !picking && !authTab" :key="tab.id" class="absolute inset-0" :app-name="tab.container" :host="tab.host" :secured="!tab.host && tab.container === homedock" :attempt="tab.attempt" :take-credentials="() => takeCredentials(tab.id)" :dependency-of="!tab.host && tab.container === initialContainer ? dependencyOf : undefined" @reauth="askForCredentials(tab.id)" />
 
       <form v-if="authTab" class="absolute inset-0 overflow-auto p-4" :class="themeClasses.terminalSurface" @submit.prevent="submitCredentials">
         <div class="max-w-sm mx-auto">
-          <h3 :class="[themeClasses.terminalStateTitle]" class="text-sm font-semibold mb-1 flex items-center gap-2"><Icon :icon="hostIcon" class="w-4 h-4" />{{ $t("Open a shell on the host") }}</h3>
-          <p :class="[themeClasses.terminalStateText]" class="text-xs mb-3 leading-relaxed">{{ $t("This shell runs as root on the machine itself, outside every container. Confirm it is you.") }}</p>
+          <h3 :class="[themeClasses.terminalStateTitle]" class="text-sm font-semibold mb-1 flex items-center gap-2"><Icon :icon="hostIcon" class="w-4 h-4" />{{ authContainer ? $t("Open a shell in HomeDock OS") : $t("Open a shell on the host") }}</h3>
+          <p :class="[themeClasses.terminalStateText]" class="text-xs mb-3 leading-relaxed">{{ authContainer ? $t("HomeDock OS controls the container engine, so this shell is as powerful as a host shell. Confirm it is you.") : $t("This shell runs as root on the machine itself, outside every container. Confirm it is you.") }}</p>
           <label class="block text-xs mb-1" :class="[themeClasses.windowText]" for="host-shell-password">{{ $t("Password") }}</label>
           <input id="host-shell-password" ref="passwordInput" v-model="password" type="password" autocomplete="current-password" :class="[themeClasses.windowInputBg, themeClasses.windowText, themeClasses.windowBorder]" class="w-full px-2 py-1.5 mb-2 text-xs rounded border outline-hidden" />
           <template v-if="host?.requires_2fa">
@@ -66,7 +66,7 @@
               </button>
             </li>
             <li v-for="target in targets" :key="target.name">
-              <button :disabled="target.status !== 'running'" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-left rounded-lg border-0 bg-transparent cursor-pointer disabled:opacity-40 disabled:cursor-default" @click="pick(target.name)">
+              <button :disabled="target.status !== 'running' || (target.name === homedock && !host)" :title="target.name === homedock && !host ? $t('Turn on the host shell in Settings to open this one.') : ''" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="w-full flex items-center gap-2 px-3 py-2 text-xs text-left rounded-lg border-0 bg-transparent cursor-pointer disabled:opacity-40 disabled:cursor-default" @click="target.name === homedock ? askForOwn(target.name) : pick(target.name)">
                 <Icon :icon="target.name === homedock ? homeIcon : containerIcon" class="w-4 h-4 flex-shrink-0" />
                 <span class="truncate">{{ target.name === homedock ? $t("HomeDock OS") : target.name }}</span>
                 <span v-if="target.name === homedock" class="text-[10px] opacity-50 font-mono truncate">{{ target.name }}</span>
@@ -132,6 +132,7 @@ const host = ref<HostTarget | null>(null);
 const credentials = new Map<number, { password: string; code: string }>();
 const authTab = ref(false);
 const authFor = ref<number | null>(null);
+const authContainer = ref<string | null>(null);
 const password = ref("");
 const code = ref("");
 const passwordInput = ref<HTMLInputElement | null>(null);
@@ -187,6 +188,11 @@ function takeCredentials(id: number) {
   return found;
 }
 
+function askForOwn(container: string) {
+  authContainer.value = container;
+  askForCredentials(null);
+}
+
 async function askForCredentials(id: number | null) {
   authFor.value = id;
   password.value = "";
@@ -206,7 +212,7 @@ function submitCredentials() {
   authTab.value = false;
 
   if (authFor.value === null) {
-    const tab = open("Host", true);
+    const tab = authContainer.value ? open(authContainer.value) : open("Host", true);
 
     credentials.set(tab.id, entered);
   } else {
@@ -216,6 +222,7 @@ function submitCredentials() {
   }
 
   authFor.value = null;
+  authContainer.value = null;
 }
 
 function cancelCredentials() {
@@ -226,6 +233,7 @@ function cancelCredentials() {
   if (authFor.value === null) picking.value = true;
 
   authFor.value = null;
+  authContainer.value = null;
 }
 
 function closeTab(id: number) {

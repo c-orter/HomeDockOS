@@ -282,6 +282,7 @@ interface Props {
   appName?: string;
   dependencyOf?: string;
   host?: boolean;
+  secured?: boolean;
   attempt?: number;
   takeCredentials?: () => { password: string; code: string } | null;
   data?: {
@@ -312,6 +313,8 @@ interface ExtraKey {
 }
 
 const props = defineProps<Props>();
+
+const needsAuth = computed(() => !!props.host || !!props.secured);
 const emit = defineEmits<{ reauth: [] }>();
 const { t } = useI18n();
 const { themeClasses } = useTheme();
@@ -988,16 +991,16 @@ function websocketUrl(path: string, ticket: string): string {
 
 // A host session asks for the password again every time, so reconnecting goes back to the prompt
 function restart() {
-  if (props.host) emit("reauth");
+  if (needsAuth.value) emit("reauth");
   else startSession();
 }
 
 async function startSession() {
   if (!term || disposed || !appName.value) return;
 
-  const credentials = props.host ? (props.takeCredentials?.() ?? null) : null;
+  const credentials = needsAuth.value ? (props.takeCredentials?.() ?? null) : null;
 
-  if (props.host && !credentials) {
+  if (needsAuth.value && !credentials) {
     failSession("auth_required");
     return;
   }
@@ -1018,7 +1021,7 @@ async function startSession() {
   let path = "";
 
   try {
-    const body = credentials ? { host: true, password: credentials.password, code: credentials.code, cols: term.cols, rows: term.rows } : { containerName: appName.value, shell: shellChoice.value, user: userMode.value, cols: term.cols, rows: term.rows };
+    const body = props.host ? { host: true, ...credentials, cols: term.cols, rows: term.rows } : { containerName: appName.value, shell: shellChoice.value, user: userMode.value, cols: term.cols, rows: term.rows, ...credentials };
     const response = await axios.post(SESSION_ENDPOINT, body, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
 
     if (current !== generation) return;
@@ -1160,7 +1163,7 @@ watch(keyBarVisible, () => nextTick(scheduleFit));
 watch(
   () => props.attempt,
   (current, previous) => {
-    if (props.host && current !== previous) startSession();
+    if (needsAuth.value && current !== previous) startSession();
   },
 );
 

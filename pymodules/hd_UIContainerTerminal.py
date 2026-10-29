@@ -338,6 +338,26 @@ def _host_session(payload, client_ip):
     }
 
 
+def _require_gates_for_own_container(container, payload, client_ip):
+    """HomeDock's own container mounts the Docker socket, so a shell in it is as strong as a host shell and needs the same switch, fresh password and 2FA."""
+
+    if not is_docker:
+        return
+
+    own = own_container(_client())
+
+    if own is None or own.id != container.id:
+        return
+
+    if not host_shell.host_shell_enabled():
+        raise TerminalError("host_disabled", 403)
+
+    try:
+        host_shell.authorize(client_ip, payload.get("password"), payload.get("code"))
+    except host_shell.HostShellError as e:
+        raise TerminalError(e.code, e.status)
+
+
 @login_required
 def api_container_terminal_session():
     payload = request.get_json(silent=True)
@@ -367,6 +387,7 @@ def api_container_terminal_session():
 
     try:
         container = _get_running_container(container_name)
+        _require_gates_for_own_container(container, payload, request.remote_addr)
         interpreter, shells, default_username = _probe_shells(container)
         shell = _resolve_shell(requested_shell, shells)
     except TerminalError as e:
