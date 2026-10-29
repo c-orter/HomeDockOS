@@ -22,7 +22,7 @@ from vite_fusion import register_vite_assets
 
 from pymodules.hd_HDOSWebServerInit import homedock_www
 from pymodules.hd_AppFilters import b64encode_filter
-from pymodules.hd_FunctionsGlobals import current_directory, version, version_hash, running_OS, running_ARCH, logs_folder
+from pymodules.hd_FunctionsGlobals import current_directory, compose_upload_folder, version, version_hash, running_OS, running_ARCH, logs_folder
 from pymodules.hd_FunctionsNetwork import local_ip, internet_ip
 from pymodules.hd_PublicKeySender import send_public_key
 from pymodules.hd_FunctionsConfig import check_and_generate_config, read_config
@@ -57,6 +57,7 @@ from pymodules.hd_HTMLErrorCodeHandler import setup_error_handlers
 from pymodules.hd_ApplyUploadLimits import ContentSizeLimitMiddleware
 
 from pymodules.hd_FunctionsHostSelector import is_docker
+from pymodules.hd_HomedockNetwork import setup_homedock_network
 
 os.chdir(current_directory)
 
@@ -88,6 +89,9 @@ if __name__ == "__main__":
 
     RouteAllModules(homedock_www, send_public_key)
     enterprise_cogs = load_enterprise(homedock_www)
+
+    if is_docker:
+        setup_homedock_network(compose_upload_folder)
 
     start_auto_port_routing_thread()
     start_resource_usage_thread()

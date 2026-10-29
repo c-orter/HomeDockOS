@@ -11,6 +11,8 @@ import subprocess
 
 from typing import Optional, List, Tuple
 
+from pymodules.hd_RuntimeCompose import runtime_compose_file
+
 
 class DockerComposeHelper:
     _instance = None
@@ -98,39 +100,42 @@ class DockerComposeHelper:
             if not os.path.exists(compose_file):
                 return False, f"Compose file not found: {compose_file}"
 
-            # 1. Whales!
-            if method == "whale":
-                from python_on_whales import DockerClient
+            with runtime_compose_file(compose_file) as (run_file, project_name, project_dir):
+                # 1. Whales!
+                if method == "whale":
+                    from python_on_whales import DockerClient
 
-                docker = DockerClient(compose_files=[compose_file])
+                    docker = DockerClient(compose_files=[run_file], compose_project_name=project_name or None, compose_project_directory=project_dir)
 
-                if service_names:
-                    docker.compose.up(services=service_names, detach=detach)
+                    if service_names:
+                        docker.compose.up(services=service_names, detach=detach)
+                    else:
+                        docker.compose.up(detach=detach)
+
+                    return True, "Container(s) started successfully"
+
                 else:
-                    docker.compose.up(detach=detach)
+                    # 2. Compose!
+                    if method == "v2":
+                        cmd = ["docker", "compose"]
 
-                return True, "Container(s) started successfully"
+                    # 3. Oldpose!
+                    else:
+                        cmd = ["docker-compose"]
 
-            else:
-                # 2. Compose!
-                if method == "v2":
-                    cmd = ["docker", "compose"]
+                    cmd.extend(["-f", run_file, "--project-directory", project_dir])
+                    if project_name:
+                        cmd.extend(["-p", project_name])
+                    cmd.extend(["up", "-d"] if detach else ["up"])
+                    if service_names:
+                        cmd.extend(service_names)
 
-                # 3. Oldpose!
-                else:
-                    cmd = ["docker-compose"]
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
 
-                cmd.extend(["-f", compose_file])
-                cmd.extend(["up", "-d"] if detach else ["up"])
-                if service_names:
-                    cmd.extend(service_names)
-
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
-
-                if result.returncode == 0:
-                    return True, result.stdout
-                else:
-                    return False, f"Error: {result.stderr}"
+                    if result.returncode == 0:
+                        return True, result.stdout
+                    else:
+                        return False, f"Error: {result.stderr}"
 
         except Exception as e:
             stderr_text = ""

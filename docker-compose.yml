@@ -17,8 +17,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - homedock_network
     labels:
       - "HDDockerInDocker=true"
     environment:
       - TZ=Europe/Madrid
       - PYTHONUNBUFFERED=1
+
+networks:
+  homedock_network:
+    name: homedock_network
