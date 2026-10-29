@@ -12,8 +12,8 @@ import configparser
 
 from flask import jsonify, session, request
 from flask_login import login_required
-from urllib.parse import urlparse
 
+from pymodules.hd_BaseDomain import validate_base_domain
 from pymodules.hd_FunctionsConfig import read_config, write_config, ALLOWED_DISKSPLUS_SESSION_MINUTES, ALLOWED_LANGUAGES, ALLOWED_CLOCK_FORMATS, ALLOWED_WEEK_STARTS, ALLOWED_APPEARANCES
 from pymodules.hd_FunctionsHandleCSRFToken import regenerate_csrf_token
 from pymodules.hd_FunctionsGlobals import current_directory
@@ -80,17 +80,9 @@ def api_save_settings():
         except ValueError:
             return jsonify({"error": "Selected port must be between 80 and 65535."}), 400
 
-        raw_dynamic_dns = system_data.get("dynamic_dns", "get.homedock.cloud")
-
-        if not raw_dynamic_dns.startswith(("http://", "https://")):
-            raw_dynamic_dns = "http://" + raw_dynamic_dns
-        parsed_url = urlparse(raw_dynamic_dns)
-        domain = parsed_url.netloc.lstrip("www.")
-        domain_regex = r"^(?!-)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$"
-        if not re.match(domain_regex, domain):
-            domain = "get.homedock.cloud"
-        safe_domain = re.sub(r"[^a-zA-Z0-9.-]", "", domain)
-        dynamic_dns = safe_domain
+        base_domain, base_domain_error = validate_base_domain(system_data.get("base_domain", ""))
+        if base_domain_error:
+            return jsonify({"error": base_domain_error}), 400
 
         allowed_themes = ["default", "noir", "aeroplus"]
         selected_theme = theme_data.get("selected_theme", "default")
@@ -162,7 +154,7 @@ def api_save_settings():
             "user_name": user_name,
             "user_password": hashed_password,
             "run_port": run_port,
-            "dynamic_dns": dynamic_dns,
+            "base_domain": base_domain,
             "local_dns": local_dns,
             "run_on_development": run_on_development,
             "disable_usage_data": disable_usage_data,

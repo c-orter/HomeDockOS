@@ -232,7 +232,7 @@ interface UserFormData {
 
 interface SystemFormData {
   run_port?: number;
-  dynamic_dns?: string;
+  base_domain?: string;
   run_on_development?: boolean;
   delete_old_image_containers_after_update?: boolean;
   delete_old_image_containers_after_uninstall?: boolean;
@@ -269,7 +269,7 @@ const formData = reactive({
 
   system: {
     run_port: settingsData.run_port,
-    dynamic_dns: settingsData.dynamic_dns,
+    base_domain: settingsData.base_domain,
     run_on_development: settingsData.run_on_development,
     disable_usage_data: settingsData.disable_usage_data,
     delete_old_image_containers_after_update: settingsData.delete_old_image_containers_after_update,
@@ -385,7 +385,7 @@ const handleSubmit = async () => {
         updateSettings({
           user_name: formData.user.user_name,
           run_port: formData.system.run_port,
-          dynamic_dns: formData.system.dynamic_dns,
+          base_domain: formData.system.base_domain,
           local_dns: formData.system.local_dns,
           run_on_development: formData.system.run_on_development,
           disable_usage_data: formData.system.disable_usage_data,

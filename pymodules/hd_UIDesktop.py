@@ -11,7 +11,6 @@ from flask_login import login_required
 from pymodules.hd_FunctionsConfig import read_config
 
 from pymodules.hd_FunctionsNetwork import local_ip, internet_ip
-from pymodules.hd_AdoptHostname import adopt_browsed_hostname
 from pymodules.hd_FunctionsGlobals import version, version_hash, current_year
 
 from pymodules.hd_FunctionsMain import get_total_containers, get_active_containers
@@ -38,15 +37,13 @@ def desktop():
     week_start = config["week_start"]
 
     run_port = config["run_port"]
-    dynamic_dns = config["dynamic_dns"]
+    base_domain = config["base_domain"]
     local_dns = config["local_dns"]
     run_on_development = config["run_on_development"]
     disable_usage_data = config["disable_usage_data"]
     delete_old_image_containers_after_update = config["delete_old_image_containers_after_update"]
     delete_old_image_containers_after_uninstall = config["delete_old_image_containers_after_uninstall"]
     delete_internal_data_volumes = config["delete_internal_data_volumes"]
-    # HDOS00075
-    adopt_browsed_hostname(request.host)
 
     reverse_proxy = config["reverse_proxy"]
     local_http_access = config["local_http_access"]
@@ -72,7 +69,7 @@ def desktop():
         clock_format=clock_format,
         week_start=week_start,
         run_port=run_port,
-        dynamic_dns=dynamic_dns,
+        base_domain=base_domain,
         local_dns=local_dns,
         run_on_development=run_on_development,
         disable_usage_data=disable_usage_data,

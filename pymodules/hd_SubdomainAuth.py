@@ -97,7 +97,7 @@ def api_subdomain_diagnostics():
 
 def _covered_alternative(domains, host):
 
-    configured = (read_config().get("dynamic_dns") or "").strip().lower().rstrip(".")
+    configured = (read_config().get("base_domain") or "").strip().lower().rstrip(".")
 
     covered = {domain[2:].strip().lower() for domain in domains if domain.startswith("*.")} - {host}
 

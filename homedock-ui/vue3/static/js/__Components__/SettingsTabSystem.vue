@@ -130,7 +130,7 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const portNumber = ref<number>(props.modelValue.run_port || 80);
-const hostnameValue = ref<string>(props.modelValue.dynamic_dns || "get.homedock.cloud");
+const hostnameValue = ref<string>(props.modelValue.base_domain || "");
 const homedockLocalValue = ref<boolean>(props.modelValue.local_dns || false);
 const initialLocalDNS = props.modelValue.local_dns || false;
 const localDNSChanged = computed(() => homedockLocalValue.value !== initialLocalDNS);
@@ -170,7 +170,7 @@ const portErrorMessage = computed(() => {
 watch(
   () => ({
     run_port: portNumber.value,
-    dynamic_dns: hostnameValue.value,
+    base_domain: hostnameValue.value,
     local_dns: homedockLocalValue.value,
     run_on_development: developmentValue.value,
     disable_usage_data: disableUsageDataValue.value,

@@ -6,7 +6,7 @@
 export interface SettingsData {
   user_name: string;
   run_port: number;
-  dynamic_dns: string;
+  base_domain: string;
   local_dns: boolean;
   run_on_development: boolean;
   disable_usage_data: boolean;

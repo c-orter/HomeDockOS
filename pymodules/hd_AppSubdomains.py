@@ -142,9 +142,9 @@ def get_desktop_hosts():
             hosts.add(value)
 
     try:
-        dynamic_dns = read_config().get("dynamic_dns")
-        if dynamic_dns:
-            hosts.add(dynamic_dns.strip().lower())
+        base_domain = read_config().get("base_domain")
+        if base_domain:
+            hosts.add(base_domain.strip().lower())
     except Exception:
         pass
 

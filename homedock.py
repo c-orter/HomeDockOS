@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     run_port = globalConfig["run_port"]
     local_dns = globalConfig["local_dns"]
-    dynamic_dns = globalConfig["dynamic_dns"]
+    base_domain = globalConfig["base_domain"]
     run_on_development = globalConfig["run_on_development"]
     reverse_proxy_enabled = globalConfig.get("reverse_proxy", False)
     local_http_access = globalConfig.get("local_http_access", False) and not reverse_proxy_enabled
@@ -172,7 +172,8 @@ if __name__ == "__main__":
 
     print(f" + Log in at: \x1b[4m{format_url(protocol, local_ip, run_port)}\x1b[0m")
     print(f"           ├─ \x1b[4m{format_url(protocol, internet_ip, run_port)}\x1b[0m")
-    print(f"           └─ \x1b[4m{format_url(protocol, dynamic_dns, run_port)}\x1b[0m")
+    if base_domain:
+        print(f"           └─ \x1b[4m{format_url(protocol, base_domain, run_port)}\x1b[0m")
 
     if local_dns:
         if announce_homedock_service():

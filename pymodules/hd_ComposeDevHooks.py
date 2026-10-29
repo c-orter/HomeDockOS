@@ -100,7 +100,7 @@ def generate_random_string(length=16):
 
 def process_devhooks(yml_str, generate_passwords=True):
     config = read_config()
-    dynamic_dns = config["dynamic_dns"]
+    base_domain = config["base_domain"]
     user_name = config["user_name"].lower()
 
     if generate_passwords:
@@ -114,7 +114,7 @@ def process_devhooks(yml_str, generate_passwords=True):
 
     yml_str = yml_str.replace("[[HD_LOCAL_IP]]", local_ip)
     yml_str = yml_str.replace("[[HD_INTERNET_IP]]", internet_ip)
-    yml_str = yml_str.replace("[[HD_DYN_DNS]]", dynamic_dns)
+    yml_str = yml_str.replace("[[HD_DYN_DNS]]", base_domain)
 
     yml_str = yml_str.replace("[[HD_USER_NAME]]", user_name)
 
@@ -127,7 +127,7 @@ def process_devhooks(yml_str, generate_passwords=True):
     yml_str = yml_str.replace("[[APP_MOUNT_POINT]]", get_internal_storage_path())
     yml_str = yml_str.replace("[[SSL_CERT_PATH]]", get_ssl_cert_directory_for_containers())
 
-    devhook_values = {"user_name": user_name, "password": password, "sys_password": sys_password, "random_string": random_string, "local_ip": local_ip, "internet_ip": internet_ip, "dynamic_dns": dynamic_dns, "install_path": get_config_path(), "app_mount_point": get_internal_storage_path(), "ssl_cert_path": get_ssl_cert_directory_for_containers()}
+    devhook_values = {"user_name": user_name, "password": password, "sys_password": sys_password, "random_string": random_string, "local_ip": local_ip, "internet_ip": internet_ip, "dynamic_dns": base_domain, "install_path": get_config_path(), "app_mount_point": get_internal_storage_path(), "ssl_cert_path": get_ssl_cert_directory_for_containers()}
 
     return yml_str, devhook_values
 

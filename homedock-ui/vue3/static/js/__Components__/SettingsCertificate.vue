@@ -11,11 +11,11 @@
       </template>
     </SettingsItem>
 
-    <SettingsItem :icon="globeIcon" icon-color="cyan" :title="$t('Hostname')" :description="$t('The address you reach HomeDock OS with, and the name the certificate is issued for')" :is-last="!showForm && !showLocalHttp">
+    <SettingsItem :icon="globeIcon" icon-color="cyan" :title="$t('Base domain')" :description="$t('The domain you own that this server lives under, and the name the certificate is issued for')" :is-last="!showForm && !showLocalHttp">
       <template #badge>
-        <SettingsHelpTooltip :text="$t('OnScreen Apps live on subdomains of this name, so it has to be a domain you own. A free dynamic DNS name works. Leave the factory value and HomeDock OS adopts whatever address you browse it by.')" />
+        <SettingsHelpTooltip :text="$t('OnScreen Apps live on subdomains of this name, so it has to be a domain you own. A free dynamic DNS name works. Leave it empty to use only homedock.local.')" />
       </template>
-      <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="domain" @update:value="(value: string) => emit('update:domain', value)" name="FormInputDynamicDNS" id="FormInputDynamicDNS" :placeholder="$t('get.homedock.cloud')" style="width: 280px" />
+      <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="domain" @update:value="(value: string) => emit('update:domain', value)" name="FormInputBaseDomain" id="FormInputBaseDomain" :placeholder="$t('home.example.com')" style="width: 280px" />
     </SettingsItem>
 
     <template v-if="showForm">
@@ -256,8 +256,8 @@ const blocked = computed(() => !busy.value && !requirementsMet.value);
 const restartAfterIssue = computed(() => Boolean(status.value && !status.value.certificate.context_active && !props.reverseProxy));
 
 const issueDescription = computed(() => {
-  if (domainIsReserved.value) return t("Set your own domain in Hostname above — {domain} belongs to HomeDock OS.", { domain: targetDomain.value });
-  if (!targetDomain.value.includes(".")) return t("Set the domain you reach HomeDock OS with in Hostname above.");
+  if (domainIsReserved.value) return t("Set your own domain in Base domain above — {domain} belongs to HomeDock OS.", { domain: targetDomain.value });
+  if (!targetDomain.value.includes(".")) return t("Set the domain you reach HomeDock OS with in Base domain above.");
   if (!hasToken.value) return t("Add the token for your DNS provider above to issue the certificate.");
 
   return t("For {domain} and {record}", { domain: targetDomain.value, record: `*.${targetDomain.value}` });
@@ -344,7 +344,7 @@ async function issue() {
   try {
     await axios.post("/api/acme/issue", { provider: provider.value, token: token.value, staging: staging.value, domain: targetDomain.value }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
 
-    if (!staging.value) updateSettings?.({ dynamic_dns: targetDomain.value });
+    if (!staging.value) updateSettings?.({ base_domain: targetDomain.value });
 
     token.value = "";
     message.info(t("Requesting certificate, this takes a few minutes."));

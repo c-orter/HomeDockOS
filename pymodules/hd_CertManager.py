@@ -135,7 +135,7 @@ def renewal_status():
 
     config = read_config()
 
-    domain = (config.get("dynamic_dns") or "").strip().lower().rstrip(".")
+    domain = (config.get("base_domain") or "").strip().lower().rstrip(".")
     provider = (config.get("acme_provider") or "").strip().lower()
     token = config.get("acme_token") or ""
 

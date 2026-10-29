@@ -17,13 +17,14 @@ from pymodules.hd_FunctionsConfig import read_config, write_config
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_cert_domains_and_type, cert_covers_subdomains_of, restart_pending, ssl_context_active
 from pymodules.hd_ACMEProviders import provider_names, provider_labels, provider_syncs_ip
 from pymodules.hd_CertManager import issue_certificate, claim, release, get_state, days_until_expiry, is_reserved_domain, renewal_status
+from pymodules.hd_BaseDomain import validate_base_domain
 from pymodules.hd_ThreadDynamicDNS import get_dynamic_dns_state
 
 # HDOS00066
 _config_path = os.path.join(current_directory, "homedock_server.conf")
 
 
-def _persist(domain, provider, token):
+def _persist(provider, token):
     config = configparser.ConfigParser()
     config.read(_config_path)
 
@@ -32,9 +33,6 @@ def _persist(domain, provider, token):
 
     config.set("Config", "acme_provider", provider)
     config.set("Config", "acme_token", token)
-
-    if domain:
-        config.set("Config", "dynamic_dns", domain)
 
     write_config(config, _config_path)
 
@@ -71,7 +69,7 @@ def _certificate_snapshot(host, domain):
 def api_acme_status():
     config = read_config()
     host = request.host.split(":")[0].strip().lower().rstrip(".")
-    domain = (config.get("dynamic_dns") or "").strip().lower().rstrip(".")
+    domain = (config.get("base_domain") or "").strip().lower().rstrip(".")
 
     return (
         jsonify(
@@ -80,7 +78,7 @@ def api_acme_status():
                 "provider_labels": provider_labels(),
                 "provider": config.get("acme_provider", ""),
                 "token_set": bool(config.get("acme_token", "")),
-                "domain": config.get("dynamic_dns", ""),
+                "domain": config.get("base_domain", ""),
                 "host": host,
                 "certificate": _certificate_snapshot(host, domain),
                 "state": get_state(),
@@ -106,9 +104,9 @@ def api_acme_issue():
 
     config = read_config()
 
-    domain = str(data.get("domain") or config.get("dynamic_dns") or "").strip().lower().rstrip(".")
-    if not domain or "." not in domain:
-        return jsonify({"status": "bad_request", "message": "A valid domain name is required."}), 400
+    domain, domain_error = validate_base_domain(str(data.get("domain") or config.get("base_domain") or ""))
+    if domain_error or not domain:
+        return jsonify({"status": "bad_request", "message": domain_error or "A valid domain name is required."}), 400
 
     if is_reserved_domain(domain):
         return jsonify({"status": "bad_request", "message": f"{domain} belongs to HomeDock OS. Set your own domain as the hostname first."}), 400
@@ -124,7 +122,7 @@ def api_acme_issue():
         return jsonify({"status": "busy", "message": "A certificate request is already running."}), 409
 
     try:
-        _persist(domain, provider, token)
+        _persist(provider, token)
     except OSError as error:
         release(f"Could not save the configuration: {error}")
         return jsonify({"status": "error", "message": f"Could not save the configuration: {error}"}), 500
