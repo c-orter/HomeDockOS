@@ -142,3 +142,10 @@ def handle_log_errors(e):
     else:
         print(f"Unexpected error reading file: {e}")
         return make_response(jsonify({"error": "Error reading log file"}), 500)
+
+
+@login_required
+def serve_host_shell():
+    from pymodules.hd_HostShell import read_audit
+
+    return jsonify(read_audit())

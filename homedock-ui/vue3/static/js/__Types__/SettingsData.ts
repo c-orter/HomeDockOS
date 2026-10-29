@@ -16,6 +16,7 @@ export interface SettingsData {
   reverse_proxy: boolean;
   local_http_access: boolean;
   dynamic_dns_sync: boolean;
+  host_shell_enabled: boolean;
   default_external_drive: string;
   require_protected_paths_password: boolean;
   disksplus_session_timeout_minutes: number;

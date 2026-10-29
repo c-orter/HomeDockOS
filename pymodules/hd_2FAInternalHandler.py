@@ -97,6 +97,16 @@ def generate_backup_codes(count=10):
     return [f"HDS-{secrets.token_hex(4).upper()}" for _ in range(count)]
 
 
+def save_backup_codes(codes):
+    config_file = os.path.join(current_directory, "homedock_server.conf")
+    config_parser = configparser.ConfigParser()
+    config_parser.read(config_file)
+    config_parser.set("Config", "2fa_backup_codes", ",".join(codes))
+
+    with open(config_file, "w") as f:
+        config_parser.write(f)
+
+
 def verify_2fa_code(code, secret, backup_codes):
     code = code.replace(" ", "").upper()
 

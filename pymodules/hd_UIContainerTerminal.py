@@ -5,6 +5,7 @@ See LICENSE.md or https://polyformproject.org/licenses/strict/1.0.0/
 https://www.banshee.pro
 """
 
+import os
 import re
 import json
 import time
@@ -20,11 +21,13 @@ from urllib.parse import parse_qs
 from concurrent.futures import TimeoutError as FutureTimeoutError
 
 from flask import jsonify, request
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
+from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_HomedockNetwork import own_container
 from pymodules.hd_FunctionsHostSelector import is_docker
+from pymodules import hd_HostShell as host_shell
 
 TERMINAL_WS_PATH = "/api/container-terminal/ws"
 
@@ -254,7 +257,12 @@ def _consume_ticket(ticket):
 
 def _active_session_count():
     with _sessions_lock:
-        return len(_sessions)
+        return sum(1 for session in _sessions if not session.entry.get("host"))
+
+
+def _active_host_count():
+    with _sessions_lock:
+        return sum(1 for session in _sessions if session.entry.get("host"))
 
 
 @login_required
@@ -270,7 +278,64 @@ def api_container_terminal_targets():
 
     containers = sorted(({"name": c.name, "status": c.status} for c in listed), key=lambda item: item["name"].lower())
 
-    return jsonify({"success": True, "homedock": own.name if own else None, "containers": containers})
+    return jsonify({"success": True, "homedock": own.name if own else None, "containers": containers, "host": _host_target(client, own)})
+
+
+def _host_target(client, own):
+    """The host option, present only while the Settings switch is on."""
+
+    if not host_shell.host_shell_enabled():
+        return None
+
+    reason = ""
+
+    if is_docker and own is None:
+        reason = "HomeDock OS could not find its own container to start the host helper from."
+    elif is_docker and host_shell.engine_is_rootless(client):
+        reason = "The container engine runs rootless, so it cannot enter the host."
+
+    return {"available": not reason, "reason": reason, "requires_2fa": bool(read_config().get("2fa_enabled"))}
+
+
+def _host_session(payload, client_ip):
+    if not host_shell.host_shell_enabled():
+        raise TerminalError("host_disabled", 403)
+
+    if _active_host_count() >= host_shell.HOST_MAX_SESSIONS:
+        raise TerminalError("host_limit", 429)
+
+    try:
+        host_shell.authorize(client_ip, payload.get("password"), payload.get("code"))
+    except host_shell.HostShellError as e:
+        raise TerminalError(e.code, e.status)
+
+    image = ""
+
+    if is_docker:
+        own = own_container(_client())
+
+        if own is None or host_shell.engine_is_rootless(_client()):
+            raise TerminalError("host_unavailable", 422)
+
+        image = own.attrs.get("Config", {}).get("Image") or own.image.tags[0]
+
+    return {
+        "host": True,
+        "kind": "docker" if is_docker else "pty",
+        "image": image,
+        "container_id": "host",
+        "container_name": "Host",
+        "interpreter": None,
+        "shell": "login",
+        "user": "0:0",
+        "user_mode": "root",
+        "username": "root" if is_docker else (os.environ.get("USER") or "host"),
+        "windows": False,
+        "ip": client_ip,
+        "operator": current_user.get_id(),
+        "cols": _clamp_size(payload.get("cols"), MAX_COLS, 80),
+        "rows": _clamp_size(payload.get("rows"), MAX_ROWS, 24),
+    }
 
 
 @login_required
@@ -286,6 +351,16 @@ def api_container_terminal_session():
 
     if not isinstance(user_mode, str) or user_mode not in USER_MODES:
         return jsonify({"success": False, "code": "invalid_user"}), 400
+
+    if payload.get("host"):
+        try:
+            entry = _host_session(payload, request.remote_addr)
+        except TerminalError as e:
+            return jsonify({"success": False, "code": e.code, "detail": e.detail}), e.status
+
+        ticket = _issue_ticket(entry)
+
+        return jsonify({"success": True, "ticket": ticket, "shell": "login", "shells": [], "user": "root", "path": TERMINAL_WS_PATH})
 
     if _active_session_count() >= MAX_SESSIONS:
         return jsonify({"success": False, "code": "limit"}), 429
@@ -325,6 +400,7 @@ class TerminalSession:
         self.pid = None
         self.closed = False
         self.writes = queue.Queue()
+        self.last_input = time.monotonic()
         self._lock = threading.Lock()
 
     def _environment(self, container_env):
@@ -336,7 +412,9 @@ class TerminalSession:
 
         return environment
 
-    def open(self):
+    def _prepare(self):
+        """(container id, command, container env, user) for the exec this session runs."""
+
         entry = self.entry
         container = _client().containers.get(entry["container_id"])
 
@@ -345,16 +423,13 @@ class TerminalSession:
         else:
             command = [entry["interpreter"], "-c", _LAUNCH_SCRIPT, "homedock-terminal", entry["shell"]]
 
-        created = self.api.exec_create(
-            container.id,
-            command,
-            stdout=True,
-            stderr=True,
-            stdin=True,
-            tty=True,
-            environment=self._environment(container.attrs.get("Config", {}).get("Env")),
-            user=entry["user"] or "",
-        )
+        return container.id, command, container.attrs.get("Config", {}).get("Env"), entry["user"] or ""
+
+    def open(self):
+        entry = self.entry
+        container_id, command, container_env, user = self._prepare()
+
+        created = self.api.exec_create(container_id, command, stdout=True, stderr=True, stdin=True, tty=True, environment=self._environment(container_env), user=user)
 
         self.exec_id = created["Id"]
         self.sock = self.api.exec_start(self.exec_id, tty=True, socket=True)
@@ -456,6 +531,99 @@ class TerminalSession:
             _sessions.discard(self)
 
 
+class HostDockerSession(TerminalSession):
+    """A shell on the host: a short-lived privileged helper in the host's pid space runs nsenter into pid 1."""
+
+    helper = None
+    removal = None
+
+    def _prepare(self):
+        self.helper = host_shell.start_helper(_client(), self.entry["image"])
+
+        return self.helper.id, host_shell.NSENTER_COMMAND, ["HOME=/root"], "0:0"
+
+    def _environment(self, container_env):
+        return {**super()._environment(container_env), "HOME": "/root"}
+
+    def close(self):
+        super().close()
+
+        helper, self.helper = self.helper, None
+
+        if helper is not None:
+            self.removal = threading.Thread(target=_remove_quietly, args=(helper,), name="hd-host-helper-removal", daemon=True)
+            self.removal.start()
+
+
+def _remove_quietly(container):
+    try:
+        container.remove(force=True)
+    except Exception:
+        pass
+
+
+class HostPtySession(TerminalSession):
+    """A shell on the machine HomeDock runs on directly, when it is not in a container: a local pty."""
+
+    def __init__(self, entry):
+        self.entry = entry
+        self.exec_id = "pty"
+        self.sock = None
+        self.raw = None
+        self.process = None
+        self.pid = None
+        self.closed = False
+        self.writes = queue.Queue()
+        self.last_input = time.monotonic()
+        self._lock = threading.Lock()
+
+    def open(self):
+        self.process, fd = host_shell.spawn_pty(self.entry["cols"], self.entry["rows"])
+        self.pid = self.process.pid
+        self.raw = host_shell.FdSocket(fd)
+
+        with _sessions_lock:
+            _sessions.add(self)
+
+    def resize(self, cols, rows):
+        if self.closed or self.raw is None:
+            return
+
+        try:
+            host_shell.resize_pty(self.raw.fd, _clamp_size(cols, MAX_COLS, 80), _clamp_size(rows, MAX_ROWS, 24))
+        except OSError:
+            pass
+
+    def exit_code(self):
+        try:
+            return self.process.wait(timeout=1)
+        except Exception:
+            return None
+
+    def is_running(self):
+        return self.process is not None and self.process.poll() is None
+
+    def hangup(self):
+        pass
+
+    def close(self):
+        with self._lock:
+            if self.closed:
+                return
+
+        if self.process is not None and self.process.poll() is None:
+            host_shell.hang_up(self.process)
+
+        super().close()
+
+
+def _make_session(entry):
+    if not entry.get("host"):
+        return TerminalSession(entry)
+
+    return HostDockerSession(entry) if entry["kind"] == "docker" else HostPtySession(entry)
+
+
 def _strip_pid_marker(session, pending):
     match = PID_MARKER_RE.search(pending)
 
@@ -473,7 +641,7 @@ def _strip_pid_marker(session, pending):
 
 def _reader_thread(session, loop, output):
     pending = b""
-    marker_resolved = session.entry["windows"]
+    marker_resolved = session.entry["windows"] or bool(session.entry.get("host"))
 
     def deliver(data):
         future = asyncio.run_coroutine_threadsafe(output.put(data), loop)
@@ -557,6 +725,7 @@ async def _pump_input(session, receive, loop):
 
         if data is not None:
             if 0 < len(data) <= MAX_INPUT_FRAME:
+                session.last_input = time.monotonic()
                 session.writes.put(data)
             continue
 
@@ -570,6 +739,18 @@ async def _pump_input(session, receive, loop):
 
         if control.get("type") == "resize":
             await loop.run_in_executor(None, session.resize, control.get("cols"), control.get("rows"))
+
+
+async def _watch_idle(session):
+    """Ends a host session once nothing has been typed into it for the idle limit."""
+
+    while True:
+        remaining = host_shell.HOST_IDLE_TIMEOUT - (time.monotonic() - session.last_input)
+
+        if remaining <= 0:
+            return "idle"
+
+        await asyncio.sleep(min(remaining, 30))
 
 
 async def _cancel(tasks):
@@ -596,12 +777,22 @@ async def _serve_terminal(scope, receive, send):
         await _reject(send, "unauthorized")
         return
 
-    if _active_session_count() >= MAX_SESSIONS:
+    is_host = bool(entry.get("host"))
+
+    if is_host and not host_shell.host_shell_enabled():
+        await _reject(send, "host_disabled")
+        return
+
+    if is_host and _active_host_count() >= host_shell.HOST_MAX_SESSIONS:
+        await _reject(send, "host_limit")
+        return
+
+    if not is_host and _active_session_count() >= MAX_SESSIONS:
         await _reject(send, "limit")
         return
 
     loop = asyncio.get_running_loop()
-    session = TerminalSession(entry)
+    session = _make_session(entry)
 
     try:
         await loop.run_in_executor(None, session.open)
@@ -614,6 +805,11 @@ async def _serve_terminal(scope, receive, send):
         await _reject(send, "exec_failed")
         return
 
+    opened = time.monotonic()
+
+    if is_host:
+        host_shell.audit("open", entry["ip"], entry["operator"], "host", entry["kind"])
+
     await send({"type": "websocket.accept"})
     await _send_json(send, {"type": "ready", "shell": entry["shell"], "user": entry["user_mode"], "username": entry["username"], "container": entry["container_name"], "id": entry["container_id"][:12]})
 
@@ -624,16 +820,19 @@ async def _serve_terminal(scope, receive, send):
 
     output_task = asyncio.ensure_future(_pump_output(output, send))
     input_task = asyncio.ensure_future(_pump_input(session, receive, loop))
+    idle_task = asyncio.ensure_future(_watch_idle(session)) if is_host else None
 
     outcome = "disconnected"
 
     try:
-        done, pending = await asyncio.wait({output_task, input_task}, return_when=asyncio.FIRST_COMPLETED)
+        done, pending = await asyncio.wait({output_task, input_task, *([idle_task] if idle_task else [])}, return_when=asyncio.FIRST_COMPLETED)
 
         await _cancel(pending)
 
         if output_task in done and not output_task.cancelled() and output_task.exception() is None:
             outcome = output_task.result()
+        elif idle_task in done and not idle_task.cancelled() and idle_task.exception() is None:
+            outcome = "idle"
 
     except asyncio.CancelledError:
         await _cancel([output_task, input_task])
@@ -645,7 +844,17 @@ async def _serve_terminal(scope, receive, send):
 
         session.close()
 
-    if outcome == "exited":
+        if is_host:
+            host_shell.audit("close", entry["ip"], entry["operator"], "host", f"{outcome} after {int(time.monotonic() - opened)}s")
+
+    if outcome == "idle":
+        try:
+            await _send_json(send, {"type": "exit", "code": None, "reason": "idle"})
+            await send({"type": "websocket.close", "code": 1000})
+        except Exception:
+            pass
+
+    elif outcome == "exited":
         code = await loop.run_in_executor(None, session.exit_code)
 
         try:
@@ -661,6 +870,12 @@ def shutdown_terminal_sessions():
 
     for session in active:
         session.close()
+
+    for session in active:
+        removal = getattr(session, "removal", None)
+
+        if removal is not None:
+            removal.join(timeout=5)
 
 
 def wrap_asgi_with_container_terminal(downstream):

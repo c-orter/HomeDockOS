@@ -242,6 +242,7 @@ interface SystemFormData {
   reverse_proxy?: boolean;
   local_http_access?: boolean;
   dynamic_dns_sync?: boolean;
+  host_shell_enabled?: boolean;
 }
 
 interface StorageFormData {
@@ -279,6 +280,7 @@ const formData = reactive({
     reverse_proxy: settingsData.reverse_proxy,
     local_http_access: settingsData.local_http_access,
     dynamic_dns_sync: settingsData.dynamic_dns_sync,
+    host_shell_enabled: settingsData.host_shell_enabled,
   } as SystemFormData,
 
   storage: {
@@ -395,6 +397,7 @@ const handleSubmit = async () => {
           reverse_proxy: formData.system.reverse_proxy,
           local_http_access: formData.system.local_http_access,
           dynamic_dns_sync: formData.system.dynamic_dns_sync,
+          host_shell_enabled: formData.system.host_shell_enabled,
           default_external_drive: formData.storage.default_external_drive,
           require_protected_paths_password: formData.storage.require_protected_paths_password,
           disksplus_session_timeout_minutes: formData.storage.disksplus_session_timeout_minutes,

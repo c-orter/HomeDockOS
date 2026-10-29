@@ -13,11 +13,20 @@ export interface TerminalTarget {
 export interface TerminalTab {
   id: number;
   container: string;
+  host: boolean;
+  attempt: number;
+}
+
+export interface HostTarget {
+  available: boolean;
+  reason: string;
+  requires_2fa: boolean;
 }
 
 export interface TerminalTargets {
   homedock: string | null;
   containers: TerminalTarget[];
+  host?: HostTarget | null;
 }
 
 // HomeDock's own container first, then the rest by name
@@ -36,13 +45,20 @@ export function useTerminalTabs(initialContainer: string = "") {
 
   const activeTab = computed(() => tabs.value.find((tab) => tab.id === activeId.value) ?? null);
 
-  function open(container: string): TerminalTab {
-    const tab = { id: nextId++, container };
+  function open(container: string, host = false): TerminalTab {
+    const tab = { id: nextId++, container, host, attempt: 0 };
 
     tabs.value.push(tab);
     activeId.value = tab.id;
 
     return tab;
+  }
+
+  // A host tab that signed in again: its terminal starts a fresh session
+  function retry(id: number) {
+    const tab = tabs.value.find((candidate) => candidate.id === id);
+
+    if (tab) tab.attempt++;
   }
 
   function select(id: number) {
@@ -61,5 +77,5 @@ export function useTerminalTabs(initialContainer: string = "") {
 
   if (initialContainer) open(initialContainer);
 
-  return { tabs, activeId, activeTab, open, select, close };
+  return { tabs, activeId, activeTab, open, select, close, retry };
 }

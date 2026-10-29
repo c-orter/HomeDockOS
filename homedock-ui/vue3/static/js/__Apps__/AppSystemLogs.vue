@@ -14,6 +14,8 @@
         <LoginAttempts />
       </div>
 
+      <HostShellSessions />
+
       <div class="system-metrics-grid gap-x-4">
         <div>
           <SectionHeader title="CPU Temperature" description="In-depth CPU insights" :icon="thermometerLowIcon" />
@@ -73,6 +75,7 @@ import { useDisksPlusStore } from "../__Stores__/useDisksPlusStore";
 
 import SectionHeader from "../__Components__/SectionHeader.vue";
 import LoginAttempts from "../__Components__/LoginAttempts.vue";
+import HostShellSessions from "../__Components__/HostShellSessions.vue";
 import ChartDetails from "../__Components__/ChartDetails.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";

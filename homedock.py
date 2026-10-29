@@ -57,6 +57,7 @@ from pymodules.hd_ApplyUploadLimits import ContentSizeLimitMiddleware
 
 from pymodules.hd_FunctionsHostSelector import is_docker
 from pymodules.hd_HomedockNetwork import setup_homedock_network
+from pymodules.hd_HostShell import cleanup_host_shell_helpers
 from pymodules.hd_PortDiscovery import start_port_events_thread
 
 os.chdir(current_directory)
@@ -92,6 +93,7 @@ if __name__ == "__main__":
 
     if is_docker:
         setup_homedock_network(compose_upload_folder)
+        cleanup_host_shell_helpers()
     else:
         start_port_events_thread()
 

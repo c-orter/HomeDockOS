@@ -90,6 +90,7 @@ def check_and_generate_config():
             "acme_provider": "",
             "acme_token": "",
             "dynamic_dns_sync": "False",
+            "host_shell_enabled": "False",
             "default_external_drive": default_external_drive,
             "require_protected_paths_password": "True",
             "disksplus_session_timeout_minutes": "10",
@@ -193,6 +194,10 @@ def check_and_update_config():
         if not config.has_option("Config", "dynamic_dns_sync"):
             config.set("Config", "dynamic_dns_sync", "False")
             missing_options.append("dynamic_dns_sync")
+
+        if not config.has_option("Config", "host_shell_enabled"):
+            config.set("Config", "host_shell_enabled", "False")
+            missing_options.append("host_shell_enabled")
 
         if not config.has_option("Config", "require_protected_paths_password"):
             config.set("Config", "require_protected_paths_password", "True")
@@ -346,6 +351,7 @@ def read_config():
         "acme_provider": config.get("Config", "acme_provider", fallback=""),
         "acme_token": config.get("Config", "acme_token", fallback=""),
         "dynamic_dns_sync": config.getboolean("Config", "dynamic_dns_sync", fallback=False),
+        "host_shell_enabled": config.getboolean("Config", "host_shell_enabled", fallback=False),
         "require_protected_paths_password": config.getboolean("Config", "require_protected_paths_password", fallback=True),
         "disksplus_session_timeout_minutes": _clamp_session_timeout(config.get("Config", "disksplus_session_timeout_minutes", fallback="10")),
         "selected_language": _clamp_language(config.get("Config", "selected_language", fallback="en")),

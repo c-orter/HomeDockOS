@@ -59,6 +59,13 @@
       <Switch v-model:checked="disableUsageDataValue" name="FormInputDisableUsageData" id="FormInputDisableUsageData" />
     </SettingsItem>
 
+    <SettingsItem :icon="consoleLineIcon" icon-color="red" :title="$t('Host Shell')" :description="$t('Allow opening a shell on the machine itself')">
+      <template #badge>
+        <SettingsHelpTooltip :text="$t('Adds a Host option to the Terminal. A host shell runs as root on the machine that runs HomeDock OS, outside every container, so anyone who can open one controls the whole machine. Each session asks for your password again (and a 2FA code if you use one), at most 2 can be open at a time, they close after 30 minutes of silence, and every open and close is written to the System Logs. It needs the Docker engine to run as root; rootless Docker and Podman cannot offer it.')" />
+      </template>
+      <Switch v-model:checked="hostShellValue" name="FormInputHostShell" id="FormInputHostShell" />
+    </SettingsItem>
+
     <SettingsItem :icon="deleteClockIcon" icon-color="orange" :title="$t('Auto-Clean on Update')" :description="$t('Delete old images when updating apps')">
       <template #badge>
         <SettingsHelpTooltip :text="$t('Updating an app downloads a new image and leaves the old one on disk. Deleting it frees the space, at the cost of having to download it again if you ever want to go back to that version.')" />
@@ -102,6 +109,7 @@ import { Icon } from "@iconify/vue";
 import counterIcon from "@iconify-icons/mdi/counter";
 import deleteIcon from "@iconify-icons/mdi/delete-alert";
 import deleteClockIcon from "@iconify-icons/mdi/delete-clock";
+import consoleLineIcon from "@iconify-icons/mdi/console-line";
 import hazardLightsIcon from "@iconify-icons/mdi/hazard-lights";
 import lanIcon from "@iconify-icons/mdi/lan";
 import alertIcon from "@iconify-icons/mdi/alert";
@@ -146,6 +154,7 @@ const localHttpAccessValue = ref<boolean>(props.modelValue.local_http_access || 
 const initialLocalHttpAccess = props.modelValue.local_http_access || false;
 const localHttpAccessChanged = computed(() => localHttpAccessValue.value !== initialLocalHttpAccess);
 const dynamicDnsSyncValue = ref<boolean>(props.modelValue.dynamic_dns_sync || false);
+const hostShellValue = ref<boolean>(props.modelValue.host_shell_enabled || false);
 
 const isCloudInstance = computed(() => /(^|\.)homedock\.cloud$/i.test(window.location.hostname));
 
@@ -180,6 +189,7 @@ watch(
     reverse_proxy: reverseProxyValue.value,
     local_http_access: localHttpAccessValue.value,
     dynamic_dns_sync: dynamicDnsSyncValue.value,
+    host_shell_enabled: hostShellValue.value,
   }),
   (newValue) => {
     emit("update:modelValue", newValue);

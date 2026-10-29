@@ -56,3 +56,27 @@ describe("useTerminalTabs", () => {
     expect(activeTab.value).toBeNull();
   });
 });
+
+describe("host tabs", () => {
+  it("marks host tabs and restarts them without touching others", () => {
+    const { tabs, open, retry } = useTerminalTabs();
+    const web = open("web");
+    const host = open("Host", true);
+
+    retry(host.id);
+    retry(host.id);
+
+    expect(tabs.value.find((tab) => tab.id === host.id)).toMatchObject({ host: true, attempt: 2 });
+    expect(tabs.value.find((tab) => tab.id === web.id)).toMatchObject({ host: false, attempt: 0 });
+  });
+
+  it("ignores a retry for a tab that is gone", () => {
+    const { tabs, open, close, retry } = useTerminalTabs();
+    const host = open("Host", true);
+
+    close(host.id);
+    retry(host.id);
+
+    expect(tabs.value).toEqual([]);
+  });
+});

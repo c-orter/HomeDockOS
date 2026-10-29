@@ -10,7 +10,7 @@
         <button :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="px-3 py-1 text-xs rounded transition-colors cursor-pointer">{{ $t("Shell") }}</button>
         <template #overlay>
           <Menu class="min-w-[220px]">
-            <MenuItem key="new" @click="startSession">
+            <MenuItem key="new" @click="restart">
               <div class="flex items-center gap-2">
                 <Icon :icon="consoleIcon" class="w-4 h-4" />
                 <span>{{ $t("New Session") }}</span>
@@ -22,8 +22,8 @@
                 <span>{{ $t("End Session") }}</span>
               </div>
             </MenuItem>
-            <MenuDivider />
-            <MenuItemGroup :title="$t('Shell')">
+            <MenuDivider v-if="!host" />
+            <MenuItemGroup v-if="!host" :title="$t('Shell')">
               <MenuItem key="shell-auto" @click="chooseShell('auto')">
                 <div class="flex items-center gap-2">
                   <Icon :icon="shellChoice === 'auto' ? radioOnIcon : radioOffIcon" class="w-4 h-4" />
@@ -39,8 +39,8 @@
                 </div>
               </MenuItem>
             </MenuItemGroup>
-            <MenuDivider />
-            <MenuItemGroup :title="$t('Run as')">
+            <MenuDivider v-if="!host" />
+            <MenuItemGroup v-if="!host" :title="$t('Run as')">
               <MenuItem key="user-default" @click="chooseUser('default')">
                 <div class="flex items-center gap-2">
                   <Icon :icon="userMode === 'default' ? radioOnIcon : radioOffIcon" class="w-4 h-4" />
@@ -175,7 +175,7 @@
                 <Icon :icon="actionBusy ? spinIcon : errorState.action.icon" :class="{ 'animate-spin': actionBusy }" class="w-3.5 h-3.5" />
                 <span>{{ errorState.action.label }}</span>
               </button>
-              <button :class="[themeClasses.appPropsActionButtonBg, themeClasses.appPropsActionButtonBorder, themeClasses.appPropsActionButtonText, themeClasses.appPropsActionButtonBgHover]" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer" @click="startSession">
+              <button :class="[themeClasses.appPropsActionButtonBg, themeClasses.appPropsActionButtonBorder, themeClasses.appPropsActionButtonText, themeClasses.appPropsActionButtonBgHover]" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer" @click="restart">
                 <Icon :icon="reloadIcon" class="w-3.5 h-3.5" />
                 <span>{{ $t("Try Again") }}</span>
               </button>
@@ -188,7 +188,7 @@
         <div v-if="status === 'ended'" class="absolute bottom-3 inset-x-0 flex justify-center px-3 pointer-events-none">
           <div :class="[themeClasses.terminalEndedBar]" class="pointer-events-auto flex items-center gap-3 pl-3 pr-1.5 py-1.5 rounded-full border text-xs max-w-full">
             <span class="truncate">{{ endedMessage }}</span>
-            <button :class="[themeClasses.appPropsActionButtonPrimaryBg, themeClasses.appPropsActionButtonPrimaryText, themeClasses.appPropsActionButtonPrimaryBgHover]" class="flex items-center gap-1 px-2.5 py-1 rounded-full font-medium flex-shrink-0 transition-colors cursor-pointer" @click="startSession">
+            <button :class="[themeClasses.appPropsActionButtonPrimaryBg, themeClasses.appPropsActionButtonPrimaryText, themeClasses.appPropsActionButtonPrimaryBgHover]" class="flex items-center gap-1 px-2.5 py-1 rounded-full font-medium flex-shrink-0 transition-colors cursor-pointer" @click="restart">
               <Icon :icon="reloadIcon" class="w-3.5 h-3.5" />
               <span>{{ $t("Reconnect") }}</span>
             </button>
@@ -281,6 +281,9 @@ import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
 interface Props {
   appName?: string;
   dependencyOf?: string;
+  host?: boolean;
+  attempt?: number;
+  takeCredentials?: () => { password: string; code: string } | null;
   data?: {
     appName?: string;
   };
@@ -309,6 +312,7 @@ interface ExtraKey {
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{ reauth: [] }>();
 const { t } = useI18n();
 const { themeClasses } = useTheme();
 const { isMobile } = useResponsive();
@@ -578,7 +582,10 @@ const statusInfo = computed(() => {
   return "";
 });
 
+const endedIdle = ref(false);
+
 const endedMessage = computed(() => {
+  if (endedIdle.value) return t("Closed after 30 minutes without input.");
   if (endReason.value === "lost") return t("The connection to the container was lost.");
   if (endReason.value === "user") return t("Session ended");
   if (exitCode.value === null || exitCode.value === 0) return t("Process completed");
@@ -625,6 +632,18 @@ const errorState = computed(() => {
         text: t("Close another terminal window and try again."),
         action: null,
       };
+    case "auth_required":
+      return { icon: alertIcon, title: t("Sign in again to continue"), text: t("A host shell asks for your password every time it opens."), action: null };
+    case "auth_failed":
+      return { icon: alertIcon, title: t("Password or code not accepted"), text: t("Check them and try again."), action: null };
+    case "too_many_attempts":
+      return { icon: alertIcon, title: t("Too many attempts"), text: t("Wait a few minutes before trying again."), action: null };
+    case "host_disabled":
+      return { icon: alertIcon, title: t("Host shell is turned off"), text: t("An administrator can turn it on in Settings."), action: null };
+    case "host_limit":
+      return { icon: alertIcon, title: t("Too many host shells open"), text: t("Close one of the open host shells and try again."), action: null };
+    case "host_unavailable":
+      return { icon: shellOffIcon, title: t("Host shell is not available"), text: t("HomeDock OS cannot reach the host from here. The container engine has to run as root for that."), action: null };
     default:
       return {
         icon: alertIcon,
@@ -967,8 +986,21 @@ function websocketUrl(path: string, ticket: string): string {
   return `${protocol}//${window.location.host}${path}?ticket=${encodeURIComponent(ticket)}`;
 }
 
+// A host session asks for the password again every time, so reconnecting goes back to the prompt
+function restart() {
+  if (props.host) emit("reauth");
+  else startSession();
+}
+
 async function startSession() {
   if (!term || disposed || !appName.value) return;
+
+  const credentials = props.host ? (props.takeCredentials?.() ?? null) : null;
+
+  if (props.host && !credentials) {
+    failSession("auth_required");
+    return;
+  }
 
   const current = ++generation;
 
@@ -977,6 +1009,7 @@ async function startSession() {
   errorCode.value = "";
   exitCode.value = null;
   endReason.value = "exit";
+  endedIdle.value = false;
   findNoMatch.value = false;
 
   scheduleFit();
@@ -985,7 +1018,8 @@ async function startSession() {
   let path = "";
 
   try {
-    const response = await axios.post(SESSION_ENDPOINT, { containerName: appName.value, shell: shellChoice.value, user: userMode.value, cols: term.cols, rows: term.rows }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
+    const body = credentials ? { host: true, password: credentials.password, code: credentials.code, cols: term.cols, rows: term.rows } : { containerName: appName.value, shell: shellChoice.value, user: userMode.value, cols: term.cols, rows: term.rows };
+    const response = await axios.post(SESSION_ENDPOINT, body, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
 
     if (current !== generation) return;
 
@@ -1018,7 +1052,7 @@ async function startSession() {
       return;
     }
 
-    let control: { type?: string; code?: unknown; shell?: string; username?: string; container?: string; id?: string } = {};
+    let control: { type?: string; code?: unknown; reason?: string; shell?: string; username?: string; container?: string; id?: string } = {};
 
     try {
       control = JSON.parse(event.data);
@@ -1040,6 +1074,7 @@ async function startSession() {
     } else if (control.type === "exit") {
       exitReported = true;
       exitCode.value = typeof control.code === "number" ? control.code : null;
+      endedIdle.value = control.reason === "idle";
     } else if (control.type === "error") {
       reportedError = typeof control.code === "string" ? control.code : "exec_failed";
     }
@@ -1121,6 +1156,13 @@ watch(terminalTheme, (theme) => {
 });
 
 watch(keyBarVisible, () => nextTick(scheduleFit));
+
+watch(
+  () => props.attempt,
+  (current, previous) => {
+    if (props.host && current !== previous) startSession();
+  },
+);
 
 watch(
   () => appEntry.value?.status,

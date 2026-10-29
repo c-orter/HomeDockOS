@@ -54,6 +54,7 @@ def desktop():
     reverse_proxy = config["reverse_proxy"]
     local_http_access = config["local_http_access"]
     dynamic_dns_sync = config["dynamic_dns_sync"]
+    host_shell_enabled = config["host_shell_enabled"]
     default_external_drive = config["default_external_drive"]
     require_protected_paths_password = config["require_protected_paths_password"]
     disksplus_session_timeout_minutes = config["disksplus_session_timeout_minutes"]
@@ -85,6 +86,7 @@ def desktop():
         reverse_proxy=reverse_proxy,
         local_http_access=local_http_access,
         dynamic_dns_sync=dynamic_dns_sync,
+        host_shell_enabled=host_shell_enabled,
         default_external_drive=default_external_drive,
         require_protected_paths_password=require_protected_paths_password,
         disksplus_session_timeout_minutes=disksplus_session_timeout_minutes,

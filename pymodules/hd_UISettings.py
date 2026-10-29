@@ -123,6 +123,8 @@ def api_save_settings():
         # HDOS00109
         dynamic_dns_sync = "True" if bool(system_data.get("dynamic_dns_sync", False)) else "False"
 
+        host_shell_enabled = "True" if bool(system_data.get("host_shell_enabled", False)) else "False"
+
         default_external_drive = storage_data.get("default_external_drive", "disabled")
         if not is_valid_external_drive(default_external_drive):
             default_external_drive = "disabled"
@@ -166,6 +168,7 @@ def api_save_settings():
             "acme_provider": acme_provider,
             "acme_token": acme_token,
             "dynamic_dns_sync": dynamic_dns_sync,
+            "host_shell_enabled": host_shell_enabled,
             "default_external_drive": default_external_drive,
             "require_protected_paths_password": require_protected_paths_password,
             "disksplus_session_timeout_minutes": disksplus_session_timeout_minutes,

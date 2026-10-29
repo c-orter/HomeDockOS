@@ -108,9 +108,10 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/homedock-ui/vue3/static/<path:path>", "send_src_static", send_src_static)
     homedock_www.add_url_rule("/homedock-ui/vue3/dist/<path:path>", "send_src_dist", send_src_dist)
 
-    from pymodules.hd_LogServeFiles import serve_temperature, serve_ram_usage, serve_cpu_usage, serve_disk_usage, serve_external_disk_usage, serve_network_usage, serve_logins
+    from pymodules.hd_LogServeFiles import serve_temperature, serve_ram_usage, serve_cpu_usage, serve_disk_usage, serve_external_disk_usage, serve_network_usage, serve_logins, serve_host_shell
 
     homedock_www.add_url_rule("/api/system-logs/serve_logins", "serve_logins", CSRF_Protect(serve_logins), methods=["GET"])
+    homedock_www.add_url_rule("/api/system-logs/serve_host_shell", "serve_host_shell", CSRF_Protect(serve_host_shell), methods=["GET"])
     homedock_www.add_url_rule("/api/system-logs/serve_temperature", "serve_temperature", CSRF_Protect(serve_temperature), methods=["GET"])
     homedock_www.add_url_rule("/api/system-logs/serve_cpu_usage", "serve_cpu_usage", CSRF_Protect(serve_cpu_usage), methods=["GET"])
     homedock_www.add_url_rule("/api/system-logs/serve_ram_usage", "serve_ram_usage", CSRF_Protect(serve_ram_usage), methods=["GET"])
