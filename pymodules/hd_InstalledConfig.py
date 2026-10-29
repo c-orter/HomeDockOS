@@ -25,6 +25,14 @@ CONTAINER_NAME = re.compile(r"^[a-zA-Z0-9\-_ ]+\Z")
 MASK = "••••••"
 
 
+IDENTITY_KEYS = ("container_name", "HDGroup", "HDRole")
+IDENTITY_READ = {
+    "container_name": lambda service: service.get("container_name"),
+    "HDGroup": lambda service: (service.get("labels") or {}).get("HDGroup"),
+    "HDRole": lambda service: (service.get("labels") or {}).get("HDRole"),
+}
+
+
 class InstalledConfigError(Exception):
     def __init__(self, message, status=400, **extra):
         super().__init__(message)
@@ -132,7 +140,25 @@ def describe(service: dict, raw_text: str = "") -> dict:
     }
 
 
-def read_installed_config(container_name) -> dict:
+def choose_service(yml_data, wanted=None):
+    """The requested service, or the main one when none is named."""
+
+    if not wanted:
+        return pick_main(yml_data)
+
+    service = ((yml_data or {}).get("services") or {}).get(wanted)
+
+    if not isinstance(service, dict):
+        raise InstalledConfigError(f"Service '{wanted}' not found", 404)
+
+    return wanted, service
+
+
+def service_list(services) -> list:
+    return [{"name": name, "role": (service.get("labels") or {}).get("HDRole"), "container_name": service.get("container_name")} for name, service in services.items() if isinstance(service, dict)]
+
+
+def read_installed_config(container_name, service_name=None) -> dict:
     path = installed_compose_path(container_name)
 
     with open(path, "r") as file:
@@ -143,7 +169,7 @@ def read_installed_config(container_name) -> dict:
     except yaml.YAMLError:
         raise InstalledConfigError("Invalid YML", 500)
 
-    name, service = pick_main(yml_data)
+    name, service = choose_service(yml_data, service_name)
 
     if not name:
         raise InstalledConfigError("No service data found", 404)
@@ -151,7 +177,7 @@ def read_installed_config(container_name) -> dict:
     services = yml_data["services"]
     labels = service.get("labels") or {}
 
-    return {**describe(service, text), "service": name, "ymlContent": yaml.dump(yml_data, sort_keys=False), "warnings": compose_warnings(text), "dependencies": [n for n, s in services.items() if isinstance(s, dict) and (s.get("labels") or {}).get("HDRole") == "dependency"], "hd_group": labels.get("HDGroup"), "hd_role": labels.get("HDRole")}
+    return {**describe(service, text), "service": name, "services": service_list(services), "ymlContent": yaml.dump(yml_data, sort_keys=False), "warnings": compose_warnings(text), "dependencies": [n for n, s in services.items() if isinstance(s, dict) and (s.get("labels") or {}).get("HDRole") == "dependency"], "hd_group": labels.get("HDGroup"), "hd_role": labels.get("HDRole")}
 
 
 # --- merging ---
@@ -262,6 +288,11 @@ def apply_form(yml_data: dict, service_name: str, form: dict, container_name: st
     service = yml_data["services"][service_name]
     current = describe(service, raw_text)
     changes = []
+    container_name = service.get("container_name") or container_name
+
+    for key in IDENTITY_KEYS:
+        if key in form and form[key] != IDENTITY_READ[key](service):
+            raise InstalledConfigError(f"'{key}' cannot be changed here. It ties the app to its container and group.", 400, section=key)
 
     for section in current["unrepresentable"]:
         if section in form and form[section] != current[section]:
@@ -314,7 +345,7 @@ def apply_form(yml_data: dict, service_name: str, form: dict, container_name: st
     return changes
 
 
-def update_installed_config(container_name, form, apply: bool) -> dict:
+def update_installed_config(container_name, form, apply: bool, service_name=None) -> dict:
     path = installed_compose_path(container_name)
 
     with open(path, "r") as file:
@@ -325,7 +356,7 @@ def update_installed_config(container_name, form, apply: bool) -> dict:
     except yaml.YAMLError:
         raise InstalledConfigError("Invalid YML", 500)
 
-    name, _ = pick_main(yml_data)
+    name, _ = choose_service(yml_data, service_name)
 
     if not name:
         raise InstalledConfigError("No service data found", 404)
@@ -349,7 +380,7 @@ def update_installed_config(container_name, form, apply: bool) -> dict:
 @login_required
 def get_installed_config():
     try:
-        return jsonify({"success": True, "data": read_installed_config(request.args.get("containerName"))})
+        return jsonify({"success": True, "data": read_installed_config(request.args.get("containerName"), request.args.get("service"))})
     except InstalledConfigError as e:
         return jsonify(e.payload()), e.status
 
@@ -359,7 +390,7 @@ def update_installed_config_view():
     body = request.get_json(silent=True) or {}
 
     try:
-        result = update_installed_config(body.get("containerName"), body.get("form"), bool(body.get("apply")))
+        result = update_installed_config(body.get("containerName"), body.get("form"), bool(body.get("apply")), body.get("service"))
     except InstalledConfigError as e:
         return jsonify(e.payload()), e.status
 

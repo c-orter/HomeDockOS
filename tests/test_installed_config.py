@@ -256,3 +256,98 @@ def test_http_views(env):
 
     bad = client.post("/set", json={"containerName": "demo", "form": {"environment": {"1X": "v"}}})
     assert bad.status_code == 400 and "valid environment" in bad.get_json()["message"]
+
+
+GROUP = """services:
+  db:
+    image: pg
+    container_name: demo-db
+    labels: {HDGroup: g, HDRole: dependency}
+    restart: always
+    environment:
+      POSTGRES_USER: app
+  app:
+    image: a
+    container_name: demo
+    labels: {HDGroup: g, HDRole: main}
+    ports: ["18080:80"]
+"""
+
+
+def test_service_dropdown_lists_every_service_and_defaults_to_main(env):
+    env.write_text(GROUP)
+
+    data = ic.read_installed_config("demo")
+    assert data["service"] == "app"
+    assert data["services"] == [{"name": "db", "role": "dependency", "container_name": "demo-db"}, {"name": "app", "role": "main", "container_name": "demo"}]
+
+    dep = ic.read_installed_config("demo", "db")
+    assert dep["service"] == "db" and dep["environment"] == {"POSTGRES_USER": "app"} and dep["restartPolicy"] == "always"
+
+
+def test_edits_apply_to_the_chosen_service_only(env):
+    env.write_text(GROUP)
+
+    ic.update_installed_config("demo", {"environment": {"POSTGRES_USER": "owner"}}, apply=True, service_name="db")
+
+    data = yaml.safe_load(env.read_text())["services"]
+    assert data["db"]["environment"] == {"POSTGRES_USER": "owner"}
+    assert data["app"] == yaml.safe_load(GROUP)["services"]["app"]
+
+
+def test_unknown_service_is_404(env):
+    with pytest.raises(ic.InstalledConfigError) as e:
+        ic.read_installed_config("demo", "nope")
+    assert e.value.status == 404
+
+    with pytest.raises(ic.InstalledConfigError):
+        ic.update_installed_config("demo", {}, apply=True, service_name="nope")
+
+
+def test_port_validation_excludes_the_edited_services_own_container(env, monkeypatch):
+    env.write_text(GROUP)
+    seen = {}
+    monkeypatch.setattr(ic, "validate_ports", lambda yml, allow_container_name=None: seen.setdefault("allow", allow_container_name) and (True, None, None))
+
+    ic.update_installed_config("demo", {"ports": ["18080:80", "19000:9000"]}, apply=False, service_name="app")
+
+    assert seen["allow"] == "demo"
+
+
+@pytest.mark.parametrize("key,value", [("container_name", "renamed"), ("HDGroup", "other"), ("HDRole", "dependency")])
+def test_identity_keys_cannot_change(env, key, value):
+    env.write_text(GROUP)
+    original = env.read_text()
+
+    with pytest.raises(ic.InstalledConfigError) as e:
+        ic.update_installed_config("demo", {key: value}, apply=True)
+
+    assert "cannot be changed" in e.value.message and env.read_text() == original
+
+
+def test_identity_keys_resubmitted_unchanged_are_fine(env):
+    env.write_text(GROUP)
+
+    result = ic.update_installed_config("demo", {"container_name": "demo", "HDGroup": "g", "HDRole": "main"}, apply=True)
+
+    assert result["changes"] == []
+
+
+def test_long_form_ports_are_not_rewritten_by_other_edits(env):
+    long_form = "services:\n  web:\n    image: n\n    ports:\n      - target: 80\n        published: 18080\n    restart: no\n"
+    env.write_text(long_form)
+
+    ic.update_installed_config("demo", {"ports": [], "restartPolicy": "always"}, apply=True)
+
+    assert yaml.safe_load(env.read_text())["services"]["web"]["ports"] == [{"target": 80, "published": 18080}]
+
+
+def test_unrepresentable_detection(env):
+    cases = {
+        "ports": "    ports:\n      - target: 80\n",
+        "volumes": "    volumes:\n      - type: bind\n        source: /a\n        target: /b\n",
+        "environment": "    environment:\n      FLAG:\n",
+    }
+    for section, body in cases.items():
+        env.write_text(f"services:\n  web:\n    image: n\n{body}")
+        assert ic.read_installed_config("demo")["unrepresentable"] == [section]

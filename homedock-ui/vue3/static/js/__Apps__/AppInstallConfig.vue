@@ -229,6 +229,15 @@
                   <span>{{ dependenciesText }}</span>
                 </div>
               </div>
+              <!-- Service picker -->
+              <div v-if="editing && editableServices.length > 1" :class="[themeClasses.installConfigSectionCard]" class="p-4">
+                <h3 :class="[themeClasses.installConfigSectionTitle]" class="text-sm font-semibold mb-3">{{ $t("Service") }}</h3>
+                <Select :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :popup-class-name="`${themeClasses.scopeSelector}`" :value="selectedService" class="w-full" @change="changeService">
+                  <SelectOption v-for="entry in editableServices" :key="entry.name" :class="[themeClasses.scopeSelector]" :value="entry.name">{{ entry.name }}{{ entry.role ? ` (${$t(entry.role === "main" ? "main" : "dependency")})` : "" }}</SelectOption>
+                </Select>
+                <p :class="[themeClasses.installConfigLabel]" class="mt-2 mb-0 text-[10px]">{{ $t("Unsaved changes to the current service are discarded when you switch.") }}</p>
+              </div>
+
               <!-- Compose warnings -->
               <div v-if="composeWarnings.length" class="flex flex-col gap-1.5" role="status">
                 <div v-for="code in composeWarnings" :key="code" :class="[themeClasses.warningBg, themeClasses.warningText]" class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium">
@@ -682,6 +691,8 @@ const props = defineProps<Props>();
 const editing = computed(() => props.mode === "edit");
 const locked = computed(() => Boolean(app.value?.is_installed) && !editing.value);
 const unrepresentable = ref<string[]>([]);
+const editableServices = ref<{ name: string; role: string | null }[]>([]);
+const selectedService = ref<string | undefined>(undefined);
 const allSections = 7;
 const fieldLocked = (section: string) => locked.value || unrepresentable.value.includes(section);
 
@@ -997,10 +1008,13 @@ async function fetchAppInfo() {
 async function fetchInstalledConfig() {
   try {
     const response = await axios.get("/api/get-installed-config", {
-      params: { containerName: app.value!.name },
+      params: { containerName: app.value!.name, service: selectedService.value },
       headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
     });
     const data = response.data.data;
+
+    editableServices.value = data.services || [];
+    selectedService.value = data.service;
 
     portMappings.value = (data.ports as string[]).map(parseMapping);
     volumeMappings.value = (data.volumes as string[]).map(parseVolume);
@@ -1017,6 +1031,11 @@ async function fetchInstalledConfig() {
     hasLoadedConfig.value = false;
     notifyWarning(t("Could not load the installed configuration."), themeClasses.value.scopeSelector);
   }
+}
+
+async function changeService(value: unknown) {
+  selectedService.value = String(value);
+  await fetchInstalledConfig();
 }
 
 const isReviewing = ref(false);
@@ -1060,7 +1079,7 @@ async function reviewChanges() {
   isReviewing.value = true;
 
   try {
-    const response = await axios.post("/api/update-installed-config", { containerName: app.value.name, form: editedForm(), apply: false, homedock_csrf_token: csrfToken.value });
+    const response = await axios.post("/api/update-installed-config", { containerName: app.value.name, service: selectedService.value, form: editedForm(), apply: false, homedock_csrf_token: csrfToken.value });
     pendingChanges.value = response.data.changes;
 
     if (pendingChanges.value.length === 0) notifySuccess(t("No changes to save."), undefined, themeClasses.value.scopeSelector);
@@ -1077,7 +1096,7 @@ async function applyChanges(recreate: boolean) {
   if (!app.value?.name) return;
 
   try {
-    const saved = await axios.post("/api/update-installed-config", { containerName: app.value.name, form: editedForm(), apply: true, homedock_csrf_token: csrfToken.value });
+    const saved = await axios.post("/api/update-installed-config", { containerName: app.value.name, service: selectedService.value, form: editedForm(), apply: true, homedock_csrf_token: csrfToken.value });
 
     if (!recreate) {
       notifySuccess(t("Configuration saved successfully!"), undefined, themeClasses.value.scopeSelector);
