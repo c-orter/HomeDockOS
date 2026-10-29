@@ -26,11 +26,13 @@ fi
 docker compose version >/dev/null 2>&1 || apt-get install -y -qq docker-compose-plugin >/dev/null
 systemctl enable --now docker >/dev/null 2>&1 || true
 
-for port in 80 443; do
-  if ss -ltn "sport = :$port" 2>/dev/null | grep -q LISTEN; then
-    die "port $port is already in use; stop whatever listens on it and run this again"
-  fi
-done
+if ! docker inspect homedock-os >/dev/null 2>&1; then
+  for port in 80 443; do
+    if ss -ltn "sport = :$port" 2>/dev/null | grep -q LISTEN; then
+      die "port $port is already in use; stop whatever listens on it and run this again"
+    fi
+  done
+fi
 
 say "Downloading HomeDock OS $REF"
 mkdir -p "$DIR"
