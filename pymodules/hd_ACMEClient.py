@@ -164,9 +164,7 @@ class ACMEClient:
         return self.kid
 
     def dns_txt_value(self, token):
-        key_authorization = f"{token}.{self.thumbprint}"
-
-        return b64(hashlib.sha256(key_authorization.encode()).digest())
+        return b64(hashlib.sha256(self.key_authorization(token).encode()).digest())
 
     def new_order(self, domains):
         response = self._post(self.directory["newOrder"], {"identifiers": [{"type": "dns", "value": d} for d in domains]})
@@ -176,8 +174,14 @@ class ACMEClient:
 
         return order
 
-    def dns_challenges(self, order):
-        """Returns [(authorization_url, challenge_url, txt_value, identifier)]."""
+    def key_authorization(self, token):
+        return f"{token}.{self.thumbprint}"
+
+    def challenges(self, order, methods):
+        """Returns [{authorization_url, challenge_url, type, value, identifier, name, token}] for authorizations still pending.
+
+        methods maps a name ("example.com", "*.example.com") to "dns-01" or "http-01"; wildcards are always dns-01.
+        """
 
         pending = []
 
@@ -187,12 +191,19 @@ class ACMEClient:
             if authorization["status"] == "valid":
                 continue
 
-            challenge = next((c for c in authorization["challenges"] if c["type"] == "dns-01"), None)
+            identifier = authorization["identifier"]["value"]
+            wildcard = bool(authorization.get("wildcard"))
+            name = f"*.{identifier}" if wildcard else identifier
+            kind = "dns-01" if wildcard else methods.get(name, "dns-01")
+
+            challenge = next((c for c in authorization["challenges"] if c["type"] == kind), None)
 
             if challenge is None:
-                raise ACMEError(f"No dns-01 challenge offered for {authorization['identifier']['value']}")
+                raise ACMEError(f"No {kind} challenge offered for {name}")
 
-            pending.append((authorization_url, challenge["url"], self.dns_txt_value(challenge["token"]), authorization["identifier"]["value"]))
+            value = self.dns_txt_value(challenge["token"]) if kind == "dns-01" else self.key_authorization(challenge["token"])
+
+            pending.append({"authorization_url": authorization_url, "challenge_url": challenge["url"], "type": kind, "value": value, "identifier": identifier, "name": name, "token": challenge["token"]})
 
         return pending
 

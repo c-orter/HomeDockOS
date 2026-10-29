@@ -13,6 +13,7 @@ import asyncio
 
 from urllib.parse import quote, unquote
 
+from pymodules.hd_AcmeChallenges import lookup as lookup_challenge
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_TrustedProxy import is_trusted_peer
 from pymodules.hd_AppSubdomains import resolve_app_for_host, is_app_namespace, build_forwarding_headers, get_desktop_hosts
@@ -836,6 +837,15 @@ def wrap_asgi_with_subdomain_router(downstream):
         if scope["type"] not in ("http", "websocket") or not _load_aiohttp():
             await downstream(scope, receive, send)
             return
+
+        # an ACME validator asks the name itself, so this must answer before any app route claims the host
+        if scope["type"] == "http":
+            answer = lookup_challenge(scope.get("path", ""))
+
+            if answer is not None:
+                await send({"type": "http.response.start", "status": 200, "headers": [(b"content-type", b"text/plain")]})
+                await send({"type": "http.response.body", "body": answer.encode()})
+                return
 
         host_header, scheme = _public_host_and_scheme(scope)
         app = resolve_app_for_host(host_header)

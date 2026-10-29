@@ -8,18 +8,28 @@ https://www.banshee.pro
 import ipaddress
 import socket
 
-from flask import Flask, request, redirect, abort
+from flask import Flask, request, redirect, abort, Response
 from hypercorn.config import Config
 from hypercorn.middleware import AsyncioWSGIMiddleware
 
 from pymodules.hd_FunctionsNetwork import local_ip, internet_ip
 from pymodules.hd_FunctionsHostSelector import docker_host, is_docker
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_cert_domains_and_type
+from pymodules.hd_AcmeChallenges import PREFIX, lookup
 from pymodules.hd_AppSubdomains import get_desktop_hosts, BASE_HOSTNAME, LOOPBACK_HOSTNAME
 
 
 def start_http_redirect_server():
     redirect_app = Flask("redirect_http_to_https")
+
+    @redirect_app.route(PREFIX + "<token>")
+    def acme_challenge(token):
+        answer = lookup(PREFIX + token)
+
+        if answer is None:
+            abort(404)
+
+        return Response(answer, mimetype="text/plain")
 
     @redirect_app.route("/", defaults={"path": ""})
     @redirect_app.route("/<path:path>")

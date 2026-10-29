@@ -52,7 +52,15 @@ def test_name_without_provider_is_excluded_and_others_still_go():
     result = plan.plan_names("home.example.com", names=["app.nowhere.net", "x.home.example.com"], entries=entries, resolver=resolver_for({}), addresses=ME)
 
     assert result["covered"] == ["home.example.com", "*.home.example.com"]
-    assert result["excluded"] == [{"name": "app.nowhere.net", "reason": "no DNS provider covers its zone"}]
+    assert result["excluded"] == [{"name": "app.nowhere.net", "reason": "its DNS name does not resolve"}]
+
+
+def test_name_without_provider_falls_back_to_http_01_but_wildcards_never_do():
+    result = plan.plan_names("home.example.com", names=["app.nowhere.net"], entries=[entry("home.example.com")], resolver=resolver_for({"app.nowhere.net": ["203.0.113.5"]}), addresses=ME)
+
+    assert result["challenges"]["app.nowhere.net"] == "http-01"
+    assert result["challenges"]["*.home.example.com"] == "dns-01"
+    assert not any(name.startswith("*.") and kind == "http-01" for name, kind in result["challenges"].items())
 
 
 def test_name_not_pointing_here_is_excluded_with_reason():
@@ -146,8 +154,8 @@ class FakeClient:
         self.domains = domains
         return {"authorizations": domains}
 
-    def dns_challenges(self, order):
-        return [(f"auth/{d}", f"chal/{d}", f"txt-{d}", d.lstrip("*.")) for d in order["authorizations"]]
+    def challenges(self, order, methods):
+        return [{"authorization_url": f"auth/{d}", "challenge_url": f"chal/{d}", "type": "dns-01", "value": f"txt-{d}", "identifier": d.lstrip("*."), "name": d, "token": "t"} for d in order["authorizations"]]
 
     def answer_challenge(self, url): self.answered.append(url)
     def wait_for_authorization(self, url): return True
@@ -166,7 +174,7 @@ def test_each_authorization_reaches_its_own_provider_and_probe(monkeypatch, tmp_
         }
 
     entries = [entry("home.example.com", "duckdns", "t-home"), entry("other.org", "cloudflare", "t-cf")]
-    result = {"covered": ["home.example.com", "other.org"], "excluded": [{"name": "x.net", "reason": "no DNS provider covers its zone"}], "challenges": {}}
+    result = {"covered": ["home.example.com", "other.org"], "excluded": [{"name": "x.net", "reason": "its DNS name does not resolve"}], "challenges": {}}
 
     monkeypatch.setattr(manager, "load_credentials", lambda: entries)
     monkeypatch.setattr(manager, "get_provider", provider)

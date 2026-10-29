@@ -60,7 +60,11 @@ def _run_pebble(tmp_path_factory, pebble_args=()):
                     pytest.fail("Pebble did not become ready in 30s")
                 time.sleep(0.5)
 
-        yield {"directory": directory, "management": management, "ca": ca_path}
+        hosts_path = str(tmp_path_factory.mktemp("pebble-hosts") / "hosts")
+        subprocess.run([runtime, "cp", f"{name}:/etc/hosts", hosts_path], check=True, capture_output=True)
+        host_ip = next((line.split()[0] for line in open(hosts_path) if "hostbox" in line.split()[1:]), None)
+
+        yield {"directory": directory, "management": management, "ca": ca_path, "host_ip": host_ip}
     finally:
         subprocess.run([runtime, "rm", "-f", name], capture_output=True)
 
@@ -72,13 +76,14 @@ def pebble(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def pebble_dns(tmp_path_factory):
-    """Pebble that resolves through a TXT-only DNS server the test controls; yields the usual keys plus `records`."""
+    """Pebble that resolves through a TXT-only DNS server the test controls; yields the usual keys plus `records` (TXT) and `addresses` (A), both name -> list."""
 
     import socket
     import struct
     import threading
 
     records = {}
+    addrs = {}
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("0.0.0.0", 0))
     sock.settimeout(0.5)
@@ -97,14 +102,18 @@ def pebble_dns(tmp_path_factory):
             offset += 1 + data[offset]
         question = data[12 : offset + 5]
         qtype = struct.unpack("!H", data[offset + 1 : offset + 3])[0]
-        texts = records.get(".".join(labels).lower(), []) if qtype == 16 else []
+        name = ".".join(labels).lower()
+        texts = records.get(name, []) if qtype == 16 else []
+        addresses = addrs.get(name, []) if qtype == 1 else []
 
         body = b""
         for text in texts:
             raw = text.encode()
             body += b"\xc0\x0c" + struct.pack("!HHIH", 16, 1, 1, len(raw) + 1) + bytes([len(raw)]) + raw
+        for address in addresses:
+            body += b"\xc0\x0c" + struct.pack("!HHIH", 1, 1, 1, 4) + socket.inet_aton(address)
 
-        return data[:2] + struct.pack("!HHHHH", 0x8400, 1, len(texts), 0, 0) + question + body
+        return data[:2] + struct.pack("!HHHHH", 0x8400, 1, len(texts) + len(addresses), 0, 0) + question + body
 
     def serve_udp():
         while not stop.is_set():
@@ -140,7 +149,7 @@ def pebble_dns(tmp_path_factory):
 
     try:
         for info in _run_pebble(tmp_path_factory, ("-dnsserver", f"hostbox:{port}")):
-            yield {**info, "records": records}
+            yield {**info, "records": records, "addresses": addrs}
     finally:
         stop.set()
         sock.close()

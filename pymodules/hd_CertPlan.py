@@ -82,7 +82,7 @@ def _under_wildcard(name, base):
 def plan_names(base, names=None, entries=None, resolver=resolve_a, addresses=None):
     """Which names go on the certificate: the base, its wildcard, and each other stored name that passes the pre-check.
 
-    Returns {"covered": [...], "excluded": [{"name", "reason"}], "challenges": {name: "dns-01"}}.
+    Returns {"covered": [...], "excluded": [{"name", "reason"}], "challenges": {name: "dns-01" | "http-01"}}; wildcards are always dns-01.
     """
 
     base = (base or "").strip().lower().rstrip(".")
@@ -117,10 +117,6 @@ def plan_names(base, names=None, entries=None, resolver=resolve_a, addresses=Non
             excluded.append({"name": name, "reason": "local names cannot get a public certificate"})
             continue
 
-        if match_credential(name, entries) is None:
-            excluded.append({"name": name, "reason": "no DNS provider covers its zone"})
-            continue
-
         ok, reason = resolves_to_server(name, resolver, addresses)
 
         if not ok:
@@ -132,6 +128,8 @@ def plan_names(base, names=None, entries=None, resolver=resolve_a, addresses=Non
             continue
 
         covered.append(name)
-        challenges[name] = "dns-01"
+
+        # no provider covers the zone, so port 80 has to answer for it
+        challenges[name] = "dns-01" if match_credential(name, entries) else "http-01"
 
     return {"covered": covered, "excluded": excluded, "challenges": challenges}

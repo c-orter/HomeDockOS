@@ -22,6 +22,7 @@ from pymodules.hd_ACMEClient import ACMEClient, DIRECTORY_PRODUCTION, DIRECTORY_
 from pymodules.hd_ACMEProviders import get_provider, ProviderError
 from pymodules.hd_AcmeCredentials import match_credential, load_credentials
 from pymodules.hd_CertPlan import plan_names
+from pymodules.hd_AcmeChallenges import publish as publish_challenge, withdraw as withdraw_challenge
 from pymodules.hd_DNSProbe import wait_for_txt
 
 # HDOS00065
@@ -218,12 +219,12 @@ def _validate_dns(client, pending, entries, log):
     work = []
 
     for item in pending:
-        credential = match_credential(item[3], entries)
+        credential = match_credential(item["identifier"], entries)
 
         if credential is None:
-            raise ACMEError(f"No DNS provider covers {item[3]}")
+            raise ACMEError(f"No DNS provider covers {item['identifier']}")
 
-        work.append((item, credential, get_provider(credential["provider"])))
+        work.append(((item["authorization_url"], item["challenge_url"], item["value"], item["identifier"]), credential, get_provider(credential["provider"])))
 
     live = []
 
@@ -273,6 +274,26 @@ def _validate_dns(client, pending, entries, log):
         _clear_quietly(live)
 
 
+def _validate_http(client, pending, log):
+    """Answers http-01 challenges from port 80; returns [(name, reason)] for the ones the server refused, so the rest can still issue."""
+
+    failed = []
+
+    for item in pending:
+        publish_challenge(item["token"], item["value"])
+
+        try:
+            client.answer_challenge(item["challenge_url"])
+            client.wait_for_authorization(item["authorization_url"])
+            log(f" * ACME: {item['name']} validated over http-01")
+        except ACMEError as error:
+            failed.append((item["name"], f"http-01 failed: {error}"))
+        finally:
+            withdraw_challenge(item["token"])
+
+    return failed
+
+
 def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=False, plan=None, directory_url=None, verify=True, account_key=None):
     """Issues one SAN certificate for the base domain, its wildcard and every stored name that passes the pre-check."""
 
@@ -317,12 +338,36 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
         client.register()
 
         _set_state(step="order")
-        order = client.new_order(domains)
 
-        pending = client.dns_challenges(order)
+        excluded = list(plan["excluded"])
 
-        if pending:
-            _validate_dns(client, pending, entries, log)
+        # an order with a refused http-01 name is dead, so the refused names are dropped and a fresh order asks again
+        for attempt in range(2):
+            order = client.new_order(domains)
+            pending = client.challenges(order, plan["challenges"])
+
+            failed = _validate_http(client, [item for item in pending if item["type"] == "http-01"], log)
+
+            if not failed:
+                break
+
+            if any(name == domain for name, _ in failed):
+                raise ACMEError(f"The base domain {domain} could not be validated: {failed[0][1]}")
+
+            for name, reason in failed:
+                log(f" * ACME: not covered: {name} ({reason})")
+                excluded.append({"name": name, "reason": reason})
+
+            dropped = {name for name, _ in failed}
+            domains = [name for name in domains if name not in dropped]
+            _set_state(plan={"covered": domains, "excluded": excluded})
+        else:
+            raise ACMEError("Could not get a valid order after dropping the names that failed")
+
+        dns_pending = [item for item in pending if item["type"] == "dns-01"]
+
+        if dns_pending:
+            _validate_dns(client, dns_pending, entries, log)
 
         _set_state(step="finalizing")
 
@@ -344,7 +389,7 @@ def issue_certificate(domain, staging=False, cert_dir=None, log=print, claimed=F
 
         _set_state(running=False, step="done", finished_at=datetime.now(timezone.utc).isoformat())
 
-        return {"domains": domains, "excluded": plan["excluded"], "directory": cert_dir, "files": written}
+        return {"domains": domains, "excluded": excluded, "directory": cert_dir, "files": written}
 
     except Exception as error:
         detail = str(error) if isinstance(error, (ACMEError, ProviderError)) else f"{type(error).__name__}: {error}"
