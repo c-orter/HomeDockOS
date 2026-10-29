@@ -1,6 +1,8 @@
 # CHANGELOG
 
-- **2.7.0.0** (Latest): Domains for every app, install straight from the Packager, a terminal outside apps, an editor for installed apps, and the end of port-based URLs.
+- **2.7.0.1** (Latest): Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
+
+- **2.7.0.0**: Domains for every app, install straight from the Packager, a terminal outside apps, an editor for installed apps, and the end of port-based URLs.
   - **Any number of domains per app.** Each app gets its own list of names, with a port, protocol, path and a gated or direct access mode per name. One certificate covers all of them, issued over DNS-01 with a credential per DNS zone, or over HTTP-01 on port 80.
   - **Install now from the Packager**, and Save to my packages, with warnings for privileged containers, the Docker socket and host-root mounts.
   - **Terminal picker.** Open a shell in any container, in HomeDock OS itself, or on the host. The host shell and the HomeDock OS shell are off until you turn them on in Settings, and each session asks for your password and 2FA code.

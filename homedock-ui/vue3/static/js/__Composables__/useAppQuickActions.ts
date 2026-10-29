@@ -10,6 +10,7 @@ import { useI18n } from "vue-i18n";
 
 import { useWindowStore } from "../__Stores__/windowStore";
 import { useCsrfToken } from "./useCsrfToken";
+import { useAppStoreActions } from "./useAppStoreActions";
 import type { DockerApp } from "../__Stores__/desktopStore";
 import type { ContextMenuAction, ContextMenuItem } from "../__Components__/ContextMenu.vue";
 
@@ -18,6 +19,7 @@ import logsIcon from "@iconify-icons/mdi/text-box-outline";
 import appDriveIcon from "@iconify-icons/mdi/folder-open";
 import controlHubIcon from "@iconify-icons/mdi/nut";
 import editConfigIcon from "@iconify-icons/mdi/pencil";
+import editYamlIcon from "@iconify-icons/mdi/code-braces";
 
 const APP_DRIVE_TTL = 30000;
 
@@ -37,6 +39,7 @@ function sanitizeContainerName(name: string): string {
 
 export function useAppQuickActions() {
   const windowStore = useWindowStore();
+  const { findStoreApp } = useAppStoreActions();
   const csrfToken = useCsrfToken();
   const { t } = useI18n();
 
@@ -87,6 +90,15 @@ export function useAppQuickActions() {
     });
   }
 
+  function openEditForm(app: DockerApp) {
+    const storeApp = findStoreApp(app.name) ?? { name: app.name, display_name: app.display_name, is_installed: true };
+
+    windowStore.openUniqueWindow("installconfig", `edit:${app.name}`, {
+      title: t("Edit {name}", { name: app.display_name || app.name }),
+      data: { app: storeApp, mode: "edit" },
+    });
+  }
+
   function openEditConfig(app: DockerApp) {
     windowStore.openUniqueWindow("edit", app.name, {
       title: `${app.display_name || app.name} - ${t("Edit Config")}`,
@@ -112,7 +124,8 @@ export function useAppQuickActions() {
     }
 
     if (options.editConfig) {
-      actions.push({ label: "Edit Config", icon: editConfigIcon, action: () => openEditConfig(app), disabled: Boolean(options.parent) });
+      actions.push({ label: "Edit", icon: editConfigIcon, action: () => openEditForm(app), disabled: Boolean(options.parent) });
+      actions.push({ label: "Edit YAML (advanced)", icon: editYamlIcon, action: () => openEditConfig(app), disabled: Boolean(options.parent) });
     }
 
     actions.push({ label: "App Drive", icon: appDriveIcon, action: () => openAppDrive(app), disabled: withoutAppDrive });

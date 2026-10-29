@@ -4,7 +4,7 @@
 <!-- https://www.banshee.pro -->
 
 <template>
-  <div class="rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.aeroExtraScope]" :aria-labelledby="headingId">
+  <div class="@container rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.aeroExtraScope]" :aria-labelledby="headingId">
     <div class="flex items-center gap-2 mb-2.5">
       <Icon :icon="webIcon" width="20" height="20" :class="[themeClasses.appPropsCardHeaderIcon]" />
       <span :id="headingId" class="text-[15px] font-semibold m-0 flex-1" :class="[themeClasses.appPropsCardHeaderText]">{{ $t("Domains") }}</span>
@@ -24,7 +24,7 @@
       <span class="text-xs opacity-60" :class="[themeClasses.appPropsInfoLabel]">{{ data.web_port ? $t("Set by you. The window opens this port.") : $t("Picked automatically. The window opens this port.") }}</span>
     </div>
 
-    <div v-if="data" class="grid grid-cols-1 sm:grid-cols-[268px_1fr] rounded-[10px] border overflow-hidden min-h-[260px]" :class="[themeClasses.appPropsActionListItemBorder]">
+    <div v-if="data" class="grid grid-cols-1 @2xl:grid-cols-[268px_1fr] rounded-[10px] border overflow-hidden min-h-[260px]" :class="[themeClasses.appPropsActionListItemBorder]">
       <ul class="list-none m-0 p-0 flex flex-col border-b sm:border-b-0 sm:border-r" :class="[themeClasses.appPropsActionListItemBorder, themeClasses.appPropsInfoCardBg]" :aria-label="$t('Domains')">
         <li v-if="windowAddress" class="flex items-start gap-2 px-3 py-2.5 border-b" :class="[themeClasses.appPropsInfoRowBorder]">
           <Icon :icon="lockIcon" width="14" height="14" class="mt-0.5 flex-shrink-0 opacity-60" :class="[themeClasses.appPropsInfoLabel]" />
@@ -95,7 +95,7 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div class="grid grid-cols-1 @lg:grid-cols-2 gap-3.5">
           <div>
             <span :id="`${headingId}-dport`" class="block text-[10px] uppercase tracking-wide opacity-60" :class="[themeClasses.appPropsInfoLabel]">{{ $t("Container port") }}</span>
             <Select class="w-full mt-0.5" :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" :value="selected.port" :disabled="busy" :aria-labelledby="`${headingId}-dport`" :popup-class-name="themeClasses.scopeSelector" :show-search="false" @change="changePort(Number($event))">

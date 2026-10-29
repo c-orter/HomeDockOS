@@ -4,7 +4,7 @@
 set -Eeuo pipefail
 
 REPO="${HOMEDOCK_REPO:-c-orter/HomeDockOS}"
-REF="${HOMEDOCK_REF:-v2.7.0.0}"
+REF="${HOMEDOCK_REF:-v2.7.0.1}"
 DIR="${HOMEDOCK_DIR:-/opt/homedock}"
 TZ_NAME="${TZ:-$(cat /etc/timezone 2>/dev/null || echo UTC)}"
 
