@@ -26,6 +26,7 @@ def client(tmp_path, monkeypatch):
     app.add_url_rule("/api/domains/update", "update", api.api_domains_update, methods=["POST"])
     app.add_url_rule("/api/domains/remove", "remove", api.api_domains_remove, methods=["POST"])
     app.add_url_rule("/api/domains/web-port", "web", api.api_domains_web_port, methods=["POST"])
+    app.add_url_rule("/api/domains/check", "check", api.api_domains_check, methods=["POST"])
 
     return app.test_client()
 
@@ -68,3 +69,28 @@ def test_web_port_override_roundtrip(client):
 
     assert response.get_json()["web_port"] == 9000
     assert client.post("/api/domains/web-port", json={"container": "web", "port": None}).get_json()["web_port"] == 80
+
+
+def test_listing_offers_ports_base_domain_and_suggestion(client, monkeypatch):
+    monkeypatch.setattr(api, "read_config", lambda: {"base_domain": "Home.Example.com"})
+    client.post("/api/domains/add", json={"container": "web", "fqdn": "a.example.com", "port": 9000})
+
+    app = client.get("/api/domains?container=web").get_json()
+
+    assert app["ports"] == [80, 9000]
+    assert app["base_domain"] == "home.example.com"
+    assert app["suggestion"] == "web.home.example.com"
+
+
+def test_listing_without_base_domain_has_no_suggestion(client, monkeypatch):
+    monkeypatch.setattr(api, "read_config", lambda: {"base_domain": ""})
+    client.post("/api/domains/add", json={"container": "web", "fqdn": "a.example.com", "port": 80})
+
+    assert client.get("/api/domains?container=web").get_json()["suggestion"] == ""
+
+
+def test_dns_check_reports_where_the_name_points(client, monkeypatch):
+    monkeypatch.setattr(api, "resolves_to_server", lambda fqdn: (False, "its DNS name does not resolve"))
+
+    assert client.post("/api/domains/check", json={"fqdn": "A.Example.com."}).get_json() == {"fqdn": "a.example.com", "resolves": False, "reason": "its DNS name does not resolve"}
+    assert client.post("/api/domains/check", json={}).status_code == 400

@@ -8,9 +8,11 @@ https://www.banshee.pro
 from flask import jsonify, request
 from flask_login import login_required
 
-from pymodules.hd_BackendResolver import installed_containers, reachability, sync_installed_apps, web_port
+from pymodules.hd_BackendResolver import container_ports, installed_containers, reachability, sync_installed_apps, web_port
 from pymodules.hd_DomainAccess import direct_refusal
-from pymodules.hd_CertManager import name_statuses
+from pymodules.hd_CertManager import name_statuses, days_until_expiry
+from pymodules.hd_CertPlan import resolves_to_server
+from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_DomainStore import DomainError, add_domain, get_app, list_apps, remove_domain, set_web_port, update_domain
 
 
@@ -25,7 +27,23 @@ def _app_json(container, app):
 
     domains = [{**domain, "direct_refusal": direct_refusal(domain["fqdn"]), "certificate": certificate.get(domain["fqdn"], {"status": "pending", "reason": ""})} for domain in app["domains"]]
 
-    return {"container": container, "slug": app["slug"], "web_port": app["web_port"], "effective_web_port": web_port(container), "reachable": reachable, "unreachable_reason": reason, "domains": domains}
+    base = (read_config().get("base_domain") or "").strip().lower().rstrip(".")
+    effective = web_port(container)
+    ports = sorted({*container_ports(container), *([effective] if effective else []), *(domain["port"] for domain in app["domains"])})
+
+    return {
+        "container": container,
+        "slug": app["slug"],
+        "web_port": app["web_port"],
+        "effective_web_port": effective,
+        "ports": ports,
+        "base_domain": base,
+        "suggestion": f"{app['slug']}.{base}" if base else "",
+        "certificate_expires_in_days": days_until_expiry(),
+        "reachable": reachable,
+        "unreachable_reason": reason,
+        "domains": domains,
+    }
 
 
 def _check_direct(fqdn, mode):
@@ -118,3 +136,17 @@ def api_domains_web_port():
         return _error(error)
 
     return jsonify({"status": "saved", "web_port": web_port(container)}), 200
+
+
+@login_required
+def api_domains_check():
+    """Whether a name's DNS points at this server, so the manager can say so before anyone relies on it."""
+
+    fqdn = str(_body().get("fqdn", "")).strip().lower().rstrip(".")
+
+    if not fqdn:
+        return jsonify({"status": "bad_request", "message": "A domain name is required."}), 400
+
+    ok, reason = resolves_to_server(fqdn)
+
+    return jsonify({"fqdn": fqdn, "resolves": ok, "reason": reason}), 200

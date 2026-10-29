@@ -185,6 +185,8 @@
 
               </div>
 
+              <AppDomainsCard v-if="!isDependency && app.openable" :container="app.name" :window-address="appAddresses[0]?.host ?? null" />
+
               <div v-if="!isDependency" class="rounded-[10px] px-3.5 py-3 transition-all duration-200" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.appPropsUsageCardBgHover, themeClasses.appPropsUsageCardBorderHover, themeClasses.aeroExtraScope]">
                 <div class="flex items-center gap-2 mb-2.5">
                   <Icon :icon="dockWindowIcon" width="20" height="20" :class="[themeClasses.appPropsCardHeaderIcon]" />
@@ -392,6 +394,7 @@ import webIcon from "@iconify-icons/mdi/web";
 import dockWindowIcon from "@iconify-icons/mdi/dock-window";
 
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
+import AppDomainsCard from "../__Components__/AppDomainsCard.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
 

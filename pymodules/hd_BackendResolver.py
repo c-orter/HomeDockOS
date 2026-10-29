@@ -100,6 +100,25 @@ def _definition(container):
     return info["services"][info["service"]] if info else {}
 
 
+def container_ports(container):
+    """The container-side ports the compose file declares (published or exposed), sorted, for choosing a domain's target."""
+
+    found = set()
+
+    for entry in list(_definition(container).get("ports") or []) + list(_definition(container).get("expose") or []):
+        if isinstance(entry, dict):
+            value = entry.get("target")
+        else:
+            value = str(entry).split("/")[0].split(":")[-1]
+
+        try:
+            found.add(int(value))
+        except (TypeError, ValueError):
+            continue
+
+    return sorted(found)
+
+
 def resolve_backend(container, port):
     """(host, port) to dial for a container's internal port, or None when it cannot be reached right now.
 
