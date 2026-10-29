@@ -13,11 +13,11 @@ import asyncio
 
 from urllib.parse import quote, unquote
 
-from pymodules.hd_FunctionsHostSelector import docker_host
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_TrustedProxy import is_trusted_peer
 from pymodules.hd_AppSubdomains import resolve_app_for_host, is_app_namespace, build_forwarding_headers
 from pymodules.hd_AppExposure import is_directly_exposed
+from pymodules.hd_BackendResolver import resolve_backend, container_running
 from pymodules.hd_SubdomainAuth import TOKEN_COOKIE_NAME, TOKEN_QUERY_PARAM, HANDOFF_MAX_AGE, SESSION_MAX_AGE, verify_app_token
 
 aiohttp = None
@@ -130,8 +130,8 @@ def _is_backend_failure(error):
     return isinstance(error, (aiohttp.ClientConnectorError, aiohttp.ServerDisconnectedError))
 
 
-def _cached_protocol(port):
-    cached = _protocol_cache.get(port)
+def _cached_protocol(key):
+    cached = _protocol_cache.get(key)
 
     if cached and (time.monotonic() - cached[1]) < _PROTOCOL_CACHE_TTL:
         return cached[0]
@@ -139,9 +139,10 @@ def _cached_protocol(port):
     return None
 
 
-async def _probe_protocol(port):
+async def _probe_protocol(host, port):
 
-    protocol = _cached_protocol(port)
+    key = (host, port)
+    protocol = _cached_protocol(key)
 
     if protocol:
         return protocol
@@ -149,13 +150,13 @@ async def _probe_protocol(port):
     # HDOS00121
     session = await _get_uncapped_session()
 
-    lock = _probe_locks.get(port)
+    lock = _probe_locks.get(key)
 
     if lock is None:
-        lock = _probe_locks.setdefault(port, asyncio.Lock())
+        lock = _probe_locks.setdefault(key, asyncio.Lock())
 
     async with lock:
-        protocol = _cached_protocol(port)
+        protocol = _cached_protocol(key)
 
         if protocol:
             return protocol
@@ -164,16 +165,23 @@ async def _probe_protocol(port):
 
         for candidate in ("https", "http"):
             try:
-                async with session.request("HEAD", f"{candidate}://{docker_host}:{port}/", allow_redirects=False, timeout=timeout) as response:
+                async with session.request("HEAD", f"{candidate}://{host}:{port}/", allow_redirects=False, timeout=timeout) as response:
                     if response.status:
-                        _protocol_cache[port] = (candidate, time.monotonic())
+                        _protocol_cache[key] = (candidate, time.monotonic())
                         return candidate
             except Exception:
                 continue
 
-        _protocol_cache[port] = ("http", time.monotonic())
+        _protocol_cache[key] = ("http", time.monotonic())
 
         return "http"
+
+
+async def _backend_protocol(app, host, port):
+    if app.get("protocol") in ("http", "https"):
+        return app["protocol"]
+
+    return await _probe_protocol(host, port)
 
 
 def _headers_to_dict(raw_headers):
@@ -483,7 +491,7 @@ async def _authorize(scope, send, app, scheme, public_host):
         return False
 
     # HDOS00056
-    if _is_document_request(scope):
+    if app.get("implicit", True) and _is_document_request(scope):
         port = public_host.partition(":")[2]
         target = f"{scheme}://{app['host_trail']}" + (f":{port}" if port else "") + f"/appdenied?app={quote(slug)}"
 
@@ -524,9 +532,9 @@ async def _stream_request_body(receive):
 
 
 async def _proxy_http(scope, receive, send, app, scheme, public_host):
-    port = app["port"]
-    protocol = await _probe_protocol(port)
-    backend_host = f"{docker_host}:{port}"
+    host, port = resolve_backend(app["container"], app["port"])
+    protocol = await _backend_protocol(app, host, port)
+    backend_host = f"{host}:{port}"
 
     query_string = scope.get("query_string", b"").decode("latin-1")
     _, remaining = _split_token(query_string)
@@ -584,11 +592,11 @@ async def _proxy_http(scope, receive, send, app, scheme, public_host):
     except Exception as e:
         # HDOS00028 HDOS00121
         if _is_backend_failure(e):
-            _protocol_cache.pop(port, None)
+            _protocol_cache.pop((host, port), None)
 
         print(f" ! Subdomain proxy error for '{app['slug']}' ({backend_host}) {scope['method']} {path}: {type(e).__name__}: {e}")
 
-        body = b"Application unavailable."
+        body = b"Application unavailable." if await asyncio.to_thread(container_running, app["container"]) else b"App not running."
         try:
             await _send_simple_response(send, 502, [(b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("latin-1"))], body)
         except Exception:
@@ -643,9 +651,9 @@ async def _pump_backend_to_client(ws, send):
 
 
 async def _proxy_websocket(scope, receive, send, app, scheme, public_host):
-    port = app["port"]
-    protocol = await _probe_protocol(port)
-    backend_host = f"{docker_host}:{port}"
+    host, port = resolve_backend(app["container"], app["port"])
+    protocol = await _backend_protocol(app, host, port)
+    backend_host = f"{host}:{port}"
 
     ws_scheme = "wss" if protocol == "https" else "ws"
 
@@ -693,7 +701,7 @@ async def _proxy_websocket(scope, receive, send, app, scheme, public_host):
     except Exception as e:
         # HDOS00121
         if _is_backend_failure(e):
-            _protocol_cache.pop(port, None)
+            _protocol_cache.pop((host, port), None)
 
         print(f" ! Subdomain websocket error for '{app['slug']}' ({backend_host}): {e}")
 

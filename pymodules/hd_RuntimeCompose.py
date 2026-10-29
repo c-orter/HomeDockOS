@@ -141,18 +141,50 @@ def project_name_for(compose_file):
     return re.sub(r"[^a-z0-9_-]", "", os.path.basename(os.path.dirname(os.path.abspath(compose_file))).lower()).lstrip("_-")
 
 
-def proxied_ports_for(compose_file, services):
-    """Container ports HomeDock reaches over the network instead of publishing: for now the app's primary web port."""
-
+def suggested_port_for(names):
     from pymodules.hd_DockerAPIContainerData import load_suggested_ports
 
     suggested_ports = load_suggested_ports()
+
+    return next((suggested_ports[n] for n in names if n in suggested_ports), None)
+
+
+def web_ports_for(compose_file, services):
+    """{service: container port} of each service's window port: a saved override, else the app's primary port on its owning service."""
+
+    from pymodules.hd_DomainStore import get_app
+
+    ports = {}
+
+    for name, service in services.items():
+        app = get_app(service.get("container_name") or name) if isinstance(service, dict) else None
+
+        if app and app.get("web_port"):
+            ports[name] = app["web_port"]
+
+    if ports:
+        return ports
+
     names = [os.path.splitext(os.path.basename(compose_file))[0]] + [s.get("container_name") for s in services.values() if isinstance(s, dict)]
-    suggested = next((suggested_ports[n] for n in names if n in suggested_ports), None)
+    primary = primary_web_port(services, suggested_port_for(names))
 
-    primary = primary_web_port(services, suggested)
+    return {primary[0]: primary[1]} if primary else {}
 
-    return {primary[0]: {primary[1]}} if primary else {}
+
+def proxied_ports_for(compose_file, services):
+    """Container ports HomeDock reaches over the network instead of publishing: window ports and domain-assigned ports."""
+
+    from pymodules.hd_DomainStore import get_app
+
+    proxied = {name: {port} for name, port in web_ports_for(compose_file, services).items()}
+
+    for name, service in services.items():
+        app = get_app(service.get("container_name") or name) if isinstance(service, dict) else None
+
+        for domain in (app or {}).get("domains", []):
+            proxied.setdefault(name, set()).add(domain["port"])
+
+    return proxied
 
 
 @contextlib.contextmanager

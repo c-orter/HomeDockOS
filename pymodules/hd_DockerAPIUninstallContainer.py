@@ -13,6 +13,7 @@ import shutil
 from flask import request
 from flask_login import login_required
 
+from pymodules.hd_DomainStore import delete_app
 from pymodules.hd_FunctionsConfig import read_config
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_ComposeDevHooks import get_internal_storage_paths, is_internal_volume_path
@@ -146,6 +147,7 @@ def uninstall_containers():
 
                 container.stop()
                 container.remove()
+                delete_app(name)
 
                 if delete_internal_data_volumes and internal_volumes:
                     print(f" i Cleaning {len(internal_volumes)} internal volumes for {name}")

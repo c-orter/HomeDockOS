@@ -7,123 +7,41 @@ https://www.banshee.pro
 
 import os
 import re
-import threading
 
-from pymodules.hd_FunctionsGlobals import current_directory
 from pymodules.hd_FunctionsNetwork import local_ip, internet_ip
 from pymodules.hd_FunctionsHostSelector import docker_host
 from pymodules.hd_FunctionsConfig import read_config
+from pymodules.hd_DomainStore import list_apps, lookup_domain, slugify_container_name  # noqa: F401  (slugify is re-exported)
 
-_INVALID_LABEL_CHARS = re.compile(r"[^a-z0-9-]")
-_REPEATED_DASHES = re.compile(r"-{2,}")
 _IPV4_HOST = re.compile(r"\d{1,3}(?:\.\d{1,3}){3}")
-
-_ports_file = os.path.join(current_directory, "homedock_ports.conf")
 
 BASE_HOSTNAME = "homedock.local"
 
 LOOPBACK_HOSTNAME = "homedock.localhost"
 
 
-_lock = threading.Lock()
-_cache = {"signature": None, "slugs": {}}
+def get_slug_map():
+    """{slug: {container, port, trail}} for every installed container that has a window port."""
 
-_reported_collisions = set()
+    from pymodules.hd_BackendResolver import sync_installed_apps, web_port, compose_file_for
+    from pymodules.hd_DockerAPIContainerData import load_suggested_trails
 
+    sync_installed_apps()
 
-def slugify_container_name(name):
-
-    slug = name.strip().lower().replace("_", "-").replace(".", "-")
-    slug = _INVALID_LABEL_CHARS.sub("", slug)
-    slug = _REPEATED_DASHES.sub("-", slug).strip("-")
-
-    return slug[:63]
-
-
-def _parse_ports_value(value):
-
-    value = value.strip()
-
-    if value in ("", "hostmode", "disabled"):
-        return None, ""
-
-    trail = ""
-    if "/" in value:
-        head, _, tail = value.partition("/")
-        trail = tail.split(":")[0].strip("/")
-    else:
-        head = value
-
-    primary = head.split(":")[0].strip()
-
-    if not primary.isdigit():
-        return None, ""
-
-    port = int(primary)
-    if port < 1 or port > 65535:
-        return None, ""
-
-    return port, trail
-
-
-def _read_ports_file():
-    try:
-        with open(_ports_file, "r") as file:
-            return file.readlines()
-    except (FileNotFoundError, IOError, OSError):
-        return []
-
-
-def _file_signature():
-    try:
-        stat = os.stat(_ports_file)
-        return (stat.st_mtime_ns, stat.st_size)
-    except (FileNotFoundError, IOError, OSError):
-        return None
-
-
-def _build_slug_map():
+    trails = load_suggested_trails()
     slugs = {}
 
-    for line in _read_ports_file():
-        parts = line.strip().split("*")
-        if len(parts) < 2:
-            continue
+    for container, app in list_apps().items():
+        port = web_port(container)
 
-        container_name = parts[0].strip()
-        if not container_name:
-            continue
-
-        port, trail = _parse_ports_value(parts[1])
         if port is None:
             continue
 
-        slug = slugify_container_name(container_name)
-        if not slug:
-            continue
+        stem = os.path.splitext(os.path.basename(compose_file_for(container) or ""))[0]
 
-        # HDOS00048
-        if slug in slugs:
-            existing = slugs[slug]["container"]
-            if existing != container_name and slug not in _reported_collisions:
-                _reported_collisions.add(slug)
-                print(f" ! Subdomain slug collision on '{slug}': keeping '{existing}', ignoring '{container_name}'")
-            continue
-
-        slugs[slug] = {"container": container_name, "port": port, "trail": trail}
+        slugs[app["slug"]] = {"container": container, "port": port, "trail": (trails.get(stem) or trails.get(container) or "").strip("/")}
 
     return slugs
-
-
-def get_slug_map():
-    signature = _file_signature()
-
-    with _lock:
-        if _cache["signature"] != signature:
-            _cache["slugs"] = _build_slug_map()
-            _cache["signature"] = signature
-
-        return _cache["slugs"]
 
 
 def lookup_slug(slug):
@@ -198,6 +116,7 @@ def split_host(host_header):
 
 
 def resolve_app_for_host(host_header):
+    """The app a Host header addresses: an exact stored domain first, then the app's window address <slug>.<this host>."""
 
     if not host_header:
         return None
@@ -206,6 +125,14 @@ def resolve_app_for_host(host_header):
 
     if bare_host in get_desktop_hosts():
         return None
+
+    found = lookup_domain(bare_host)
+
+    if found is not None:
+        container, domain = found
+        app = list_apps()[container]
+
+        return {"slug": app["slug"], "container": container, "port": domain["port"], "trail": domain["path"].strip("/"), "protocol": domain["protocol"], "host_trail": "", "fqdn": bare_host, "implicit": False}
 
     slug, host_trail = split_host(host_header)
     if not slug or not host_trail:
@@ -221,7 +148,7 @@ def resolve_app_for_host(host_header):
         return None
 
     # HDOS00034
-    return {"slug": slug, "host_trail": host_trail, **entry}
+    return {"slug": slug, "host_trail": host_trail, "protocol": "auto", "fqdn": bare_host, "implicit": True, **entry}
 
 
 # HDOS00131

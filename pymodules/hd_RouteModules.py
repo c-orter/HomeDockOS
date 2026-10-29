@@ -70,6 +70,14 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/app-view-mode", "api_app_view_mode", CSRF_Protect(api_app_view_mode), methods=["GET", "POST"])
 
+    from pymodules.hd_UIDomains import api_domains, api_domains_add, api_domains_update, api_domains_remove, api_domains_web_port
+
+    homedock_www.add_url_rule("/api/domains", "api_domains", CSRF_Protect(api_domains), methods=["GET"])
+    homedock_www.add_url_rule("/api/domains/add", "api_domains_add", CSRF_Protect(api_domains_add), methods=["POST"])
+    homedock_www.add_url_rule("/api/domains/update", "api_domains_update", CSRF_Protect(api_domains_update), methods=["POST"])
+    homedock_www.add_url_rule("/api/domains/remove", "api_domains_remove", CSRF_Protect(api_domains_remove), methods=["POST"])
+    homedock_www.add_url_rule("/api/domains/web-port", "api_domains_web_port", CSRF_Protect(api_domains_web_port), methods=["POST"])
+
     from pymodules.hd_AppExposure import api_app_exposure
 
     homedock_www.add_url_rule("/api/app-exposure", "api_app_exposure", CSRF_Protect(api_app_exposure), methods=["GET", "POST"])
