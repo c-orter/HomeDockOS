@@ -1073,6 +1073,8 @@ async function handleInstall() {
           homedock_csrf_token: currentToken,
         };
 
+    let contentHash: string | undefined;
+
     try {
       const response = await axios.post("/api/process-config", configData, {
         headers: { "X-HomeDock-CSRF-Token": currentToken },
@@ -1084,6 +1086,8 @@ async function handleInstall() {
         notifyWarning(messages.map((m: any) => t(m.key, m.params || {})).join("\n"), themeClasses.value.scopeSelector, 10);
         return;
       }
+
+      contentHash = response.data.contentHash;
     } catch (configError: any) {
       if (configError.response?.status === 400 && configError.response?.data?.messages) {
         notifyWarning(configError.response.data.messages.map((m: any) => t(m.key, m.params || {})).join("\n"), themeClasses.value.scopeSelector, 10);
@@ -1100,6 +1104,7 @@ async function handleInstall() {
 
     await axios.post("/api/app-store-install-container", {
       containerName: app.value.name,
+      contentHash,
       homedock_csrf_token: currentToken,
     });
   } catch (error: any) {

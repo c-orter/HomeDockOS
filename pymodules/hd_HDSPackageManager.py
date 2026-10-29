@@ -276,6 +276,15 @@ def create_hds_package(app_slug: str, display_name: str, output_path: str, app_m
         return False, f"Error creating package: {str(e)}"
 
 
+def _unique_temp_path() -> str:
+    """A fresh temp file for an uploaded package, so concurrent uploads never share a path."""
+
+    fd, path = tempfile.mkstemp(suffix=".hds")
+    os.close(fd)
+
+    return path
+
+
 def extract_hds_package(hds_path: str, fallback_display_name: str) -> Tuple[bool, str, Optional[Dict]]:
     is_valid, msg, manifest = validate_hds_package(hds_path)
     if not is_valid:
@@ -322,6 +331,9 @@ def extract_hds_package(hds_path: str, fallback_display_name: str) -> Tuple[bool
             with open(compose_path, "w") as f:
                 f.write(compose_content)
 
+            with open(compose_path, "rb") as f:
+                compose_sha256 = hashlib.sha256(f.read()).hexdigest()
+
             icon_bytes = zip_ref.read(icon_filename_safe)
 
             try:
@@ -344,6 +356,7 @@ def extract_hds_package(hds_path: str, fallback_display_name: str) -> Tuple[bool
 
         manifest["slug"] = app_slug
         manifest["icon_filename"] = f"{app_slug}{icon_ext}"
+        manifest["compose_sha256"] = compose_sha256
 
         try:
             safe = compose_content.replace("[[", "__DBLBRK__").replace("]]", "__DBLBRK_END__")
@@ -425,7 +438,7 @@ def upload_hds_package():
 
     try:
         filename = secure_filename(file.filename)
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        temp_path = _unique_temp_path()
         file.save(temp_path)
 
         file_size = os.path.getsize(temp_path)
@@ -1562,7 +1575,7 @@ def _install_hds_from_buffer(hds_bytes: bytes, filename: str) -> dict:
         os.makedirs(user_packages_available_folder, exist_ok=True)
         os.makedirs(user_packages_images_folder, exist_ok=True)
 
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        temp_path = _unique_temp_path()
         with open(temp_path, "wb") as f:
             f.write(hds_bytes)
 
