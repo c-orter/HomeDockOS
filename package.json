@@ -1,6 +1,6 @@
 {
   "name": "homedock_os",
-  "version": "2.6.2.104",
+  "version": "2.7.0.0",
   "description": "The Cloud OS to simplify your life: 800+ self-hosted apps, a real desktop in your browser, and every file you own a double-click away.",
   "type": "module",
   "scripts": {

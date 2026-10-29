@@ -1,6 +1,14 @@
 # CHANGELOG
 
-- **2.6.2.104** (Latest): Fixes blank HTTPS windows, stuck port scans, blank sub-subdomains OnScreen Apps, Start Menu iOS longress hotfix and updated dependencies.
+- **2.7.0.0** (Latest): Domains for every app, install straight from the Packager, a terminal outside apps, an editor for installed apps, and the end of port-based URLs.
+  - **Any number of domains per app.** Each app gets its own list of names, with a port, protocol, path and a gated or direct access mode per name. One certificate covers all of them, issued over DNS-01 with a credential per DNS zone, or over HTTP-01 on port 80.
+  - **Install now from the Packager**, and Save to my packages, with warnings for privileged containers, the Docker socket and host-root mounts.
+  - **Terminal picker.** Open a shell in any container, in HomeDock OS itself, or on the host. The host shell and the HomeDock OS shell are off until you turn them on in Settings, and each session asks for your password and 2FA code.
+  - **Edit installed apps** (environment, ports, volumes, services) from a structured editor, with a change summary.
+  - **Legacy port URLs are gone.** Apps open by container name and domain only. `dynamic_dns` is now `base_domain` and defaults to empty.
+  - Not yet covered by a real Let's Encrypt run or a browser walkthrough; translations for the new strings are English only.
+
+- **2.6.2.104**: Fixes blank HTTPS windows, stuck port scans, blank sub-subdomains OnScreen Apps, Start Menu iOS longress hotfix and updated dependencies.
   - **Sonarr, Radarr and friends no longer go blank over HTTPS.** When their session expired, they redirected to their login page with a hardcoded `http://` address, ignoring `X-Forwarded-Proto`, and the browser refused to load it inside the HTTPS app window, leaving it empty with a Content Security Policy error. The built-in reverse proxy now upgrades those redirects to `https://` when they point back at the app itself. Redirects anywhere else are left untouched, and over plain HTTP, `homedock.localhost` included, nothing changes.
   - **New apps no longer get stuck scanning for their port.** The task that finds each app's web port gave up for good the first time Docker took more than 60 seconds to answer, something a busy Raspberry Pi pulling an image can easily do. From then on every new app, and every Rescan ports, stayed on the scanning animation until HomeDock OS was restarted. It now skips that round and tries again 10 seconds later.
   - **App subdomains are for apps only.** DuckDNS, freemyip and `*.homedock.localhost` resolve any subdomain to your machine, so `anything.yourname.duckdns.org`, or the address of an app you had uninstalled, opened the HomeDock OS login. Subdomains of your HomeDock OS address that don't belong to an app now answer "No app at this address." The desktop stays at the address you configured, and your apps at theirs.
