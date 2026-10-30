@@ -43,6 +43,7 @@ from pymodules.hd_EnterpriseLoader import load_enterprise, print_enterprise_bann
 from pymodules.hd_FunctionsNativeSSL import ssl_enabled, get_ssl_cert_info, get_ssl_cert_directory, capture_ssl_context
 from pymodules.hd_ThreadZeroConf import announce_homedock_service, format_url
 from pymodules.hd_SubdomainRouter import wrap_asgi_with_subdomain_router, subdomain_routing_available
+from pymodules.hd_UIBrowser import wrap_asgi_with_browser
 from pymodules.hd_UIContainerTerminal import wrap_asgi_with_container_terminal
 from pymodules.hd_SessionSecurity import SchemeAwareSessionInterface
 from pymodules.hd_TrustedProxy import TrustedProxyFix
@@ -259,6 +260,7 @@ if __name__ == "__main__":
 
         # HDOS00033
         homedock_www_asgi = wrap_asgi_with_container_terminal(homedock_www_asgi)
+        homedock_www_asgi = wrap_asgi_with_browser(homedock_www_asgi)
 
         # HDOS00033
         homedock_www_asgi = wrap_asgi_with_subdomain_router(homedock_www_asgi)

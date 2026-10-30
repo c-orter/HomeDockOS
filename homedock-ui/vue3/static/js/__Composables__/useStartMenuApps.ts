@@ -10,6 +10,7 @@ import { useDesktopStore, type DockerApp } from "../__Stores__/desktopStore";
 import { useWindowStore } from "../__Stores__/windowStore";
 import { appLayoutKey } from "../__Stores__/useDesktopSyncStore";
 import { getStartMenuApps, ENTERPRISE_APP_COLOR } from "../__Config__/WindowDefaultDetails";
+import { loadBrowserAvailability } from "./useBrowserAvailability";
 import type { SystemApp } from "../__Config__/WindowTypes";
 import { UTILITIES_APPS } from "../__Config__/UtilitiesDefaultDetails";
 import { GAMES_APPS } from "../__Config__/GamesDefaultDetails";
@@ -74,6 +75,7 @@ export function useStartMenuApps() {
   }
 
   loadEnterpriseModules();
+  loadBrowserAvailability();
 
   onBeforeUnmount(() => {
     if (enterpriseTimer) clearTimeout(enterpriseTimer);

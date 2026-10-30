@@ -6,6 +6,7 @@
 import { defineAsyncComponent } from "vue";
 import WindowLoading from "../__Components__/WindowLoading.vue";
 import type { SystemApp } from "./WindowTypes";
+import { browserAvailable } from "../__Composables__/useBrowserAvailability";
 
 const AppLogs = defineAsyncComponent({
   loader: () => import("../__Apps__/AppLogs.vue"),
@@ -14,6 +15,11 @@ const AppLogs = defineAsyncComponent({
 });
 const AppTerminal = defineAsyncComponent({
   loader: () => import("../__Apps__/AppTerminal.vue"),
+  loadingComponent: WindowLoading,
+  delay: 200,
+});
+const AppBrowser = defineAsyncComponent({
+  loader: () => import("../__Apps__/AppBrowser.vue"),
   loadingComponent: WindowLoading,
   delay: 200,
 });
@@ -60,6 +66,7 @@ const AppDockerView = defineAsyncComponent({
 
 import scriptTextIcon from "@iconify-icons/mdi/script-text";
 import consoleLineIcon from "@iconify-icons/mdi/console-line";
+import webIcon from "@iconify-icons/mdi/web";
 import propertiesIcon from "@iconify-icons/mdi/information-outline";
 import codeBracesIcon from "@iconify-icons/mdi/code-braces";
 import downloadIcon from "@iconify-icons/mdi/download";
@@ -129,6 +136,28 @@ export const AUXILIARY_APPS: SystemApp[] = [
     showInStartMenu: true,
     showInFinderApp: true,
     showInMyHomeApp: false,
+  },
+  {
+    id: "browser",
+    name: "Browser",
+    description: "Browse the web from a real browser running on this server",
+    icon: webIcon,
+    iconOverlay: true,
+    color: "#0369a1",
+    component: AppBrowser,
+    defaultWidth: 1024,
+    defaultHeight: 768,
+    minWidth: 400,
+    minHeight: 500,
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    closeable: true,
+    category: "tools",
+    showInStartMenu: true,
+    showInFinderApp: true,
+    showInMyHomeApp: false,
+    available: () => browserAvailable.value,
   },
   {
     id: "properties",

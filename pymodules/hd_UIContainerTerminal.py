@@ -276,7 +276,7 @@ def api_container_terminal_targets():
     except docker.errors.DockerException as e:
         return jsonify({"success": False, "code": "docker_error", "detail": str(e)}), 500
 
-    containers = sorted(({"name": c.name, "status": c.status} for c in listed), key=lambda item: item["name"].lower())
+    containers = sorted(({"name": c.name, "status": c.status} for c in listed if not (getattr(c, "labels", None) or {}).get("homedock.browser")), key=lambda item: item["name"].lower())
 
     return jsonify({"success": True, "homedock": own.name if own else None, "containers": containers, "host": _host_target(client, own)})
 

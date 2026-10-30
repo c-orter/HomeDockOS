@@ -27,4 +27,5 @@ export interface SystemApp {
   showInStartMenu?: boolean;
   showInFinderApp?: boolean;
   showInMyHomeApp?: boolean;
+  available?: () => boolean;
 }
