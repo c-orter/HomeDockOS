@@ -287,9 +287,19 @@ def _image_status():
     return {"reference": engine.image_reference(), "base": engine.base_reference(), "present": present}
 
 
+def _requires_2fa():
+    from pymodules.hd_FunctionsConfig import read_config
+
+    try:
+        return bool(read_config().get("2fa_enabled"))
+    except Exception:
+        return False
+
+
 def _settings_payload():
     return {
         "success": True,
+        "requires_2fa": _requires_2fa(),
         "settings": settings.load(),
         "defaults": settings.DEFAULTS,
         "ranges": {field: list(bounds) for field, bounds in settings.RANGES.items()},
