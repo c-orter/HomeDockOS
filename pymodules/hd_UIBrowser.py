@@ -502,10 +502,16 @@ def _inject_shim(body):
     return body[: match.end()] + _SHIM_TAG + body[match.end() :] if match else _SHIM_TAG + body
 
 
+# HomeDock's desktop is served with Cross-Origin-Embedder-Policy: require-corp, and a browser refuses to show a frame in
+# such a page unless the frame's response opts in too. The opaque-origin client is cross-origin to the relay, so every
+# relayed response says it may be embedded and loaded cross-origin. The ticket in the path is what keeps it private.
+EMBED_HEADERS = [(b"cross-origin-embedder-policy", b"require-corp"), (b"cross-origin-resource-policy", b"cross-origin")]
+
+
 def _plain(status, text, extra=()):
     body = text.encode("utf-8")
 
-    return status, [(b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("latin-1")), (b"cache-control", b"no-store"), *extra], body
+    return status, [(b"content-type", b"text/plain; charset=utf-8"), (b"content-length", str(len(body)).encode("latin-1")), (b"cache-control", b"no-store"), *EMBED_HEADERS, *extra], body
 
 
 def _backend_url(scheme, target, rest, query):
@@ -572,7 +578,7 @@ async def _serve_http(scope, receive, send, ticket, rest):
 
     try:
         async with session.request(scope["method"], _backend_url("http", target, rest, query), headers=headers, data=_stream_request_body(receive) if has_body else None, allow_redirects=False, skip_auto_headers=("Accept-Encoding",)) as response:
-            out = [(b"content-security-policy", SANDBOX_POLICY.encode("latin-1")), (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"), *cors]
+            out = [(b"content-security-policy", SANDBOX_POLICY.encode("latin-1")), (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"), *EMBED_HEADERS, *cors]
 
             for key, value in response.headers.items():
                 if key.lower() not in _STRIPPED_RESPONSE_HEADERS:

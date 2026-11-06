@@ -256,6 +256,26 @@ def test_relay_forwards_with_sandbox_cors_and_without_cookies(monkeypatch):
     asyncio.run(with_upstream([("GET", "/index.html", index)], work))
 
 
+def test_every_relayed_response_may_be_embedded_in_a_require_corp_desktop(monkeypatch):
+    """HomeDock's desktop is served with COEP require-corp, which blocks any frame (and any file it loads) whose response does not opt in."""
+
+    async def upstream_page(request):
+        return web.Response(text="data", content_type="text/plain", headers={"Cross-Origin-Resource-Policy": "same-origin", "Cross-Origin-Embedder-Policy": "unsafe-none"})
+
+    async def work(address):
+        monkeypatch.setattr(runtime, "upstream", lambda: address)
+        displaced = browser.issue_ticket("admin", "ip")
+        ticket = browser.issue_ticket("admin", "ip")
+
+        for path in (f"/browser/{ticket}/", f"/browser/{ticket}/app.js", f"/browser/{'a' * 43}/x", f"/browser/{displaced}/x"):
+            _, out, _ = await call_http(relay, scope_for(path, headers=[("host", "dash.example"), ("origin", "null")]))
+
+            assert out["cross-origin-embedder-policy"] == "require-corp", path
+            assert out["cross-origin-resource-policy"] == "cross-origin", path
+
+    asyncio.run(with_upstream([("GET", "/", upstream_page), ("GET", "/app.js", upstream_page)], work))
+
+
 def test_the_storage_shim_goes_in_ahead_of_the_clients_scripts():
     page = browser._inject_shim(b'<html><head><meta charset="utf-8"><script src="a.js"></script></head></html>')
 
