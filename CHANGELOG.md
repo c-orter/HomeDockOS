@@ -1,6 +1,8 @@
 # CHANGELOG
 
-- **2.7.0.1** (Latest): Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
+- **2.7.0.2** (Latest): Brings in upstream 2.6.2.210 (Trash, PDF Editor, Slides, the ReCasa App Store and the Pillow 13 security upgrade) on top of the 2.7.x domains work.
+
+- **2.7.0.1**: Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
 
 - **2.7.0.0**: Domains for every app, install straight from the Packager, a terminal outside apps, an editor for installed apps, and the end of port-based URLs.
   - **Any number of domains per app.** Each app gets its own list of names, with a port, protocol, path and a gated or direct access mode per name. One certificate covers all of them, issued over DNS-01 with a credential per DNS zone, or over HTTP-01 on port 80.
