@@ -540,18 +540,15 @@ def stop():
 def needs_replacing(container):
     """True when a running browser is on an older image than the one this HomeDock pins, and the newer one can be had: it is already here, or a pull has not just failed."""
 
-    wanted = _engine.image_reference()
-
-    if container.attrs.get("Config", {}).get("Image") == wanted:
-        return False
-
+    # Image IDs, not names: an engine may rewrite the name a container was created from (podman adds "localhost/").
     try:
-        if _engine.has_image(_client()):
-            return True
+        wanted = _client().images.get(_engine.image_reference())
+    except docker.errors.ImageNotFound:
+        return _pull_failed_at["at"] is None or time.monotonic() - _pull_failed_at["at"] > PULL_RETRY_SECONDS
     except docker.errors.DockerException:
         return False
 
-    return _pull_failed_at["at"] is None or time.monotonic() - _pull_failed_at["at"] > PULL_RETRY_SECONDS
+    return container.attrs.get("Image") != wanted.id
 
 
 def running_container():

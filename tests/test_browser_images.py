@@ -25,7 +25,7 @@ class FakeImages:
         if reference not in self.present:
             raise docker.errors.ImageNotFound("no such image")
 
-        return object()
+        return SimpleNamespace(id=f"id-of-{reference}")
 
     def list(self, name=None):
         return [SimpleNamespace(tags=[tag], attrs={"Created": created}) for tag, created in self.older]
@@ -169,18 +169,24 @@ def test_a_failed_start_puts_the_short_text_in_the_window(monkeypatch):
     assert "SCMP_ACT" not in runtime._state["detail"] and len(runtime._state["detail"]) <= runtime.MAX_DETAIL
 
 
-def running(image):
-    return SimpleNamespace(status="running", attrs={"Config": {"Image": image}})
+def running(image_id):
+    return SimpleNamespace(status="running", attrs={"Image": image_id, "Config": {"Image": "whatever the engine rewrote it to"}})
 
 
-def test_a_browser_on_the_pinned_image_is_left_alone(monkeypatch):
-    assert runtime.needs_replacing(running(runtime.engine().image_reference())) is False
+def current_id():
+    return f"id-of-{runtime.engine().image_reference()}"
+
+
+def test_a_browser_on_the_pinned_image_is_left_alone_whatever_name_the_engine_gave_it(monkeypatch):
+    monkeypatch.setattr(runtime, "_client", lambda: SimpleNamespace(images=FakeImages(present={runtime.engine().image_reference()})))
+
+    assert runtime.needs_replacing(running(current_id())) is False
 
 
 def test_an_outdated_browser_is_replaced_once_the_new_image_is_here(monkeypatch):
     monkeypatch.setattr(runtime, "_client", lambda: SimpleNamespace(images=FakeImages(present={runtime.engine().image_reference()})))
 
-    assert runtime.needs_replacing(running("homedock/browser:old")) is True
+    assert runtime.needs_replacing(running("id-of-homedock/browser:old")) is True
 
 
 def test_an_outdated_browser_is_kept_for_a_while_after_a_failed_pull(monkeypatch):
@@ -196,7 +202,8 @@ def test_an_outdated_browser_is_kept_for_a_while_after_a_failed_pull(monkeypatch
 
 def test_opening_the_window_joins_a_current_browser_instead_of_restarting_it(monkeypatch):
     started = []
-    monkeypatch.setattr(runtime, "running_container", lambda: running(runtime.engine().image_reference()))
+    monkeypatch.setattr(runtime, "running_container", lambda: running(current_id()))
+    monkeypatch.setattr(runtime, "_client", lambda: SimpleNamespace(images=FakeImages(present={runtime.engine().image_reference()})))
     monkeypatch.setattr(runtime.threading, "Thread", lambda **kw: started.append(kw) or SimpleNamespace(start=lambda: None))
     runtime._state.update(phase="stopped", code="", detail="", progress=None)
 
