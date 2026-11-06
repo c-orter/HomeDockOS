@@ -50,6 +50,10 @@
                 <Icon :icon="arrowTopRightIcon" class="w-3 h-3 text-blue-600" />
               </div>
             </template>
+            <template v-else-if="sysIcon.appId === TRASH_ICON_ID">
+              <AppIconGraphic :icon="systemIconGlyph(sysIcon)" :color="systemIconColor(sysIcon)" :size="APP_ICON_SIZE" />
+              <CountBadge :count="trashStore.items.length" />
+            </template>
             <AppIconGraphic v-else :icon="systemIconGlyph(sysIcon)" :color="systemIconColor(sysIcon)" :size="APP_ICON_SIZE" />
           </div>
           <span :class="[themeClasses.desktopIconText, 'text-xs text-center max-w-full overflow-hidden text-ellipsis whitespace-nowrap pointer-events-none font-medium']" style="line-height: 1.25rem">{{ sysIcon.shortcut ? sysIcon.name : $t(sysIcon.name) }}</span>
@@ -89,7 +93,9 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useDesktopStore, isFolderableIcon, DockerApp, DesktopFolder, SystemDesktopIcon } from "../__Stores__/desktopStore";
+import { useDesktopStore, isFolderableIcon, TRASH_ICON_ID, DockerApp, DesktopFolder, SystemDesktopIcon } from "../__Stores__/desktopStore";
+import { useTrashStore } from "../__Stores__/useTrashStore";
+import { useTrashActions } from "../__Composables__/useTrashActions";
 import { useWidgetsStore, WIDGET_MAX_INSTANCES, type WidgetInstance } from "../__Stores__/useWidgetsStore";
 import { useQuickViewStore } from "../__Stores__/useQuickViewStore";
 import { shortcutLabel } from "../__Utils__/PlatformKeys";
@@ -130,6 +136,7 @@ import DesktopWidgetFrame from "./DesktopWidgetFrame.vue";
 import WidgetGalleryModal from "../__Components__/WidgetGalleryModal.vue";
 
 import ShortcutGraphic from "../__Components__/ShortcutGraphic.vue";
+import CountBadge from "../__Components__/CountBadge.vue";
 import { getAppById, ENTERPRISE_APP_COLOR } from "../__Config__/WindowDefaultDetails";
 
 import { startContainer, stopContainer, restartContainer, pauseContainer, unpauseContainer, uninstallContainer, updateContainer } from "../__Services__/DockerActions";
@@ -165,6 +172,7 @@ import resizeIcon from "@iconify-icons/mdi/resize";
 import cloudIcon from "@iconify-icons/mdi/cloud";
 import { homedockIcon } from "../__Config__/HomeDockIcon";
 import monitorOffIcon from "@iconify-icons/mdi/monitor-off";
+import trashCanIcon from "@iconify-icons/mdi/trash-can";
 import fileSearchIcon from "@iconify-icons/mdi/file-search";
 import cubeScanIcon from "@iconify-icons/mdi/cube-scan";
 import packageVariantIcon from "@iconify-icons/mdi/package-variant";
@@ -177,6 +185,8 @@ import toolboxOutlineIcon from "@iconify-icons/mdi/toolbox-outline";
 import folderMultipleIcon from "@iconify-icons/mdi/folder-multiple";
 
 const desktopStore = useDesktopStore();
+const trashStore = useTrashStore();
+const trashActions = useTrashActions();
 const widgetsStore = useWidgetsStore();
 const windowStore = useWindowStore();
 const { quickActionsFor } = useAppQuickActions();
@@ -1348,15 +1358,41 @@ const contextMenuItems = computed<ContextMenuItem[]>(() => {
       ];
     }
 
-    const items: ContextMenuItem[] = [
-      {
-        label: "Refresh",
-        icon: refreshIcon,
-        action: async () => {
-          await fetchContainers(csrfToken.value);
-        },
-      },
-    ];
+    const items: ContextMenuItem[] =
+      sysIcon.appId === TRASH_ICON_ID
+        ? [
+            {
+              label: "Open",
+              icon: openIcon,
+              action: () => {
+                desktopStore.openSystemApp(sysIcon.appId);
+              },
+            },
+            {
+              label: "Empty Trash",
+              icon: trashCanIcon,
+              danger: true,
+              disabled: trashStore.items.length === 0,
+              action: () => {
+                confirm({
+                  title: "Empty the Trash?",
+                  content: "Everything in the Trash will be deleted and can't be recovered.",
+                  okText: "Empty Trash",
+                  cancelText: "Cancel",
+                  onOk: trashActions.empty,
+                });
+              },
+            },
+          ]
+        : [
+            {
+              label: "Refresh",
+              icon: refreshIcon,
+              action: async () => {
+                await fetchContainers(csrfToken.value);
+              },
+            },
+          ];
 
     if (!sysIcon.isPermanent) {
       items.push({ divider: true });
@@ -1450,7 +1486,6 @@ const contextMenuItems = computed<ContextMenuItem[]>(() => {
         action: () => {
           openCreateFolderModal();
         },
-        disabled: desktopStore.mainDockerApps.length === 0,
       },
       {
         label: "New Shortcut",
@@ -2099,6 +2134,7 @@ onMounted(() => {
   desktopStore.loadDesktopState().then(() => desktopStore.loadShortcuts(csrfToken.value));
   desktopStore.loadAppViewModes(csrfToken.value);
   desktopStore.loadCertificateTrust(csrfToken.value);
+  trashStore.fetch(csrfToken.value);
 
   setTimeout(() => {
     foldersLoaded.value = true;

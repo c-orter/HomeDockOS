@@ -28,6 +28,7 @@ export interface PackagerStore {
 export const PREDEFINED_STORES: PackagerStore[] = [
   { id: "casa", name: "Casa App Store", url: "https://github.com/IceWhaleTech/CasaOS-AppStore/archive/refs/heads/main.zip", color: "#4263eb", authors: [] },
   { id: "bigbear", name: "BigBearTechWorld", url: "https://github.com/bigbeartechworld/big-bear-casaos/archive/refs/heads/master.zip", color: "#e8590c", authors: ["BigBearTechWorld", "BigBearCommunity"] },
+  { id: "recasa", name: "ReCasa App Store", url: "https://github.com/ReCasaOS/_appstore/raw/catalogue/store/recasaos.zip", color: "#d6336c", authors: [] },
   { id: "tmc", name: "TMC Store", url: "https://github.com/mariosemes/CasaOS-TMCstore/archive/refs/heads/main.zip", color: "#7048e8", authors: [] },
   { id: "zima", name: "Zima App Store", url: "https://github.com/justserdar/ZimaOS-AppStore/archive/refs/tags/latest-v0.0.8.zip", color: "#1c7ed6", authors: ["JustSerdar"] },
   { id: "coolstore", name: "Coolstore", url: "https://github.com/WisdomSky/CasaOS-Coolstore/archive/refs/heads/main.zip", color: "#1098ad", authors: [] },
@@ -619,6 +620,27 @@ function createPackager() {
   const isImportingThirdParty = ref(false);
   const thirdPartySelectedSlugs = ref<Set<string>>(new Set());
 
+  const storeAvailability = ref<Record<string, "checking" | "available" | "unavailable">>({});
+
+  const checkStoreAvailability = async (store: PackagerStore) => {
+    storeAvailability.value = { ...storeAvailability.value, [store.id]: "checking" };
+    let status: "available" | "unavailable" = "available";
+    try {
+      const response = await axios.get("/api/pkg/store-status", { params: { url: store.url }, headers: headers() });
+      if (response.data?.available === false) status = "unavailable";
+    } catch (error) {
+      console.error(`Error checking store ${store.id}:`, error);
+    }
+    storeAvailability.value = { ...storeAvailability.value, [store.id]: status };
+  };
+
+  const checkStoresAvailability = () => {
+    for (const store of PREDEFINED_STORES) if (!storeAvailability.value[store.id]) checkStoreAvailability(store);
+  };
+
+  const availableStores = computed(() => PREDEFINED_STORES.filter((store) => storeAvailability.value[store.id] === "available"));
+  const isCheckingStores = computed(() => PREDEFINED_STORES.some((store) => (storeAvailability.value[store.id] ?? "checking") === "checking"));
+
   const importedFromStore = (store: PackagerStore) => externalApps.value.filter((app: any) => (app.manifest?.source ? app.manifest.source === store.url : store.authors.includes(app.manifest?.author)));
 
   const toggleThirdPartyPkg = (slug: string) => {
@@ -909,6 +931,9 @@ function createPackager() {
     thirdPartyPreview,
     isImportingThirdParty,
     thirdPartySelectedSlugs,
+    availableStores,
+    isCheckingStores,
+    checkStoresAvailability,
     importedFromStore,
     toggleThirdPartyPkg,
     thirdPartyToggleAll,

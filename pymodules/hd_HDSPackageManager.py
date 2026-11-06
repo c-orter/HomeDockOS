@@ -16,6 +16,7 @@ import zipfile
 import tempfile
 import datetime
 
+import urllib.error
 import urllib.request
 import urllib.parse
 
@@ -1866,6 +1867,44 @@ def preview_third_party_url():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+_store_status_cache: Dict[str, dict] = {}
+_STORE_STATUS_TTL_AVAILABLE = 86400  # 24h
+_STORE_STATUS_TTL_UNAVAILABLE = 3600  # 1h
+_STORE_GONE_CODES = (404, 410, 451)
+
+
+def _check_store_url(url: str) -> Optional[bool]:
+    req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "HomeDockOS-Packager/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=10):
+            return True
+    except urllib.error.HTTPError as e:
+        return False if e.code in _STORE_GONE_CODES else None
+    except Exception:
+        return None
+
+
+@login_required
+def store_status():
+    url = (request.args.get("url") or "").strip()
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ("http", "https") or not url.lower().endswith(".zip"):
+        return jsonify({"success": False, "message": "Invalid store URL"}), 400
+
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    for key in [k for k, v in _store_status_cache.items() if now >= v["expires"]]:
+        _store_status_cache.pop(key, None)
+
+    cached = _store_status_cache.get(url)
+    if cached:
+        return jsonify({"success": True, "available": cached["available"]})
+
+    available = _check_store_url(url)
+    ttl = _STORE_STATUS_TTL_AVAILABLE if available else _STORE_STATUS_TTL_UNAVAILABLE
+    _store_status_cache[url] = {"available": available, "expires": now + ttl}
+    return jsonify({"success": True, "available": available})
 
 
 @login_required

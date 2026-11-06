@@ -38,6 +38,7 @@ def desktop():
     selected_theme = config["selected_theme"]
     selected_back = config["selected_back"]
     selected_appearance = config["selected_appearance"]
+    selected_motion = config["selected_motion"]
     selected_language = config["selected_language"]
     clock_format = config["clock_format"]
     week_start = config["week_start"]
@@ -72,6 +73,7 @@ def desktop():
         selected_theme=selected_theme,
         selected_back=selected_back,
         selected_appearance=selected_appearance,
+        selected_motion=selected_motion,
         selected_language=selected_language,
         clock_format=clock_format,
         week_start=week_start,

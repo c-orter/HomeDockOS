@@ -66,8 +66,8 @@
     </SettingsGroup>
   </Transition>
 
-  <SettingsGroup :header="$t('WINDOW STYLE')" :footer="$t('Choose how window title bars and their controls are laid out.')">
-    <SettingsItem :icon="dockWindowIcon" icon-color="yellow" :title="$t('Window Controls')" :description="$t('Pick where the window buttons sit and how they look')" is-last control-type="always-stack">
+  <SettingsGroup :header="$t('WINDOW STYLE')" :footer="$t('Choose how window title bars are laid out and how windows move.')">
+    <SettingsItem :icon="dockWindowIcon" icon-color="yellow" :title="$t('Window Controls')" :description="$t('Pick where the window buttons sit and how they look')" control-type="always-stack">
       <template #badge>
         <SettingsHelpTooltip :text="$t('Redmond puts the buttons on the right and squares them off. Cupertino puts them on the left as coloured circles. It only changes the window chrome HomeDock OS draws, never what runs inside the window.')" />
       </template>
@@ -77,6 +77,20 @@
             <Icon :icon="option.icon" class="text-xl leading-none shrink-0" aria-hidden="true" />
             <span class="text-[0.8rem] font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1 min-w-0">{{ $t(option.label) }}</span>
             <Icon :icon="checkIcon" class="text-[0.95rem] shrink-0 transition-opacity duration-150" :class="appearanceValue === option.value ? 'opacity-85' : 'opacity-0'" />
+          </button>
+        </div>
+      </div>
+    </SettingsItem>
+    <SettingsItem :icon="motionPlayOutlineIcon" icon-color="orange" :title="$t('Window Motion')" :description="$t('Choose how windows move when you drag and snap them')" is-last control-type="always-stack">
+      <template #badge>
+        <SettingsHelpTooltip :text="$t('Playful lets windows tilt a little as you drag them and bounce softly when they snap into place. Standard keeps them perfectly still.')" />
+      </template>
+      <div class="w-full">
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(110px,1fr))] gap-2 w-full sm:grid-cols-[repeat(auto-fit,minmax(125px,1fr))] sm:gap-2.5 [@media(min-width:900px)]:grid-cols-[repeat(auto-fit,minmax(135px,1fr))] [@media(min-width:900px)]:gap-3">
+          <button v-for="option in MOTION_OPTIONS" :key="option.value" @click="motionValue = option.value" :class="['relative flex items-center gap-2 py-[0.55rem] px-[0.7rem] border-2 rounded-lg cursor-pointer transition-colors duration-150 text-left overflow-hidden focus-visible:outline-hidden', themeClasses.languageOptionSelector, motionValue === option.value ? themeClasses.languageOptionSelectedSelector : '', themeClasses.scopeSelector]" type="button" :title="$t(option.label)">
+            <Icon :icon="option.icon" class="text-xl leading-none shrink-0" aria-hidden="true" />
+            <span class="text-[0.8rem] font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1 min-w-0">{{ $t(option.label) }}</span>
+            <Icon :icon="checkIcon" class="text-[0.95rem] shrink-0 transition-opacity duration-150" :class="motionValue === option.value ? 'opacity-85' : 'opacity-0'" />
           </button>
         </div>
       </div>
@@ -140,7 +154,7 @@ import { useCsrfToken } from "../__Composables__/useCsrfToken";
 
 import type { PrismAppearance } from "@prism-wm/core";
 
-import type { ThemeData } from "../__Types__/ThemeData";
+import type { ThemeData, WindowMotion } from "../__Types__/ThemeData";
 import type { SettingsData } from "../__Types__/SettingsData";
 
 import { Upload, message } from "ant-design-vue";
@@ -156,6 +170,9 @@ import checkIcon from "@iconify-icons/mdi/check-circle";
 import clockOutlineIcon from "@iconify-icons/mdi/clock-outline";
 import calendarWeekIcon from "@iconify-icons/mdi/calendar-week";
 import dockWindowIcon from "@iconify-icons/mdi/dock-window";
+import motionPlayOutlineIcon from "@iconify-icons/mdi/motion-play-outline";
+import creationIcon from "@iconify-icons/mdi/creation";
+import rectangleOutlineIcon from "@iconify-icons/mdi/rectangle-outline";
 import microsoftWindowsIcon from "@iconify-icons/mdi/microsoft-windows";
 import appleIcon from "@iconify-icons/mdi/apple";
 
@@ -193,9 +210,15 @@ const APPEARANCE_OPTIONS: { value: PrismAppearance; label: string; icon: typeof 
   { value: "cupertino", label: "Cupertino", icon: appleIcon },
 ];
 
+const MOTION_OPTIONS: { value: WindowMotion; label: string; icon: typeof microsoftWindowsIcon }[] = [
+  { value: "playful", label: "Playful", icon: creationIcon },
+  { value: "standard", label: "Standard", icon: rectangleOutlineIcon },
+];
+
 const themeValue = ref<string>(props.modelValue.selected_theme || "default");
 const wallValue = ref<string>(props.modelValue.selected_back || "back1.jpg");
 const appearanceValue = ref<PrismAppearance>(props.modelValue.selected_appearance === "cupertino" ? "cupertino" : "redmond");
+const motionValue = ref<WindowMotion>(props.modelValue.selected_motion === "standard" ? "standard" : "playful");
 const languageValue = ref<string>(props.modelValue.selected_language || "en");
 const clockFormatValue = ref<string>(props.modelValue.clock_format || "24h");
 const weekStartValue = ref<string>(props.modelValue.week_start || "monday");
@@ -221,6 +244,7 @@ watch(
     selected_theme: themeValue.value,
     selected_back: wallValue.value,
     selected_appearance: appearanceValue.value,
+    selected_motion: motionValue.value,
     selected_language: languageValue.value,
     clock_format: clockFormatValue.value,
     week_start: weekStartValue.value,
@@ -231,6 +255,7 @@ watch(
         selected_theme: newValue.selected_theme,
         selected_back: newValue.selected_back,
         selected_appearance: newValue.selected_appearance,
+        selected_motion: newValue.selected_motion,
       });
     }
     if (updateSettings) {

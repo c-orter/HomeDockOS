@@ -1,6 +1,8 @@
 # CHANGELOG
 
-- **2.7.0.1** (Latest): Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
+- **2.7.0.2** (Latest): Brings in upstream 2.6.2.210 (Trash, PDF Editor, Slides, the ReCasa App Store and the Pillow 13 security upgrade) on top of the 2.7.x domains work.
+
+- **2.7.0.1**: Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
 
 - **2.7.0.0**: Domains for every app, install straight from the Packager, a terminal outside apps, an editor for installed apps, and the end of port-based URLs.
   - **Any number of domains per app.** Each app gets its own list of names, with a port, protocol, path and a gated or direct access mode per name. One certificate covers all of them, issued over DNS-01 with a credential per DNS zone, or over HTTP-01 on port 80.
@@ -9,6 +11,99 @@
   - **Edit installed apps** (environment, ports, volumes, services) from a structured editor, with a change summary.
   - **Legacy port URLs are gone.** Apps open by container name and domain only. `dynamic_dns` is now `base_domain` and defaults to empty.
   - Not yet covered by a real Let's Encrypt run or a browser walkthrough; translations for the new strings are English only.
+
+- **2.6.2.210**: Introducing the **Trash**, the **PDF Editor**, **Slides** for presentations, CSV files in **Sheets**, a **My Home** that looks like a computer, a Packager that notices when a store disappears and the **ReCasa App Store**, plus Pillow, node-forge, DOMPurify, Vue I18n and follow-redirects security upgrades, closing 41 CVEs and 20 GHSA advisories.
+  - **Deleting a file no longer means losing it.** Files and folders you delete in Storage and the Drop Zone now go to a **Trash** in the File Explorer's Quick Access, grouped by where they came from, the same way Recents is. Restore puts them back where they were, and if something else took their name in the meantime it comes back as `name (2)` instead of overwriting anything. Whatever sits in the Trash for 30 days is deleted for good on its own, the info bar says so, and **Empty Trash** clears it whenever you like.
+  - **The Trash lives on the desktop too.** It sits next to My Home and File Explorer with a badge counting what's inside, and opens as its own app from the desktop or the Start menu's Utilities. Select items like in the File Explorer, with `Ctrl`/`Cmd`, `Shift` or by dragging a box around them, restore them or delete them for good from the command bar, the context menu or with `Delete`, check where each one came from, when it was deleted and how many days it has left in the details pane, and double-click anything to see it in the File Explorer. Right-click the desktop icon to empty it, or remove it from the desktop and bring it back from the Start menu whenever you like.
+  - **The Drop Zone's Trash stays in the Drop Zone.** Each location keeps its own Trash inside itself, following the freedesktop layout (`.Trash/files` and `.Trash/info`), so encrypted Drop Zone files stay encrypted while they wait, and nothing from one location ever ends up in another.
+  - **Where there is no Trash, it says so in red.** App Drive volumes and Disks+ drives belong to your apps and your disks, not to HomeDock OS, so there is nowhere safe to keep a Trash there. Deleting in them shows a red **Delete Permanently** and asks first, so nobody finds out the hard way. Where the Trash exists, **Move to Trash** carries a small permanent-delete button next to it, the way Compress carries its password button, for when you really mean it.
+  - **Disks+ refuses to delete the root of a drive.** A request pointing at the drive itself, rather than something inside it, is now rejected before anything is touched.
+  - **The PDF Viewer became the PDF Editor.** It is rebuilt on top of pdf.js's own viewer, so text can be selected, links work, `Ctrl+F` finds, and forms can be filled in. **Annotate** highlights text, adds notes, draws with a pen and drops images on the page, and **Sign** lets you draw or type your signature and place it wherever it goes. A sidebar shows page thumbnails or the document outline, open by default on desktop, where pages can be moved, deleted or extracted into a PDF of their own. Password-protected PDFs ask for their password instead of failing.
+  - **It saves back to where the PDF lives,** in Storage, the Drop Zone (encrypted again), App Drive or Disks+, exactly like Sheets and Writer. PDFs with no home, like ones dragged in from your computer, are saved to `Storage/Documents`. Extracting a page from a Drop Zone PDF warns you first that the new file goes to `Storage/Documents` without the Drop Zone's encryption.
+  - **PDFs can't run anything.** Scripts inside PDFs are never executed, only `http`, `https`, `mailto` and similar links are allowed, and XFA forms are now switched off explicitly, so a future pdf.js release changing its default can't turn them back on.
+  - **The PDF Editor fits on a phone.** The zoom buttons step aside on narrow windows, since you zoom with your fingers anyway, the Annotate bar wraps onto a second line instead of getting cut off, and the search field and signature dialog use the whole width.
+  - **Presentations open in Slides.** Double-click any `.pptx` and it opens in **Slides**, with thumbnails down the side, arrows, the keyboard or a page number to move around, and **Present** (`F5`) to show it full screen on a black background, with the close button and slide counter on a dark pill you can see on any slide. It shows the presentation exactly as it is in the file, cut-off text included, because it's their presentation. It's read-only for now, every slide is sanitized before it reaches the page, and a few rendering bugs in the underlying library are patched at build time, from slides borrowing content from other slides to Canva image fills showing up blank.
+  - **Sheets opens CSV and TSV files too.** The separator is detected on its own (`,`, `;`, tab or `|`) and kept when saving, along with line endings, the BOM, quotes and leading zeros, so `08001` is still `08001` when you're done. **Download as Excel Workbook** in the File menu turns it into a proper `.xlsx`. **Open in Notepad** is still in the context menu for when you want the raw text.
+  - **Every document gets its own window.** Opening a second spreadsheet, document or PDF used to replace the one you had open. Now each file opens in a window of its own, and opening one that's already open brings its window to the front instead of duplicating it.
+  - **Windows got some life in them.** Minimizing now shrinks a window into its own taskbar button, and restoring grows it back out of it. Dragging a window to the top edge maximizes it, the four corners snap it to a quarter of the screen, and dragging a maximized window by its title bar brings it back to its size under your cursor. With the new **Window Motion** setting on **Playful**, the default, windows tilt a little as you drag them and bounce softly when they snap into place; **Standard** keeps them perfectly still. It's in Settings, right under Redmond and Cupertino.
+  - **Sheets no longer goes white after opening a PDF.** pdf.js's stylesheet switched the entire page to follow your system's dark mode, so text in Sheets with no color of its own turned white on white. HomeDock OS now overrides that at the root.
+  - **The taskbar stopped offering to maximize windows on phones.** Since the move to Prism Window Manager, long-pressing an app in the taskbar on mobile offered Maximize, and then Restore Down, on windows that are always full screen anyway. Now it only offers Minimize and Close, or Restore when the window is minimized. Yes, we're dimbos, dammit.
+  - **My Home looks like a computer now.** Drives are drawn as what they are, a hard drive, an SSD, an NVMe stick, a USB drive or an optical disc, with a HomeDock OS badge on the system drive. Locations are folders in the same colors as the File Explorer's sidebar, and each section folds away and remembers it.
+  - **The App Store is pinned by default** in the Start menu, in Packager's place, since that's where most people go first. If you've already arranged your pins, nothing changes.
+  - **Packager stops showing stores that no longer exist.** BigBearTechWorld deleted its repositories overnight, which left a store in Packager that could only fail. Packager now asks HomeDock OS whether each store is still there, shows them as they answer and hides the ones that are really gone (404, 410 or 451). A network hiccup or a server error never hides a store. The answer is remembered for 24 hours, or 1 hour for missing ones, so a store that comes back shows up again by itself.
+  - **The ReCasa App Store joins Packager,** with around 320 apps, bringing the community stores to seven.
+  - **HomeDock OS now requires Python 3.11 or newer.** Pillow 13, which closes the bulk of this release's security alerts, no longer installs on Python 3.10. Installations still on 3.10 keep starting with what they have and warn on every start that dependencies won't be updated until Python is upgraded. A clean installation on 3.10 stops with a clear message instead of crashing on a missing import. The Docker image runs Python 3.12 and isn't affected.
+  - **Patched 40 Pillow CVEs and 1 GHSA advisory** by upgrading `Pillow` (pip) from 12.3.0 to 13.0.0 in `requirements.txt`. These were the ones that mattered most: HomeDock OS opens the images you upload with Pillow to make thumbnails and previews, so the JPEG, TIFF, GIF, PNG and BMP decoding flaws were reachable by anyone able to put a file in your Storage. The ones in EPS and Ghostscript, FlashPix, MIC, WMF, Spider and XBM never were, as those formats aren't on the list of formats HomeDock OS opens.
+  - **CVE-2026-96636** — Decompression bomb protection bypass via multi-frame `seek()` in MPO and DCX.
+  - **CVE-2026-96637** — Decompression bomb check bypass in `SpiderImagePlugin.seek()`, leading to unbounded allocation.
+  - **CVE-2026-96638** — BMP RLE decoder memory amplification via unbounded delta escape and absolute mode.
+  - **CVE-2026-96639** — Multi-frame loaders could reuse stale native image storage after mode transitions.
+  - **CVE-2026-96640** — PDF append accepted a malformed shared page-tree DAG, exhausting resources.
+  - **CVE-2026-96641** — Reachable undefined behavior in native integer operations during PILfont text-width accumulation.
+  - **CVE-2026-96642** — A negative size field in TarIO caused an infinite CPU-spin loop.
+  - **CVE-2026-96643** — A PNG `eXIf` chunk made EXIF parsing run in quadratic time.
+  - **CVE-2026-96644** — Heap over-read in WMF/EMF rendering via 16-bit dimension truncation, on Windows builds.
+  - **CVE-2026-96778** — Heap buffer overflow writing a JPEG comment after an ICC profile filled the buffer.
+  - **CVE-2026-112390** — Infinite loop in MIC `n_frames` through the embedded TIFF.
+  - **CVE-2026-112391** — `PdfParser` could recurse without limit in `get_value()` and `linearize_page_tree()`.
+  - **CVE-2026-112392** — NULL dereference in `ImagingExpand` via rank filters on zero-size images.
+  - **CVE-2026-112393** — Heap buffer overflow in `_tiffWriteProc` when saving TIFF to `BytesIO`.
+  - **CVE-2026-112394** — The `P;2L` and `P;4L` decoders could read 1 to 3 bytes past the buffer.
+  - **CVE-2026-112395** — The tiled-TIFF decoder read past the tile buffer in `copy4`.
+  - **CVE-2026-112396** — Heap use-after-free when encoding TIFF to an in-memory buffer.
+  - **CVE-2026-112397** — Out-of-bounds access in `_imagingmorph` on a zero-width image.
+  - **CVE-2026-112398** — Heap buffer overflow in FlashPix (FPX) JPEG decoding, leading to code execution.
+  - **CVE-2026-112399** — APNG background disposal allocated the full canvas before the decompression bomb check.
+  - **CVE-2026-112400** — GIF seek kept the rejected size after a `DecompressionBombError`.
+  - **CVE-2026-112401** — Quadratic GIF comment concatenation in `Image.open()`.
+  - **CVE-2026-112402** — Double free in `ImagingScaleAffine` on allocation failure via `Image.transform`.
+  - **CVE-2026-112403** — Heap buffer overflow in `ImagingJpegDecode`.
+  - **CVE-2026-112404** — Out-of-bounds read in the TIFF tile and RGBA paths leaked heap memory into pixels.
+  - **CVE-2026-112405** — NULL pointer dereference in `Image.merge` via an unvalidated band 0.
+  - **CVE-2026-112406** — Infinite loop in `PdfParser.rewrite_pages` on a page tree `Parent` cycle.
+  - **CVE-2026-112891** — Quadratic GIF comment copying during save.
+  - **CVE-2026-112892** — The MSP RLE decoder expanded a tiny file into unbounded memory.
+  - **CVE-2026-112893** — Invalid free in FreeType glyph rendering with a stroker active.
+  - **CVE-2026-112894** — Quadratic-time denial of service in PDF `save_all` (`PdfParser.next_object_id`).
+  - **CVE-2026-112895** — Unbounded recursion parsing a PDF page tree or trailer chain, an incomplete fix for CVE-2026-42310.
+  - **CVE-2026-112896** — A ColorMap plane-size mismatch in the TIFF encoder caused a heap out-of-bounds read.
+  - **CVE-2026-112897** — The TIFF decoder returned uninitialized memory as pixels for short JPEG strips.
+  - **CVE-2026-112898** — `Image.quantize()` with an empty palette leaked uninitialized stack memory.
+  - **CVE-2026-112899** — EPS `load(scale)` let Ghostscript render past the decompression bomb limit.
+  - **CVE-2026-112900** — Argument injection in the Ghostscript call, potentially leading to remote code execution.
+  - **CVE-2026-112901** — ReDoS in `XbmImagePlugin`, where a 512-byte file stalled `Image.open()` for minutes.
+  - **CVE-2026-112902** — Memory disclosure and segfault in the libtiff encoder via crafted TIFF tags.
+  - **CVE-2026-114501** — Arrow export leaked stale heap memory when `PILLOW_ALIGNMENT > 1`.
+  - **GHSA-78g4-xqwv-q3g8** — The bundled libopenjp2 2.5.4 carried a heap buffer overflow write (OSV-2025-219) reachable from `Image.open().load()`. No CVE associated.
+  - **Patched node-forge CVE-2026-85393 and 11 GHSA advisories** by moving `node-forge` (npm) from 1.4.0 to 1.4.3 in `package-lock.json`, including the one we had to keep open in 2.6.2.102 for lack of a fixed release. HomeDock OS only uses node-forge for random bytes, encrypting credentials towards the server, SHA-256 and Base64, so its TLS, X.509, PKCS#12 and cookie code was never reachable.
+  - **CVE-2026-85393** — RSA PKCS#1 v1.5 signature verification accepted extra nested `DigestAlgorithm` elements, allowing forged signatures with low-exponent keys.
+  - **GHSA-jc66-7q78-782g** — PKCS#12 MAC forgery and constant-key PBE via a zero iteration count.
+  - **GHSA-5x38-2vff-x55p** — X.509 `basicConstraints` bypass in `verifyCertificateChain()` via the deprecated extension OIDs 2.5.29.10 and 2.5.29.13.
+  - **GHSA-4487-j8r4-4g2f** — `verifyCertificateChain()` removed trusted CA certificates sharing a subject from the CA store.
+  - **GHSA-5cwg-6vw7-rj6p** — AES-GCM authentication bypass via an unvalidated `tagLength` option.
+  - **GHSA-7wch-p9px-956x** — ReDoS in PEM decoding (`pem.decode`).
+  - **GHSA-hqq3-7jhf-c5jx** — Denial of service in TLS record processing via call stack exhaustion.
+  - **GHSA-8hrf-8g6f-7xwp** — Denial of service in TLS record processing via a record interleaved with a fragmented handshake message.
+  - **GHSA-525v-9gp9-w22h** — The TLS client crashed when the server sent no certificate.
+  - **GHSA-6wvx-3r32-xmcg** — Prototype pollution in `forge.http` cookie handling via a malicious `Set-Cookie`.
+  - **GHSA-4642-5mcj-2rqw** — ASN.1 OID first arc truncation in `asn1.oidToDer`.
+  - **GHSA-h6cr-wjv9-3cpp** — Infinite loop in `BigInteger.modInverse()` with negative input, an incomplete fix for CVE-2026-33891.
+  - **Patched 3 DOMPurify GHSA advisories** by moving `dompurify` (npm) from 3.4.16 to 3.4.17. HomeDock OS uses neither `SAFE_FOR_TEMPLATES`, `IN_PLACE` nor the XHTML parser mode, so none of them applied. No CVEs associated.
+  - **GHSA-cg2g-xh64-v4q7** — `SAFE_FOR_TEMPLATES` bypass: split template expressions survived in attached shadow root content on DOM output modes.
+  - **GHSA-mrv2-3pqr-j5jr** — In `IN_PLACE` mode, a hook removing a parent or sibling left the detached subtree's event handlers armed, an incomplete fix for `GHSA-p98j-92pf-mc4p` from 2.6.2.102.
+  - **GHSA-c6gr-qvv4-5v3f** — The SMIL `attributeName=href` guard was skipped with `PARSER_MEDIA_TYPE` set to `application/xhtml+xml`.
+  - **Patched 2 Vue I18n GHSA advisories** by moving `vue-i18n`, `@intlify/core-base` and `@intlify/shared` (npm) from 11.4.13 to 11.4.18. Both are about `escapeParameter`, which HomeDock OS doesn't enable, and our translations are ours, not user input. No CVEs associated.
+  - **GHSA-83rm-6c8r-g728** — `escapeParameter` didn't prevent XSS through `srcdoc` in translation messages.
+  - **GHSA-8rc2-428q-7ww3** — `escapeParameter` didn't escape named values when the same call also passed a list.
+  - **Patched 3 follow-redirects GHSA advisories** by moving `follow-redirects` (npm), pulled in by axios, from 1.16.0 to 1.16.2. They are about credentials following redirects in Node, while axios only ever runs in the browser here. No CVEs associated.
+  - **GHSA-q3jh-wrc6-jgq8** — Array-form headers bypassed cross-origin credential stripping.
+  - **GHSA-8r9p-f939-6h3c** — Faulty regex escaping in `sensitiveHeaders` could expose credential headers.
+  - **GHSA-mrwp-f3q8-3g9p** — Cross-realm `sensitiveHeaders` arrays were discarded, letting custom credentials follow redirects.
+  - **The Docker image isn't affected by the OpenSSH password authentication bypass** fixed in OpenSSH 10.6p2, which hits Linux systems running musl libc, like Alpine, with PAM disabled. The image is built on Alpine but ships no SSH server at all. The OpenSSH Server app in the App Store comes with `PASSWORD_ACCESS=false`, which turns password logins off; if you turned them on, pull its image again once linuxserver.io publishes it with 10.6p2. If you run HomeDock OS directly on an Alpine host with `sshd`, that's your system's OpenSSH, so update it with `apk upgrade openssh`. No CVE assigned yet.
+  - **Kept `minimatch` at 3.1.5 and 5.1.9** despite `GHSA-g3hv-75wg-m249`, flagged as "everything before 11.0.1". The vulnerable code path (`firstPhasePreProcess()` with `optimizationLevel >= 2`) doesn't exist in those versions, it only reaches us through the Excel export of `@corbe30/fortune-excel`, and forcing 11 would break the `glob@7` that depends on it.
+    > **TL;DR:** A Trash Bin, a PDF Editor, Slides, CSV in Sheets, windows per document and a My Home that finally looks like a computer, plus 41 CVEs and 20 GHSA advisories closed with Pillow carrying most of the weight, and one left open on purpose because the code it complains about doesn't exist in our versions. Python 3.11 is the new minimum. Upgrade before your Python does it for you, selfhosters!
+
+---
 
 - **2.6.2.104**: Fixes blank HTTPS windows, stuck port scans, blank sub-subdomains OnScreen Apps, Start Menu iOS longress hotfix and updated dependencies.
   - **Sonarr, Radarr and friends no longer go blank over HTTPS.** When their session expired, they redirected to their login page with a hardcoded `http://` address, ignoring `X-Forwarded-Proto`, and the browser refused to load it inside the HTTPS app window, leaving it empty with a Content Security Policy error. The built-in reverse proxy now upgrades those redirects to `https://` when they point back at the app itself. Redirects anywhere else are left untouched, and over plain HTTP, `homedock.localhost` included, nothing changes.
@@ -28,8 +123,6 @@
   - **Kept `Hypercorn` at 0.17.3.** 0.18.0 sends a response's headers together with its first chunk of body, so a response with no body never sends them at all: every `304 Not Modified`, `HEAD` and `204` from HomeDock OS turns into a 500, and browser caching dies with it. It is reported upstream as [pgjones/hypercorn#331](https://github.com/pgjones/hypercorn/issues/331) and still open.
   - **Kept `cryptography` at 48.0.1**, the last 48.x. From 49.0 it only publishes macOS wheels for Apple Silicon, so installing it on an Intel Mac would mean building it from source with a Rust toolchain. 50.0 also fixes **CVE-2026-69247**, a Bleichenbacher oracle in PKCS#7 decryption, which HomeDock OS never uses.
     > **TL;DR:** Thirty-odd packages newer, one line of code changed for PDF.js, and three kept back on purpose: Hypercorn because it breaks caching, cryptography because it leaves Intel Macs behind, and TypeScript because it would stop checking our `.vue` files. Upgrades should never be the thing that breaks your box, selfhosters!
-
----
 
 - **2.6.2.102**: Last time fixes for urllib3, axios, DOMPurify and uuid security dependency upgrades, closing 16 CVEs and 1 GHSA advisory, plus a fix for Enterprise modules.
   - **Patched 3 urllib3 CVEs** by upgrading `urllib3` (pip) from 2.7.0 to 2.8.0 in `requirements.txt`. HomeDock OS streams mostly from the local Docker socket, a source it already trusts, so exposure was low, but a minor bump was not worth arguing about.

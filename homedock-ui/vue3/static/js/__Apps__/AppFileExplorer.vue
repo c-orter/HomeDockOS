@@ -186,6 +186,12 @@
             <span class="truncate">{{ $t("Recents") }}</span>
             <span v-if="fileExplorerStore.recentsCount > 0" :class="[themeClasses.fileExplorerBadge]" class="text-[9px] px-1.5 rounded-full ml-auto">{{ fileExplorerStore.recentsCount }}</span>
           </button>
+
+          <button @click="setLocation('trash')" :class="[currentLocation === 'trash' ? themeClasses.fileExplorerSidebarItemActive : themeClasses.fileExplorerSidebarItem]" class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left transition-colors text-sm cursor-pointer">
+            <AppIconGraphic :icon="trashCanIcon" :color="SIDEBAR_COLORS.trash" :size="SIDEBAR_TILE_SIZE" />
+            <span class="truncate">{{ $t("Trash") }}</span>
+            <span v-if="trashItems.length > 0" :class="[themeClasses.fileExplorerBadge]" class="text-[9px] px-1.5 rounded-full ml-auto">{{ trashItems.length }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -463,6 +469,19 @@
                     <span class="truncate">{{ $t("Recents") }}</span>
                     <span v-if="fileExplorerStore.recentsCount > 0" :class="[themeClasses.fileExplorerBadge]" class="text-[9px] px-1.5 rounded-full ml-auto">{{ fileExplorerStore.recentsCount }}</span>
                   </button>
+
+                  <button
+                    @click="
+                      setLocation('trash');
+                      isNavPopoverOpen = false;
+                    "
+                    :class="[currentLocation === 'trash' ? themeClasses.fileExplorerSidebarItemActive : themeClasses.fileExplorerSidebarItem]"
+                    class="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-left transition-colors text-sm cursor-pointer"
+                  >
+                    <AppIconGraphic :icon="trashCanIcon" :color="SIDEBAR_COLORS.trash" :size="SIDEBAR_TILE_SIZE" />
+                    <span class="truncate">{{ $t("Trash") }}</span>
+                    <span v-if="trashItems.length > 0" :class="[themeClasses.fileExplorerBadge]" class="text-[9px] px-1.5 rounded-full ml-auto">{{ trashItems.length }}</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -615,6 +634,13 @@
           <Icon :icon="harddiskIcon" class="w-3 h-3 flex-shrink-0" />
           <span class="truncate">{{ $t("Outside HomeDock OS") }}</span>
         </span>
+        <template v-if="currentLocation === 'trash'">
+          <span :class="[themeClasses.dropZoneTotalSizeScope]" class="rounded-full px-2 py-0.5 truncate min-w-0">{{ $t("Items are deleted permanently after {n} days", { n: trashRetentionDays }) }}</span>
+          <button v-if="trashItems.length > 0" :class="[themeClasses.dropZoneSortButton]" class="ml-auto flex items-center gap-1 px-2 py-0.5 rounded font-medium flex-shrink-0 cursor-pointer" @click="emptyTrashDialogVisible = true">
+            <Icon :icon="deleteEmptyIcon" class="w-3 h-3 text-red-500" />
+            <span class="text-red-500">{{ $t("Empty Trash") }}</span>
+          </button>
+        </template>
       </div>
 
       <div ref="filesAreaRef" class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 relative" @mousedown="handleContainerMouseDown" @contextmenu="showContextMenu($event, null)" @touchstart="handleContainerTouchStart" @touchmove="handleContainerTouchMove" @touchend="handleContainerTouchEnd" @touchcancel="handleContainerTouchEnd">
@@ -669,10 +695,10 @@
                 </template>
                 <template v-else-if="isSpecialLocation && groupedDisplayFiles.length > 0">
                   <div v-for="group in groupedDisplayFiles" :key="group.key" class="mb-4">
-                    <div :class="[themeClasses.fileExplorerSidebarSectionTitle]" class="flex items-center gap-2 px-1 py-1.5 mb-2 text-xs font-semibold opacity-80">
-                      <Icon :icon="group.icon" class="w-4 h-4" />
-                      <span>{{ group.label }}</span>
-                      <span class="opacity-50 font-normal">({{ group.files.length }})</span>
+                    <div :class="[themeClasses.fileExplorerSidebarSectionTitle]" class="flex items-center gap-2 px-1 py-1.5 mb-2 text-xs font-semibold">
+                      <AppIconGraphic :icon="group.icon" :color="group.color" :size="SIDEBAR_TILE_SIZE" />
+                      <span class="opacity-80">{{ group.label }}</span>
+                      <span class="opacity-40 font-normal">({{ group.files.length }})</span>
                     </div>
                     <div class="fileexplorer-grid" :style="{ height: `${group.gridHeight}px` }">
                       <div v-for="file in group.positionedFiles" :key="`${group.key}-${file.name}`" :data-filename="file.name" :style="{ position: 'absolute', left: `${file.x}px`, top: `${file.y}px` }" :class="['inline-flex flex-col items-center gap-1 cursor-pointer p-2 rounded-lg border', 'transition-[background,transform,border] duration-150', 'w-[100px] h-[120px] select-none', isFileSelected(file) ? [themeClasses.desktopIconBgSelected, themeClasses.desktopIconBorderSelected] : ['border-transparent', themeClasses.desktopIconBg]]" @click="handleFileClick(file, $event)" @dblclick="handleFileDoubleClick(file)" @contextmenu.stop="showContextMenu($event, file)" @touchstart="handleFileTouchStart(file, $event)" @touchmove="handleFileTouchMove" @touchend="handleFileTouchEnd(file, $event)">
@@ -802,10 +828,10 @@
                 </template>
                 <template v-else-if="isSpecialLocation">
                   <div v-for="group in groupedDisplayFiles" :key="group.key" class="mb-4">
-                    <div :class="[themeClasses.fileExplorerSidebarSectionTitle]" class="flex items-center gap-2 px-1 py-1.5 mb-2 text-xs font-semibold opacity-80">
-                      <Icon :icon="group.icon" class="w-4 h-4" />
-                      <span>{{ group.label }}</span>
-                      <span class="opacity-50 font-normal">({{ group.files.length }})</span>
+                    <div :class="[themeClasses.fileExplorerSidebarSectionTitle]" class="flex items-center gap-2 px-1 py-1.5 mb-2 text-xs font-semibold">
+                      <AppIconGraphic :icon="group.icon" :color="group.color" :size="SIDEBAR_TILE_SIZE" />
+                      <span class="opacity-80">{{ group.label }}</span>
+                      <span class="opacity-40 font-normal">({{ group.files.length }})</span>
                     </div>
                     <div v-for="file in group.files" :key="`${group.key}-${file.name}`" :data-filename="file.name" :class="['group relative flex items-center gap-3 cursor-pointer px-2 py-1.5 rounded transition-colors overflow-hidden', isFileSelected(file) ? themeClasses.desktopIconBgSelected : themeClasses.desktopIconBg]" @click="handleFileClick(file, $event)" @dblclick="handleFileDoubleClick(file)" @contextmenu.stop="showContextMenu($event, file)" @touchstart="handleFileTouchStart(file, $event)" @touchmove="handleFileTouchMove" @touchend="handleFileTouchEnd(file, $event)">
                       <div v-if="showProgress(file)" class="absolute inset-0 bg-blue-500/20 transition-all duration-300 ease-out" :style="{ width: `${fileProgress(file)}%` }" />
@@ -988,7 +1014,8 @@
       </StatusBar>
     </div>
     <ContextMenu :visible="contextMenuVisible" :x="contextMenuX" :y="contextMenuY" :items="contextMenuItems" @close="closeContextMenu" />
-    <AppDialog v-model:visible="deleteDialogVisible" type="confirm" :title="deleteDialogTitle" :content="deleteDialogContent" ok-text="Delete" cancel-text="Cancel" @ok="confirmDelete" @cancel="deleteDialogVisible = false" />
+    <AppDialog v-model:visible="deleteDialogVisible" type="confirm" :title="deleteDialogTitle" :content="deleteDialogContent" ok-text="Delete Permanently" cancel-text="Cancel" @ok="confirmDelete" @cancel="deleteDialogVisible = false" />
+    <AppDialog v-model:visible="emptyTrashDialogVisible" type="confirm" :title="$t('Empty the Trash?')" :content="$t('Everything in the Trash will be deleted and can\'t be recovered.')" ok-text="Empty Trash" cancel-text="Cancel" @ok="emptyTrash" @cancel="emptyTrashDialogVisible = false" />
 
     <AppDialog v-model:visible="createFolderDialogVisible" type="info" title="Create New Folder" ok-text="Create" cancel-text="Cancel" @ok="createFolder" @cancel="createFolderDialogVisible = false" :icon="folderPlusIcon">
       <div class="mb-1">
@@ -1064,6 +1091,9 @@ import { useCsrfToken } from "../__Composables__/useCsrfToken";
 import { BROWSER_IMAGE_EXTENSIONS, EXTENDED_IMAGE_EXTENSIONS, THUMBNAIL_EXTENSIONS, thumbnailExtension, type ThumbnailRequest } from "../__Composables__/useThumbnails";
 import { useDesktopStore, isShortcutLocation, type FileShortcutPayload } from "../__Stores__/desktopStore";
 import { useFileExplorerStore, type FileExplorerLocation } from "../__Stores__/useFileExplorerStore";
+import { useTrashStore, type TrashItem } from "../__Stores__/useTrashStore";
+import { useTrashActions } from "../__Composables__/useTrashActions";
+import { useAreaSelection } from "../__Composables__/useAreaSelection";
 import { useUploadingStore, type UploadLocation } from "../__Stores__/useUploadingStore";
 import { useFileViewerPrefsStore } from "../__Stores__/useFileViewerPrefsStore";
 import { useWindowStore } from "../__Stores__/windowStore";
@@ -1083,7 +1113,7 @@ import { useDialog } from "../__Composables__/useDialog";
 
 import { Icon } from "@iconify/vue";
 import { FILE_ICONS as fileIconsMap, SPECIAL_FOLDER_ICONS as specialFolderIcons } from "../__Config__/FileIcons";
-import { TEXT_EXTENSIONS, CODE_EXTENSIONS, IMAGE_EXTENSIONS, MEDIA_EXTENSIONS, PDF_EXTENSIONS, SHEETS_EXTENSIONS, WRITER_EXTENSIONS } from "../__Config__/FileAssociations";
+import { TEXT_EXTENSIONS, CODE_EXTENSIONS, IMAGE_EXTENSIONS, MEDIA_EXTENSIONS, PDF_EXTENSIONS, SHEETS_EXTENSIONS, WRITER_EXTENSIONS, SLIDES_EXTENSIONS } from "../__Config__/FileAssociations";
 import { useArchiveJobsStore, type FilesChangedDetail } from "../__Stores__/useArchiveJobsStore";
 import { MAX_ARCHIVE_PASSWORD_LENGTH, isArchiveName, sameLocation, startCompress, startExtract, type ArchiveFileRef, type ArchiveGuard, type ArchiveLocation } from "../__Utils__/ArchiveClient";
 import { UploadRejectedError, uploadChunked } from "../__Utils__/StorageUpload";
@@ -1101,6 +1131,7 @@ import videoFileIcon from "@iconify-icons/mdi/file-video";
 import zipFileIcon from "@iconify-icons/mdi/zip-box";
 import excelFileIcon from "@iconify-icons/mdi/file-excel";
 import wordFileIcon from "@iconify-icons/mdi/file-word";
+import powerpointFileIcon from "@iconify-icons/mdi/file-powerpoint";
 import codeFileIcon from "@iconify-icons/mdi/file-code";
 import unknownFileIcon from "@iconify-icons/mdi/file";
 import monitorIcon from "@iconify-icons/mdi/monitor";
@@ -1126,6 +1157,11 @@ import dependencyBadgeIcon from "@iconify-icons/mdi/cube-outline";
 import starIcon from "@iconify-icons/mdi/star";
 import starOutlineIcon from "@iconify-icons/mdi/star-outline";
 import historyIcon from "@iconify-icons/mdi/history";
+import trashCanIcon from "@iconify-icons/mdi/trash-can";
+import trashCanOutlineIcon from "@iconify-icons/mdi/trash-can-outline";
+import deleteRestoreIcon from "@iconify-icons/mdi/delete-restore";
+import deleteForeverIcon from "@iconify-icons/mdi/delete-forever";
+import deleteEmptyIcon from "@iconify-icons/mdi/delete-empty";
 import cubeIcon from "@iconify-icons/mdi/cube";
 import cubeScanIcon from "@iconify-icons/mdi/cube-scan";
 import arrowDownThickIcon from "@iconify-icons/mdi/arrow-down-thick";
@@ -1210,7 +1246,7 @@ interface GroupedFiles {
 
 const props = defineProps<{
   _windowId?: string;
-  initialLocation?: "storage" | "dropzone" | "appdrive" | "disksplus";
+  initialLocation?: "storage" | "dropzone" | "appdrive" | "disksplus" | "trash";
   initialContainer?: string;
   initialMountIndex?: number;
   initialDiskId?: string;
@@ -1315,6 +1351,7 @@ const SIDEBAR_COLORS = {
   games: "#c026d3",
   favorites: "#eab308",
   recents: "#16a34a",
+  trash: "#64748b",
 };
 function isProtectedFolder(file: FileEntry): boolean {
   return currentLocation.value === "storage" && !currentPath.value && file.is_directory && defaultStorageFolders.includes(file.name);
@@ -1323,20 +1360,12 @@ const dropZoneFolders = ref<string[]>([]);
 const isLoadingDropZoneFolders = ref(false);
 const selectedFile = ref<string | null>(null);
 const selectedFiles = ref<Set<string>>(new Set());
-const isSelectingArea = ref(false);
-const selectionBox = ref({ startX: 0, startY: 0, currentX: 0, currentY: 0 });
-const dragStartPoint = ref<{ x: number; y: number } | null>(null);
-const dragStartedOnItem = ref(false);
-let wasDragSelection = false;
 
-const DRAG_SELECTION_THRESHOLD = 20;
 const DOUBLE_TAP_THRESHOLD = 300;
 const DOUBLE_TAP_DISTANCE = 30;
 const LONG_PRESS_DURATION = 500;
 const LONG_PRESS_MOVE_THRESHOLD = 10;
 const DOUBLE_CLICK_DEBOUNCE = 400;
-const SELECTION_PADDING_X = 12;
-const SELECTION_PADDING_Y = 8;
 
 let lastTapTime = 0;
 let lastTapX = 0;
@@ -1387,6 +1416,13 @@ const deleteDialogVisible = ref(false);
 const deleteDialogTitle = ref("");
 const deleteDialogContent = ref("");
 const fileToDelete = ref<FileEntry | null>(null);
+
+const trashStore = useTrashStore();
+const trashActions = useTrashActions();
+const { items: trashItems, retentionDays: trashRetentionDays } = storeToRefs(trashStore);
+const trashIdsToDelete = ref<string[]>([]);
+const emptyTrashDialogVisible = ref(false);
+const movesToTrash = computed(() => currentLocation.value === "storage" || currentLocation.value === "dropzone");
 
 const createFolderDialogVisible = ref(false);
 const newFolderName = ref("");
@@ -1531,7 +1567,7 @@ const isReadOnly = computed(() => {
 });
 
 const canUpload = computed(() => {
-  if (currentLocation.value === "favorites" || currentLocation.value === "recents" || currentLocation.value === "systemapps" || isLauncherLocation.value) {
+  if (currentLocation.value === "favorites" || currentLocation.value === "recents" || currentLocation.value === "trash" || currentLocation.value === "systemapps" || isLauncherLocation.value) {
     return false;
   }
   if (currentLocation.value === "appdrive") {
@@ -1544,7 +1580,7 @@ const canUpload = computed(() => {
 });
 
 const isSpecialLocation = computed(() => {
-  return currentLocation.value === "favorites" || currentLocation.value === "recents" || currentLocation.value === "systemapps" || isLauncherLocation.value;
+  return currentLocation.value === "favorites" || currentLocation.value === "recents" || currentLocation.value === "trash" || currentLocation.value === "systemapps" || isLauncherLocation.value;
 });
 
 const showBreadcrumbs = computed(() => {
@@ -1603,6 +1639,8 @@ const emptyIcon = computed(() => {
       return starOutlineIcon;
     case "recents":
       return historyIcon;
+    case "trash":
+      return trashCanOutlineIcon;
     case "systemapps":
       return appsIcon;
     case "utilities":
@@ -1620,6 +1658,8 @@ const emptyMessage = computed(() => {
       return t("No favorites yet. Right-click on files to add them.");
     case "recents":
       return t("No recent files.");
+    case "trash":
+      return t("The Trash is empty.");
     case "appdrive":
       if (!selectedContainer.value) return t("Select an application from the sidebar.");
       return isReadOnly.value ? t("This mount is empty.") : t("Drag and drop files to upload.");
@@ -1709,6 +1749,18 @@ const displayFiles = computed(() => {
       _disk: (r as any).disk,
     }));
   }
+  if (currentLocation.value === "trash") {
+    return trashItems.value.map((item) => ({
+      name: item.id,
+      display_name: item.name,
+      size: item.size,
+      modified: item.deleted_at,
+      is_directory: item.is_directory,
+      size_exceeded: item.size_exceeded,
+      _source: item.location,
+      _trash: item,
+    }));
+  }
   return files.value;
 });
 function positionFilesInGrid(files: any[], width: number) {
@@ -1740,6 +1792,7 @@ const groupedDisplayFiles = computed(() => {
     key: string;
     label: string;
     icon: any;
+    color: string;
     files: any[];
     positionedFiles: any[];
     gridHeight: number;
@@ -1755,6 +1808,7 @@ const groupedDisplayFiles = computed(() => {
       key: "storage",
       label: t("Storage"),
       icon: folderIcon,
+      color: SIDEBAR_COLORS.storage,
       files: storageFiles,
       positionedFiles: positionFilesInGrid(storageFiles, width),
       gridHeight: calculateGridHeight(storageFiles.length, width),
@@ -1766,6 +1820,7 @@ const groupedDisplayFiles = computed(() => {
       key: "dropzone",
       label: t("Drop Zone (Encrypted)"),
       icon: cubeIcon,
+      color: SIDEBAR_COLORS.dropzone,
       files: dropzoneFiles,
       positionedFiles: positionFilesInGrid(dropzoneFiles, width),
       gridHeight: calculateGridHeight(dropzoneFiles.length, width),
@@ -1777,6 +1832,7 @@ const groupedDisplayFiles = computed(() => {
       key: "appdrive",
       label: "App Drive (Docker Volumes)",
       icon: cubeScanIcon,
+      color: SIDEBAR_COLORS.appdrive,
       files: appdriveFiles,
       positionedFiles: positionFilesInGrid(appdriveFiles, width),
       gridHeight: calculateGridHeight(appdriveFiles.length, width),
@@ -1788,6 +1844,7 @@ const groupedDisplayFiles = computed(() => {
       key: "disksplus",
       label: "Disks+",
       icon: harddiskIcon,
+      color: SIDEBAR_COLORS.disksplus,
       files: disksplusFiles,
       positionedFiles: positionFilesInGrid(disksplusFiles, width),
       gridHeight: calculateGridHeight(disksplusFiles.length, width),
@@ -2015,6 +2072,8 @@ const statusBarIcon = computed(() => {
       return starIcon;
     case "recents":
       return historyIcon;
+    case "trash":
+      return trashCanIcon;
     default:
       return folderMultipleIcon;
   }
@@ -2032,6 +2091,8 @@ const statusBarMessage = computed(() => {
       return t("Favorites");
     case "recents":
       return t("Recents");
+    case "trash":
+      return t("Trash");
     default:
       return t("File Explorer");
   }
@@ -2044,18 +2105,24 @@ const statusBarInfo = computed(() => {
   return `${displayFiles.value.length} ${displayFiles.value.length === 1 ? t("item") : t("items")}`;
 });
 
-const selectionBoxStyle = computed(() => {
-  const minX = Math.min(selectionBox.value.startX, selectionBox.value.currentX);
-  const minY = Math.min(selectionBox.value.startY, selectionBox.value.currentY);
-  const width = Math.abs(selectionBox.value.currentX - selectionBox.value.startX);
-  const height = Math.abs(selectionBox.value.currentY - selectionBox.value.startY);
-  return {
-    left: `${minX}px`,
-    top: `${minY}px`,
-    width: `${width}px`,
-    height: `${height}px`,
-  };
+const {
+  isSelectingArea,
+  selectionBoxStyle,
+  handleMouseDown: handleContainerMouseDown,
+  consumeDragClick,
+} = useAreaSelection({
+  containerRef: filesAreaRef,
+  itemAttribute: "data-filename",
+  accepts: (name) => name !== "..",
+  startOnItems: true,
+  enabled: () => !isMobileLayout.value && (sortedFiles.value.length > 0 || (currentLocation.value === "systemapps" && systemAppsAsFiles.value.length > 0) || (isLauncherLocation.value && utilitiesAsFiles.value.length > 0)),
+  getSelection: () => new Set([...selectedFiles.value, ...(selectedFile.value ? [selectedFile.value] : [])]),
+  setSelection: (names) => {
+    selectedFile.value = null;
+    selectedFiles.value = names;
+  },
 });
+
 function cleanMenuItems(items: any[]): any[] {
   const result: any[] = [];
   let lastWasDivider = true;
@@ -2084,6 +2151,21 @@ const contextMenuItems = computed(() => {
   const selectedCount = selectedFiles.value.size;
   if (file && file.name === "..") {
     return [];
+  }
+  if (currentLocation.value === "trash") {
+    const ids = selectedCount > 1 ? Array.from(selectedFiles.value) : file ? [file.name] : [];
+    if (ids.length > 0) {
+      items.push({ label: "Restore", icon: deleteRestoreIcon, action: () => restoreFromTrash(ids) });
+      items.push({ divider: true });
+      items.push({ label: "Delete Permanently", icon: deleteForeverIcon, danger: true, action: () => requestTrashDelete(ids) });
+    } else {
+      if (trashItems.value.length > 0) {
+        items.push({ label: "Empty Trash", icon: deleteEmptyIcon, danger: true, action: () => (emptyTrashDialogVisible.value = true) });
+        items.push({ divider: true });
+      }
+      items.push({ label: "Refresh", icon: refreshIcon, action: refreshFiles });
+    }
+    return cleanMenuItems(items);
   }
   if (selectedCount > 1) {
     const selectedFilesList = Array.from(selectedFiles.value)
@@ -2129,18 +2211,11 @@ const contextMenuItems = computed(() => {
     }
 
     if (!isReadOnly.value && !isSpecialLocation.value && !hasProtectedFolders) {
-      items.push({
-        label: "Delete All",
-        icon: deleteIcon,
-        danger: true,
-        action: () => {
-          deleteDialogTitle.value = t("Delete {n} items?", { n: selectedCount });
-          deleteDialogContent.value = t("Are you sure you want to delete {n} selected items? This action cannot be undone.", { n: selectedCount });
-          fileToDelete.value = null;
-          deleteDialogVisible.value = true;
-          closeContextMenu();
-        },
-      });
+      if (movesToTrash.value) {
+        items.push({ label: "Move to Trash", icon: deleteIcon, action: () => moveToTrash(selectedFilesList.map((f) => f.name)), trailing: { label: "Delete Permanently", icon: deleteForeverIcon, danger: true, action: () => showDeleteManyDialog(selectedCount) } });
+      } else {
+        items.push({ label: "Delete Permanently", icon: deleteForeverIcon, danger: true, action: () => showDeleteManyDialog(selectedCount) });
+      }
     }
 
     items.push({ divider: true });
@@ -2201,6 +2276,9 @@ const contextMenuItems = computed(() => {
         const extension = file.name.split(".").pop()?.toLowerCase() || "";
         const fileNameLower = file.name.toLowerCase();
 
+        if (SHEETS_EXTENSIONS.has(extension)) {
+          items.push({ label: "Open in Sheets", icon: excelFileIcon, action: () => openInSheets(file) });
+        }
         if (TEXT_EXTENSIONS.has(extension) || TEXT_EXTENSIONS.has(fileNameLower)) {
           items.push({ label: "Open in Notepad", icon: textFileIcon, action: () => openInNotepad(file) });
           items.push({ label: "Open in Code", icon: codeFileIcon, action: () => openInCode(file) });
@@ -2219,13 +2297,13 @@ const contextMenuItems = computed(() => {
           items.push({ label: "Open in Media Player", icon: videoFileIcon, action: () => openInMediaPlayer(file) });
         }
         if (PDF_EXTENSIONS.has(extension)) {
-          items.push({ label: "Open in PDF Viewer", icon: pdfFileIcon, action: () => openInPDFViewer(file) });
-        }
-        if (SHEETS_EXTENSIONS.has(extension)) {
-          items.push({ label: "Open in Sheets", icon: excelFileIcon, action: () => openInSheets(file) });
+          items.push({ label: "Open in PDF Editor", icon: pdfFileIcon, action: () => openInPDFViewer(file) });
         }
         if (WRITER_EXTENSIONS.has(extension)) {
           items.push({ label: "Open in Writer", icon: wordFileIcon, action: () => openInWriter(file) });
+        }
+        if (SLIDES_EXTENSIONS.has(extension)) {
+          items.push({ label: "Open in Slides", icon: powerpointFileIcon, action: () => openInSlides(file) });
         }
         if (isArchiveName(file.name) && currentArchiveLocation()) {
           items.push({ label: "Open in Zipfile", icon: zipFileIcon, action: () => openInZipfile(file) });
@@ -2257,7 +2335,11 @@ const contextMenuItems = computed(() => {
       if (!isReadOnly.value && !isProtectedFolder(file)) {
         items.push({ divider: true });
         items.push({ label: "Rename", icon: pencilIcon, action: () => showRenameDialog(file) });
-        items.push({ label: "Delete", icon: deleteIcon, danger: true, action: () => showDeleteDialog(file) });
+        if (movesToTrash.value) {
+          items.push({ label: "Move to Trash", icon: deleteIcon, action: () => moveToTrash([file.name]), trailing: { label: "Delete Permanently", icon: deleteForeverIcon, danger: true, action: () => showDeleteDialog(file) } });
+        } else {
+          items.push({ label: "Delete Permanently", icon: deleteForeverIcon, danger: true, action: () => showDeleteDialog(file) });
+        }
       }
 
       items.push({ divider: true });
@@ -2315,6 +2397,13 @@ function thumbnailRequest(file: FileEntry): ThumbnailRequest | null {
 
   if (currentLocation.value === "storage") {
     return { key: `storage|${file.name}|${version}`, url: "/api/storage/thumbnail", params: { file: file.name, v: version } };
+  }
+
+  if (currentLocation.value === "trash") {
+    const item = (file as any)._trash as TrashItem | undefined;
+    if (!item || !THUMBNAIL_EXTENSIONS.has(thumbnailExtension(item.name))) return null;
+    const path = `.Trash/files/${item.stored_name}`;
+    return { key: `${item.location}|${path}|${version}`, url: `/api/${item.location}/thumbnail`, params: { file: path, v: version } };
   }
 
   if (currentLocation.value === "dropzone") {
@@ -2409,6 +2498,8 @@ function setLocation(location: FileExplorerLocation) {
 
   if (location === "storage" || location === "dropzone") {
     loadFiles();
+  } else if (location === "trash") {
+    fetchTrash();
   } else if (location === "appdrive") {
     loadContainers();
   } else if (location === "disksplus") {
@@ -3007,9 +3098,96 @@ function refreshFiles() {
     fileExplorerStore.fetchFavorites();
   } else if (currentLocation.value === "recents") {
     fileExplorerStore.fetchRecents();
+  } else if (currentLocation.value === "trash") {
+    fetchTrash();
   } else {
     loadFiles();
   }
+}
+
+function fetchTrash() {
+  return trashStore.fetch(csrfToken.value);
+}
+
+function localDeleteEndpoint(location: FileExplorerLocation): string | null {
+  if (location === "storage") return "/api/storage/delete";
+  if (location === "dropzone") return "/api/dropzone/delete";
+  return null;
+}
+
+async function moveToTrash(fileNames: string[]) {
+  closeContextMenu();
+  const endpoint = localDeleteEndpoint(currentLocation.value);
+  if (!endpoint || fileNames.length === 0) return;
+
+  let moved = 0;
+  let lastError = "";
+  for (const fileName of fileNames) {
+    try {
+      await axios.post(endpoint, { file: fileName }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
+      moved++;
+    } catch (error: any) {
+      lastError = error?.response?.data?.error || "Couldn't move to the Trash";
+    }
+  }
+
+  if (moved === 1 && fileNames.length === 1) {
+    const entry = displayFiles.value.find((f) => f.name === fileNames[0]);
+    message.success(t('Moved "{name}" to the Trash', { name: entry ? getDisplayName(entry) : fileNames[0].split("/").pop() || fileNames[0] }));
+  } else if (moved > 0) {
+    message.success(t("Moved {n} items to the Trash", { n: moved }));
+  }
+  if (moved < fileNames.length) {
+    message.error(t(lastError));
+  }
+
+  selectedFiles.value.clear();
+  selectedFile.value = null;
+  refreshFiles();
+  fetchTrash();
+}
+
+function restoreFromTrash(ids: string[]) {
+  closeContextMenu();
+  if (ids.length === 0) return;
+  const { title, content } = trashActions.restoreConfirmText(ids);
+  confirm({
+    title,
+    content,
+    okText: "Restore",
+    cancelText: "Cancel",
+    onOk: async () => {
+      await trashActions.restore(ids);
+      selectedFiles.value.clear();
+      selectedFile.value = null;
+    },
+  });
+}
+
+function requestTrashDelete(ids: string[]) {
+  closeContextMenu();
+  trashIdsToDelete.value = ids;
+  fileToDelete.value = null;
+  const { title, content } = trashActions.deleteConfirmText(ids);
+  deleteDialogTitle.value = title;
+  deleteDialogContent.value = content;
+  deleteDialogVisible.value = true;
+}
+
+async function confirmTrashDelete() {
+  const ids = trashIdsToDelete.value;
+  trashIdsToDelete.value = [];
+  deleteDialogVisible.value = false;
+  await trashActions.deleteForever(ids);
+  selectedFiles.value.clear();
+  selectedFile.value = null;
+}
+
+async function emptyTrash() {
+  emptyTrashDialogVisible.value = false;
+  await trashActions.empty();
+  selectedFiles.value.clear();
+  selectedFile.value = null;
 }
 
 async function performSearch(forceSearch = false) {
@@ -3074,7 +3252,7 @@ function handleSearchSelect(value: string | number | { value: string | number; l
   }
 }
 function handleFileClick(file: FileEntry, event: MouseEvent) {
-  if (wasDragSelection) return;
+  if (consumeDragClick()) return;
   if (file.name === "..") return;
 
   if (event.ctrlKey || event.metaKey) {
@@ -3479,121 +3657,8 @@ async function openInImageViewer(file: FileEntry) {
   }
 }
 
-async function openInPDFViewer(file: FileEntry) {
-  try {
-    downloadProgresses.value[file.name] = 0;
-    if (currentLocation.value === "dropzone") {
-      fileStates.value[file.name] = true;
-      loadingStates.value[file.name] = true;
-    }
-
-    let response;
-
-    if (currentLocation.value === "storage") {
-      response = await axios.get("/api/storage/download", {
-        params: { file: file.name },
-        headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
-        responseType: "arraybuffer",
-        onDownloadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            downloadProgresses.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          }
-        },
-      });
-    } else if (currentLocation.value === "dropzone") {
-      response = await axios.get(`/api/dropzone/download?file=${encodeURIComponent(file.name)}`, {
-        headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
-        responseType: "arraybuffer",
-        onDownloadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            downloadProgresses.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          }
-        },
-      });
-    } else if (currentLocation.value === "appdrive" && selectedContainer.value) {
-      const guarded = await guardAppDrive(file.name, () =>
-        axios.get("/api/appdrive/download", {
-          params: {
-            container: selectedContainer.value,
-            mount: selectedMountIndex.value,
-            file: file.name,
-          },
-          headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
-          responseType: "arraybuffer",
-          onDownloadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              downloadProgresses.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            }
-          },
-        }),
-      );
-      if ((guarded as any)?._canceled) {
-        delete downloadProgresses.value[file.name];
-        return;
-      }
-      response = guarded as any;
-    } else if (currentLocation.value === "disksplus") {
-      const disk = currentDiskInfo();
-      if (!disk) throw new Error("No disk selected");
-      const abs = buildDiskAbsolutePath(disk.mountpoint, file.name);
-      const res = await withDangerCheck(abs, async () => {
-        return await axios.get("/api/disksplus/download", {
-          params: { disk: disk.id, file: file.name },
-          headers: { "X-HomeDock-CSRF-Token": csrfToken.value },
-          responseType: "arraybuffer",
-          onDownloadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              downloadProgresses.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            }
-          },
-        });
-      });
-      if ((res as any)?._canceled) {
-        delete downloadProgresses.value[file.name];
-        return;
-      }
-      disksPlusStore.slideSession();
-      response = res as any;
-    } else {
-      throw new Error("Invalid location or missing container");
-    }
-
-    const fileName = file.display_name || file.name.split("/").pop() || file.name;
-
-    windowStore.openFileInApp("pdfviewer", {
-      data: {
-        pdfFile: {
-          name: fileName,
-          buffer: response.data,
-        },
-      },
-    });
-    if (!isSpecialLocation.value) {
-      fileExplorerStore.addToRecents({
-        location: currentLocation.value as "storage" | "dropzone" | "appdrive" | "disksplus",
-        path: fileParentPath(file),
-        name: file.name,
-        is_directory: false,
-        container: currentLocation.value === "appdrive" ? selectedContainer.value || undefined : undefined,
-        mount_index: currentLocation.value === "appdrive" ? selectedMountIndex.value : undefined,
-        disk: currentLocation.value === "disksplus" ? currentDiskInfo()?.id || undefined : undefined,
-      });
-    }
-    setTimeout(() => {
-      delete downloadProgresses.value[file.name];
-      if (currentLocation.value === "dropzone") {
-        fileStates.value[file.name] = false;
-        loadingStates.value[file.name] = false;
-      }
-    }, 500);
-  } catch (error) {
-    delete downloadProgresses.value[file.name];
-    if (currentLocation.value === "dropzone") {
-      fileStates.value[file.name] = false;
-      loadingStates.value[file.name] = false;
-    }
-    message.error(t("Failed to open PDF"));
-  }
+function openInPDFViewer(file: FileEntry) {
+  return openBinaryInApp(file, "pdfviewer", "pdfFile", "Failed to open PDF");
 }
 
 function openInSheets(file: FileEntry) {
@@ -3602,6 +3667,10 @@ function openInSheets(file: FileEntry) {
 
 function openInWriter(file: FileEntry) {
   return openBinaryInApp(file, "writer", "writerFile", "Failed to open document");
+}
+
+function openInSlides(file: FileEntry) {
+  return openBinaryInApp(file, "slides", "slidesFile", "Failed to open presentation");
 }
 
 async function openBinaryInApp(file: FileEntry, appId: string, dataKey: string, failureMessage: string) {
@@ -3675,17 +3744,18 @@ async function openBinaryInApp(file: FileEntry, appId: string, dataKey: string, 
 
     const fileName = file.display_name || file.name.split("/").pop() || file.name;
 
-    windowStore.openFileInApp(appId, {
+    const target = {
+      path: file.name,
+      source: currentLocation.value,
+      container: currentLocation.value === "appdrive" ? selectedContainer.value : undefined,
+      mountIndex: currentLocation.value === "appdrive" ? selectedMountIndex.value : undefined,
+      disk: currentLocation.value === "disksplus" ? currentDiskInfo()?.id : undefined,
+    };
+    const uniqueKey = [target.source, target.container ?? "", target.mountIndex ?? "", target.disk ?? "", target.path].join(":");
+
+    windowStore.openUniqueWindow(appId, uniqueKey, {
       data: {
-        [dataKey]: {
-          name: fileName,
-          buffer: response.data,
-          path: file.name,
-          source: currentLocation.value,
-          container: currentLocation.value === "appdrive" ? selectedContainer.value : undefined,
-          mountIndex: currentLocation.value === "appdrive" ? selectedMountIndex.value : undefined,
-          disk: currentLocation.value === "disksplus" ? currentDiskInfo()?.id : undefined,
-        },
+        [dataKey]: { name: fileName, buffer: response.data, ...target },
       },
     });
     if (!isSpecialLocation.value) {
@@ -4070,6 +4140,10 @@ async function handleFileDoubleClick(file: FileEntry) {
     navigateUp();
     return;
   }
+  if (currentLocation.value === "trash") {
+    message.info(t("Restore this item to open it"));
+    return;
+  }
   if (isSpecialLocation.value && (file as any)._source) {
     const meta = file as any;
     const sourcePath = meta._sourcePath || "";
@@ -4162,6 +4236,8 @@ async function handleFileDoubleClick(file: FileEntry) {
 
     if (CODE_EXTENSIONS.has(extension) || CODE_EXTENSIONS.has(fileNameLower)) {
       openInCode(file);
+    } else if (SHEETS_EXTENSIONS.has(extension)) {
+      openInSheets(file);
     } else if (TEXT_EXTENSIONS.has(extension) || TEXT_EXTENSIONS.has(fileNameLower)) {
       openInNotepad(file);
     } else if (IMAGE_EXTENSIONS.has(extension)) {
@@ -4170,10 +4246,10 @@ async function handleFileDoubleClick(file: FileEntry) {
       openInMediaPlayer(file);
     } else if (PDF_EXTENSIONS.has(extension)) {
       openInPDFViewer(file);
-    } else if (SHEETS_EXTENSIONS.has(extension)) {
-      openInSheets(file);
     } else if (WRITER_EXTENSIONS.has(extension)) {
       openInWriter(file);
+    } else if (SLIDES_EXTENSIONS.has(extension)) {
+      openInSlides(file);
     } else if (isArchiveName(file.name) && currentArchiveLocation()) {
       openInZipfile(file);
     } else {
@@ -4417,13 +4493,26 @@ async function downloadAsZip(fileNames: string[]) {
 }
 
 function showDeleteDialog(file: FileEntry) {
+  closeContextMenu();
   fileToDelete.value = file;
-  deleteDialogTitle.value = file.is_directory ? t("Delete Folder") : t("Delete File");
-  deleteDialogContent.value = t('Are you sure you want to delete "{name}"?', { name: file.display_name || file.name });
+  deleteDialogTitle.value = t("Delete this item forever?");
+  deleteDialogContent.value = t("\"{name}\" won't go to the Trash and can't be recovered.", { name: getDisplayName(file) });
+  deleteDialogVisible.value = true;
+}
+
+function showDeleteManyDialog(count: number) {
+  closeContextMenu();
+  fileToDelete.value = null;
+  deleteDialogTitle.value = t("Delete {n} items forever?", { n: count });
+  deleteDialogContent.value = t("They won't go to the Trash and can't be recovered.");
   deleteDialogVisible.value = true;
 }
 
 async function confirmDelete() {
+  if (currentLocation.value === "trash") {
+    await confirmTrashDelete();
+    return;
+  }
   if (selectedFiles.value.size > 0 && !fileToDelete.value) {
     const selectedFilesList = Array.from(selectedFiles.value);
     let successCount = 0;
@@ -4431,10 +4520,9 @@ async function confirmDelete() {
 
     for (const fileName of selectedFilesList) {
       try {
-        if (currentLocation.value === "storage") {
-          await axios.post("/api/storage/delete", { file: fileName }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-        } else if (currentLocation.value === "dropzone") {
-          await axios.post("/api/dropzone/delete", { file: fileName }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
+        const localEndpoint = localDeleteEndpoint(currentLocation.value);
+        if (localEndpoint) {
+          await axios.post(localEndpoint, { file: fileName, permanent: true }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
         } else if (currentLocation.value === "appdrive" && selectedContainer.value) {
           const res = await guardAppDrive(fileName, () =>
             axios.post(
@@ -4465,10 +4553,10 @@ async function confirmDelete() {
     }
 
     if (successCount > 0) {
-      message.success(`Deleted ${successCount} item${successCount > 1 ? "s" : ""}`);
+      message.success(t("Deleted {n} items forever", { n: successCount }));
     }
     if (errorCount > 0) {
-      message.error(`Failed to delete ${errorCount} item${errorCount > 1 ? "s" : ""}`);
+      message.error(t("Failed to delete {n} items", { n: errorCount }));
     }
 
     selectedFiles.value.clear();
@@ -4480,16 +4568,10 @@ async function confirmDelete() {
   if (!fileToDelete.value) return;
 
   try {
-    if (currentLocation.value === "storage") {
-      await axios.post("/api/storage/delete", { file: fileToDelete.value.name }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-    } else if (currentLocation.value === "dropzone") {
-      const response = await axios.post("/api/dropzone/delete", { file: fileToDelete.value.name }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
-      if (response.data.success) {
-        message.success(t(response.data.message));
-      } else {
-        message.error(t(response.data.error || "Failed to delete file"));
-        return;
-      }
+    const localEndpoint = localDeleteEndpoint(currentLocation.value);
+    if (localEndpoint) {
+      await axios.post(localEndpoint, { file: fileToDelete.value.name, permanent: true }, { headers: { "X-HomeDock-CSRF-Token": csrfToken.value } });
+      message.success(t("Deleted forever"));
     } else if (currentLocation.value === "appdrive" && selectedContainer.value) {
       const target = fileToDelete.value.name;
       const res = await guardAppDrive(target, () =>
@@ -5190,131 +5272,6 @@ function showFileProperties(file: FileEntry) {
   });
 }
 
-function handleContainerMouseDown(event: MouseEvent) {
-  if (event.button !== 0) return;
-  if (isMobileLayout.value) return;
-
-  const target = event.target as HTMLElement;
-  if (target.closest(".fileexplorer-toolbar, .fileexplorer-sidebar, .fileexplorer-breadcrumbs, .fileexplorer-info-bar")) return;
-  const hasItems = sortedFiles.value.length > 0 || (currentLocation.value === "systemapps" && systemAppsAsFiles.value.length > 0) || (isLauncherLocation.value && utilitiesAsFiles.value.length > 0);
-  if (!hasItems) return;
-  if (!filesAreaRef.value) return;
-
-  const rect = filesAreaRef.value.getBoundingClientRect();
-  let startX = event.clientX - rect.left;
-  let startY = event.clientY - rect.top;
-  const maxX = rect.width - SELECTION_PADDING_X;
-  const maxY = rect.height - SELECTION_PADDING_Y;
-  startX = Math.max(SELECTION_PADDING_X, Math.min(startX, maxX));
-  startY = Math.max(SELECTION_PADDING_Y, Math.min(startY, maxY));
-
-  dragStartPoint.value = { x: startX, y: startY };
-  const fileItem = target.closest("[data-filename]");
-  dragStartedOnItem.value = !!fileItem;
-
-  if (dragStartedOnItem.value) {
-  } else {
-    isSelectingArea.value = true;
-    selectionBox.value.startX = startX;
-    selectionBox.value.startY = startY;
-    selectionBox.value.currentX = startX;
-    selectionBox.value.currentY = startY;
-
-    if (!event.ctrlKey && !event.metaKey) {
-      selectedFile.value = null;
-      selectedFiles.value.clear();
-    }
-  }
-
-  document.addEventListener("mousemove", handleMouseMove);
-  document.addEventListener("mouseup", handleMouseUp);
-}
-
-function handleMouseMove(event: MouseEvent) {
-  if (!filesAreaRef.value) return;
-
-  const rect = filesAreaRef.value.getBoundingClientRect();
-  let mouseX = event.clientX - rect.left;
-  let mouseY = event.clientY - rect.top;
-  const maxX = rect.width - SELECTION_PADDING_X;
-  const maxY = rect.height - SELECTION_PADDING_Y;
-  mouseX = Math.max(SELECTION_PADDING_X, Math.min(mouseX, maxX));
-  mouseY = Math.max(SELECTION_PADDING_Y, Math.min(mouseY, maxY));
-
-  if (!isSelectingArea.value && dragStartPoint.value) {
-    const distance = Math.sqrt(Math.pow(mouseX - dragStartPoint.value.x, 2) + Math.pow(mouseY - dragStartPoint.value.y, 2));
-
-    if (distance > DRAG_SELECTION_THRESHOLD) {
-      isSelectingArea.value = true;
-      selectionBox.value.startX = dragStartPoint.value.x;
-      selectionBox.value.startY = dragStartPoint.value.y;
-      selectedFile.value = null;
-      selectedFiles.value.clear();
-      if (dragStartedOnItem.value) {
-        wasDragSelection = true;
-      }
-    }
-  }
-
-  if (isSelectingArea.value) {
-    selectionBox.value.currentX = mouseX;
-    selectionBox.value.currentY = mouseY;
-    updateSelectedFilesInBox();
-  }
-}
-
-function handleMouseUp() {
-  const didDrag = Math.abs(selectionBox.value.currentX - selectionBox.value.startX) > 5 || Math.abs(selectionBox.value.currentY - selectionBox.value.startY) > 5;
-
-  if (!didDrag && isSelectingArea.value) {
-    selectedFile.value = null;
-    selectedFiles.value.clear();
-  }
-
-  if (isSelectingArea.value && didDrag) {
-    wasDragSelection = true;
-    setTimeout(() => {
-      wasDragSelection = false;
-    }, 50);
-  }
-
-  isSelectingArea.value = false;
-  dragStartPoint.value = null;
-  dragStartedOnItem.value = false;
-  document.removeEventListener("mousemove", handleMouseMove);
-  document.removeEventListener("mouseup", handleMouseUp);
-}
-
-function updateSelectedFilesInBox() {
-  const boxX = Math.min(selectionBox.value.startX, selectionBox.value.currentX);
-  const boxY = Math.min(selectionBox.value.startY, selectionBox.value.currentY);
-  const boxWidth = Math.abs(selectionBox.value.currentX - selectionBox.value.startX);
-  const boxHeight = Math.abs(selectionBox.value.currentY - selectionBox.value.startY);
-
-  selectedFiles.value.clear();
-
-  const container = filesAreaRef.value;
-  const containerRect = container?.getBoundingClientRect();
-  if (!containerRect) return;
-
-  container?.querySelectorAll("[data-filename]").forEach((element) => {
-    const fileName = element.getAttribute("data-filename");
-    if (!fileName || fileName === "..") return;
-
-    const rect = element.getBoundingClientRect();
-    const elX = rect.left - containerRect.left;
-    const elY = rect.top - containerRect.top;
-    const elWidth = rect.width;
-    const elHeight = rect.height;
-    const overlapsX = elX < boxX + boxWidth && elX + elWidth > boxX;
-    const overlapsY = elY < boxY + boxHeight && elY + elHeight > boxY;
-
-    if (overlapsX && overlapsY) {
-      selectedFiles.value.add(fileName);
-    }
-  });
-}
-
 function handleContainerTouchStart(event: TouchEvent) {
   const target = event.target as HTMLElement;
   const isFileItem = target.closest(".fileexplorer-file-item, [data-filename]");
@@ -5463,6 +5420,7 @@ let filesResizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
   await fileExplorerStore.initialize();
+  fetchTrash();
 
   const disksPlusStatus = disksPlusStore.fetchStatus();
   if (props.initialLocation === "disksplus" || props.initialLocation === "appdrive") await disksPlusStatus;
@@ -5490,6 +5448,11 @@ onMounted(async () => {
     isStorageExpanded.value = true;
     if (props.initialPath) currentPath.value = props.initialPath;
     await loadFiles();
+    selectFileInList(props.initialFileName);
+    loadContainers();
+  } else if (props.initialLocation === "trash") {
+    currentLocation.value = "trash";
+    await nextTick();
     selectFileInList(props.initialFileName);
     loadContainers();
   } else {
@@ -5547,6 +5510,10 @@ async function handleIncomingNavigation(event: CustomEvent) {
     isDropZoneExpanded.value = true;
     currentPath.value = data.initialPath || "";
     await loadFiles();
+    selectFileInList(data.initialFileName);
+  } else if (data?.initialLocation === "trash") {
+    setLocation("trash");
+    await nextTick();
     selectFileInList(data.initialFileName);
   }
 

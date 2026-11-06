@@ -138,6 +138,11 @@ import paletteIcon from "@iconify-icons/mdi/palette";
 import musicIcon from "@iconify-icons/mdi/equalizer";
 import nextIcon from "@iconify-icons/mdi/rocket-launch";
 import openSourceIcon from "@iconify-icons/mdi/open-source-initiative";
+import trashIcon from "@iconify-icons/mdi/trash-can-outline";
+import pdfIcon from "@iconify-icons/mdi/file-pdf-box";
+import slidesIcon from "@iconify-icons/mdi/presentation";
+import csvIcon from "@iconify-icons/mdi/file-delimited-outline";
+import homeIcon from "@iconify-icons/mdi/harddisk";
 import starIcon from "@iconify-icons/mdi/star-four-points";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
@@ -213,6 +218,11 @@ const entryIcons: Record<string, any> = {
   music: musicIcon,
   next: nextIcon,
   opensource: openSourceIcon,
+  trash: trashIcon,
+  pdf: pdfIcon,
+  slides: slidesIcon,
+  csv: csvIcon,
+  home: homeIcon,
 };
 
 function iconFor(name: string) {

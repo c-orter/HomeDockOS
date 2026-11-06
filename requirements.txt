@@ -1,4 +1,4 @@
-# last_update_hash: a2afcc04c9a00633be2d2c6fd61d637fcdf63d38899be5575545c378086805cd
+# last_update_hash: 65b68a0088a648b3a6ad91d738e572f07231f18dc01491e432e6e32a0323c8cb
 Flask==3.1.3
 Flask-Login==0.6.3
 Flask-Compress==1.25
@@ -19,5 +19,5 @@ urllib3==2.8.0
 pyotp==2.10.0
 Hypercorn==0.17.3
 aiohttp==3.14.4
-Pillow==12.3.0
+Pillow==13.0.0
 publicsuffixlist==1.1.2.20261023

@@ -10,8 +10,10 @@ import type { Sheet } from "@fortune-sheet/core";
 import "@fortune-sheet/react/dist/index.css";
 
 import { useIslandHost } from "./host";
+import { readCsv, sheetFormat, writeCsv, type CsvLayout } from "./sheetsCsv";
 
 export interface SheetsApi {
+  exportFile(): Promise<Blob>;
   exportXlsx(): Promise<Blob>;
   instance(): WorkbookInstance | null;
 }
@@ -97,6 +99,8 @@ function useCanvasRefreshOnResize(element: HTMLElement | null) {
 export default function SheetsIsland({ source, fileName, onReady, onDirty, onLoadError }: SheetsIslandProps) {
   const host = useIslandHost();
   const sheetRef = useRef<WorkbookInstance>(null);
+  const csvLayout = useRef<CsvLayout | null>(null);
+  const format = sheetFormat(fileName);
   const [sheets, setSheets] = useState<Sheet[] | null>(source ? null : EMPTY_WORKBOOK);
   const [key, setKey] = useState(0);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
@@ -114,10 +118,19 @@ export default function SheetsIsland({ source, fileName, onReady, onDirty, onLoa
 
     let cancelled = false;
 
-    readWorkbook(source, fileName).then(
+    const load =
+      format === "xlsx"
+        ? readWorkbook(source, fileName).then((next) => typeUnstyledNumbers(structuredClone(next)))
+        : Promise.resolve().then(() => {
+            const { sheets: next, layout } = readCsv(source, format, fileName.replace(/\.[^.]+$/, "") || "Sheet1");
+            csvLayout.current = layout;
+            return next;
+          });
+
+    load.then(
       (next) => {
         if (cancelled) return;
-        setSheets(typeUnstyledNumbers(structuredClone(next)));
+        setSheets(next);
         setKey((current) => current + 1);
       },
       (error) => {
@@ -128,7 +141,7 @@ export default function SheetsIsland({ source, fileName, onReady, onDirty, onLoa
     return () => {
       cancelled = true;
     };
-  }, [source, fileName]);
+  }, [source, fileName, format]);
 
   const [mountedKey, setMountedKey] = useState<number | null>(null);
 
@@ -143,8 +156,12 @@ export default function SheetsIsland({ source, fileName, onReady, onDirty, onLoa
   useEffect(() => {
     if (mountedKey === null) return;
 
+    const exportXlsx = () => writeWorkbook(sheetRef);
+    const layout = csvLayout.current;
+
     callbacks.current.onReady?.({
-      exportXlsx: () => writeWorkbook(sheetRef),
+      exportFile: () => (format !== "xlsx" && layout ? Promise.resolve(writeCsv(sheetRef.current?.getSheet().data, layout)) : exportXlsx()),
+      exportXlsx,
       instance: () => sheetRef.current,
     });
   }, [mountedKey]);
@@ -156,7 +173,7 @@ export default function SheetsIsland({ source, fileName, onReady, onDirty, onLoa
   return (
     <div ref={setContainer} data-island="sheets" className="hd-sheets h-full w-full">
       <Suspense>
-        <Workbook key={key} ref={attachWorkbook} data={sheets} lang={SUPPORTED_LANGS.has(lang) ? lang : "en"} devicePixelRatio={pixelRatio} onOp={() => callbacks.current.onDirty?.()} />
+        <Workbook key={key} ref={attachWorkbook} data={sheets} lang={SUPPORTED_LANGS.has(lang) ? lang : "en"} showSheetTabs={format === "xlsx"} devicePixelRatio={pixelRatio} onOp={() => callbacks.current.onDirty?.()} />
       </Suspense>
     </div>
   );

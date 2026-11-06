@@ -16,7 +16,9 @@ import { DESKTOP_GRID } from "../__Composables__/desktopLayoutFit";
 
 import type { FileExplorerLocation } from "./useFileExplorerStore";
 
-const DEFAULT_ICON_IDS = ["apphome", "fileexplorer"];
+export const TRASH_ICON_ID = "trash";
+
+const DEFAULT_ICON_IDS = ["apphome", "fileexplorer", TRASH_ICON_ID];
 const LEGACY_KEYS = ["homedock_icon_positions", "homedock_desktop_folders", "homedock_system_icon_positions", "homedock_system_icons_list", "homedock_removed_default_icons"];
 
 type LegacyPosition = { x?: number; y?: number; gridRow?: number; gridCol?: number; page?: number; folderId?: string | null };
@@ -541,6 +543,7 @@ export const useDesktopStore = defineStore("desktop", {
       const defaults: SystemIconMeta[] = [
         { appId: "apphome", name: "My Home", icon: "homedock:logo" },
         { appId: "fileexplorer", name: "File Explorer", icon: "mdi:folder-multiple" },
+        { appId: TRASH_ICON_ID, name: "Trash", icon: "mdi:trash-can" },
       ];
 
       const visible = [

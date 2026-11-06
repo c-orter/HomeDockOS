@@ -29,6 +29,7 @@ from pymodules.hd_DropZoneEncryption import (
 )
 from pymodules.hd_ImageThumbnails import thumbnail_response
 from pymodules.hd_ExtendedSupportImage import preview_response
+from pymodules.hd_UITrash import remove_item, TrashError
 
 MAX_FILES_FOR_SIZE_CALC = 10000
 MAX_TIME_FOR_SIZE_CALC = 2.0
@@ -483,14 +484,9 @@ def delete_file():
         return jsonify({"error": "Security violation"}), 403
 
     try:
-        if os.path.isdir(file_path):
-            shutil.rmtree(file_path)
-            return jsonify({"success": True, "message": f"Folder {os.path.basename(file_name)} deleted successfully"})
-        else:
-            os.remove(file_path)
-            return jsonify({"success": True, "message": f"File {os.path.basename(file_name)} deleted successfully"})
-    except Exception:
-        return jsonify({"error": "Error deleting item"}), 500
+        return jsonify(remove_item(user_dir, file_path, bool(request.json.get("permanent"))))
+    except TrashError as e:
+        return jsonify({"error": e.message}), e.status
 
 
 @login_required

@@ -10,5 +10,6 @@ export const CODE_EXTENSIONS = new Set(["json", "yml", "yaml", "xml", "conf", "i
 export const IMAGE_EXTENSIONS = new Set([...BROWSER_IMAGE_EXTENSIONS, ...EXTENDED_IMAGE_EXTENSIONS]);
 export const MEDIA_EXTENSIONS = new Set(["mp4", "webm", "ogv", "ogg", "mp3", "wav", "aac", "flac", "m4a"]);
 export const PDF_EXTENSIONS = new Set(["pdf"]);
-export const SHEETS_EXTENSIONS = new Set(["xlsx"]);
+export const SHEETS_EXTENSIONS = new Set(["xlsx", "csv", "tsv"]);
 export const WRITER_EXTENSIONS = new Set(["docx"]);
+export const SLIDES_EXTENSIONS = new Set(["pptx"]);

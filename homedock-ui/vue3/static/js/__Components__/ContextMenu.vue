@@ -18,11 +18,11 @@
               <Icon v-if="item.icon" :icon="item.icon" width="16" height="16" class="item-icon" :class="[themeClasses.contextMenuIcon, !item.disabled ? themeClasses.contextMenuIconHover : '']" />
               <span class="item-label">{{ item.label ? $t(item.label) : "" }}</span>
             </div>
-            <button type="button" class="item-trailing group" :class="[!item.trailing.disabled ? themeClasses.contextMenuItemBgHover : themeClasses.contextMenuItemDisabled, { disabled: item.trailing.disabled }]" :title="$t(item.trailing.label)" :aria-label="$t(item.trailing.label)" @click="handleActionClick(item.trailing)">
+            <button type="button" class="item-trailing group" :class="[!item.trailing.disabled ? themeClasses.contextMenuItemBgHover : themeClasses.contextMenuItemDisabled, { disabled: item.trailing.disabled, danger: item.trailing.danger && !item.trailing.disabled }]" :title="$t(item.trailing.label)" :aria-label="$t(item.trailing.label)" @click="handleActionClick(item.trailing)">
               <Icon :icon="item.trailing.icon" width="16" height="16" :class="[themeClasses.contextMenuIcon, !item.trailing.disabled ? themeClasses.contextMenuIconHover : '']" />
             </button>
           </div>
-          <div v-else class="context-menu-item group" :class="[themeClasses.contextMenuItem, !item.disabled && !item.divider ? [themeClasses.contextMenuItemBgHover, themeClasses.contextMenuItemTextHover] : '', item.disabled ? themeClasses.contextMenuItemDisabled : '', { divider: item.divider, disabled: item.disabled }]" @click="handleItemClick(item)">
+          <div v-else class="context-menu-item group" :class="[themeClasses.contextMenuItem, !item.disabled && !item.divider ? [themeClasses.contextMenuItemBgHover, themeClasses.contextMenuItemTextHover] : '', item.disabled ? themeClasses.contextMenuItemDisabled : '', { divider: item.divider, disabled: item.disabled, danger: item.danger && !item.disabled }]" @click="handleItemClick(item)">
             <template v-if="!item.divider">
               <Icon v-if="item.icon" :icon="item.icon" width="16" height="16" class="item-icon" :class="[themeClasses.contextMenuIcon, !item.disabled ? themeClasses.contextMenuIconHover : '']" />
               <span class="item-label">{{ item.label ? $t(item.label) : "" }}</span>
@@ -46,6 +46,7 @@ export interface ContextMenuAction {
   icon: any;
   action: () => void;
   disabled?: boolean;
+  danger?: boolean;
 }
 
 export interface ContextMenuItem {
@@ -54,6 +55,7 @@ export interface ContextMenuItem {
   action?: () => void;
   shortcut?: string;
   disabled?: boolean;
+  danger?: boolean;
   divider?: boolean;
   actions?: ContextMenuAction[];
   trailing?: ContextMenuAction;
@@ -199,6 +201,12 @@ onUnmounted(() => {
 
 .context-menu-item.disabled {
   cursor: not-allowed;
+}
+
+.context-menu-item.danger,
+.context-menu-item.danger .item-icon,
+.item-trailing.danger svg {
+  color: #ef4444;
 }
 
 .context-menu-actions {

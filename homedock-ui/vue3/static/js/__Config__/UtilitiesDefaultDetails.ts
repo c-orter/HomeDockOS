@@ -42,6 +42,11 @@ const UtilsWriter = defineAsyncComponent({
   loadingComponent: WindowLoading,
   delay: 200,
 });
+const UtilsSlides = defineAsyncComponent({
+  loader: () => import("../__Apps__/UtilsSlides.vue"),
+  loadingComponent: WindowLoading,
+  delay: 200,
+});
 const UtilsBrusher = defineAsyncComponent({
   loader: () => import("../__Apps__/UtilsBrusher.vue"),
   loadingComponent: WindowLoading,
@@ -62,6 +67,11 @@ const UtilsZipfile = defineAsyncComponent({
   loadingComponent: WindowLoading,
   delay: 200,
 });
+const UtilsTrash = defineAsyncComponent({
+  loader: () => import("../__Apps__/UtilsTrash.vue"),
+  loadingComponent: WindowLoading,
+  delay: 200,
+});
 
 import fileDocumentOutlineIcon from "@iconify-icons/mdi/file-document-outline";
 import codeTagsIcon from "@iconify-icons/mdi/code-tags";
@@ -70,10 +80,12 @@ import imageOutlineIcon from "@iconify-icons/mdi/image-outline";
 import filePdfBoxIcon from "@iconify-icons/mdi/file-pdf-box";
 import fileTableBoxIcon from "@iconify-icons/mdi/file-table-box";
 import fileDocumentEditIcon from "@iconify-icons/mdi/file-document-edit";
+import filePresentationBoxIcon from "@iconify-icons/mdi/file-presentation-box";
 import brushIcon from "@iconify-icons/mdi/brush";
 import movieOutlineIcon from "@iconify-icons/mdi/movie-outline";
 import calendarMonthIcon from "@iconify-icons/mdi/calendar-month";
 import zipBoxIcon from "@iconify-icons/mdi/zip-box";
+import trashCanIcon from "@iconify-icons/mdi/trash-can";
 
 export const UTILITIES_APPS: SystemApp[] = [
   {
@@ -158,8 +170,8 @@ export const UTILITIES_APPS: SystemApp[] = [
   },
   {
     id: "pdfviewer",
-    name: "PDF Viewer",
-    description: "View PDF documents",
+    name: "PDF Editor",
+    description: "View and edit PDF documents",
     icon: filePdfBoxIcon,
     color: "#dc2626",
     component: UtilsPDFViewer,
@@ -207,6 +219,26 @@ export const UTILITIES_APPS: SystemApp[] = [
     defaultHeight: 700,
     minWidth: 500,
     minHeight: 500,
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    closeable: true,
+    category: "utilities",
+    showInStartMenu: false,
+    showInFinderApp: false,
+    showInMyHomeApp: true,
+  },
+  {
+    id: "slides",
+    name: "Slides",
+    description: "View presentations",
+    icon: filePresentationBoxIcon,
+    color: "#ea580c",
+    component: UtilsSlides,
+    defaultWidth: 900,
+    defaultHeight: 640,
+    minWidth: 500,
+    minHeight: 420,
     resizable: true,
     maximizable: true,
     minimizable: true,
@@ -283,6 +315,26 @@ export const UTILITIES_APPS: SystemApp[] = [
     icon: zipBoxIcon,
     color: "#d97706",
     component: UtilsZipfile,
+    defaultWidth: 800,
+    defaultHeight: 600,
+    minWidth: 400,
+    minHeight: 600,
+    resizable: true,
+    maximizable: true,
+    minimizable: true,
+    closeable: true,
+    category: "utilities",
+    showInStartMenu: false,
+    showInFinderApp: false,
+    showInMyHomeApp: true,
+  },
+  {
+    id: "trash",
+    name: "Trash",
+    description: "Deleted files, kept for 30 days",
+    icon: trashCanIcon,
+    color: "#64748b",
+    component: UtilsTrash,
     defaultWidth: 800,
     defaultHeight: 600,
     minWidth: 400,

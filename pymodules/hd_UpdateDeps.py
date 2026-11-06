@@ -6,12 +6,17 @@ https://www.banshee.pro
 """
 
 import os
+import re
+import sys
 import hashlib
 import importlib
+import importlib.metadata
 import subprocess
 
 from pymodules.hd_FunctionsGlobals import running_OS, current_directory
 from pymodules.hd_FunctionsHostSelector import is_docker
+
+MIN_PYTHON = (3, 11)
 
 VENV_PATH = os.path.abspath(os.path.join(current_directory, "venv"))
 REQUIREMENTS_FILE = os.path.join(current_directory, "requirements.txt")
@@ -50,6 +55,42 @@ def read_existing_hash():
     return None
 
 
+def venv_python_version():
+    try:
+        result = subprocess.run([VENV_PYTHON, "-c", "import sys; print(sys.version_info[0], sys.version_info[1])"], capture_output=True, text=True, check=True)
+        major, minor = result.stdout.split()
+        return int(major), int(minor)
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        return None
+
+
+def python_is_supported():
+    version = venv_python_version()
+    if version is None or version >= MIN_PYTHON:
+        return True
+
+    current = ".".join(str(part) for part in version)
+    required = ".".join(str(part) for part in MIN_PYTHON)
+    print(f" * Error: HomeDock OS now requires Python {required} or newer, but this installation runs on Python {current}.")
+    print(f" * Dependencies won't be updated until Python is upgraded to {required}+. Some dependencies have known security issues in their older versions.")
+    return False
+
+
+def missing_requirements():
+    with open(REQUIREMENTS_FILE, "r") as f:
+        lines = [line.strip() for line in f if line.strip() and not line.lstrip().startswith("#")]
+
+    missing = []
+    for line in lines:
+        name = re.split(r"[\s<>=!~;\[]", line, maxsplit=1)[0]
+        try:
+            importlib.metadata.distribution(name)
+        except importlib.metadata.PackageNotFoundError:
+            missing.append(line)
+
+    return missing
+
+
 def install_requirements():
     if not os.path.exists(VENV_PYTHON):
         print(f" * Error: Virtual Environment does not exist: {VENV_PATH}.")
@@ -76,6 +117,14 @@ def check_and_update_dependencies():
 
     if not os.path.exists(REQUIREMENTS_FILE):
         print(" * Can't check dependencies, requirements.txt doesn't exist!")
+        return
+
+    if not python_is_supported():
+        missing = missing_requirements()
+        if missing:
+            print(f" * Error: These dependencies are missing and can't be installed on this Python version: {', '.join(missing)}.")
+            print(" * HomeDock OS can't start until Python is upgraded.")
+            sys.exit(1)
         return
 
     new_hash = calculate_hash(REQUIREMENTS_FILE)

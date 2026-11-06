@@ -31,6 +31,10 @@ html {
   -ms-touch-action: manipulation;
 }
 
+html:root {
+  color-scheme: normal;
+}
+
 body.theme-default {
   background-color: rgb(243, 244, 246);
 }

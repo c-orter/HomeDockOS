@@ -213,7 +213,7 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/app-update-seen", "api_app_update_seen", CSRF_Protect(api_app_update_seen), methods=["POST"])
 
-    from pymodules.hd_HDSPackageManager import list_external_apps, upload_hds_package, install_hds_app, delete_external_app, create_hds_from_files, register_hds_from_files, list_imported_apps, export_imported_app, get_external_apps_for_store, parse_compose, export_hdstore, preview_hdstore, import_hdstore, preview_third_party_url, import_third_party_selected, migrate_single_compose, third_party_progress
+    from pymodules.hd_HDSPackageManager import list_external_apps, upload_hds_package, install_hds_app, delete_external_app, create_hds_from_files, register_hds_from_files, list_imported_apps, export_imported_app, get_external_apps_for_store, parse_compose, export_hdstore, preview_hdstore, import_hdstore, preview_third_party_url, import_third_party_selected, migrate_single_compose, third_party_progress, store_status
 
     homedock_www.add_url_rule("/api/pkg/list", "list_external_apps", CSRF_Protect(list_external_apps), methods=["GET"])
     homedock_www.add_url_rule("/api/pkg/upload", "upload_hds_package", CSRF_Protect(upload_hds_package), methods=["POST"])
@@ -231,6 +231,7 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/pkg/preview-third-party", "preview_third_party_url", CSRF_Protect(preview_third_party_url), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/import-third-party", "import_third_party_selected", CSRF_Protect(import_third_party_selected), methods=["POST"])
     homedock_www.add_url_rule("/api/pkg/third-party-progress", "third_party_progress", CSRF_Protect(third_party_progress), methods=["GET"])
+    homedock_www.add_url_rule("/api/pkg/store-status", "store_status", CSRF_Protect(store_status), methods=["GET"])
     homedock_www.add_url_rule("/api/pkg/migrate-compose", "migrate_single_compose", CSRF_Protect(migrate_single_compose), methods=["POST"])
 
     from pymodules.hd_NotificationHandler import dismiss_notification, get_notifications
@@ -262,6 +263,13 @@ def RouteAllModules(homedock_www, send_public_key):
     homedock_www.add_url_rule("/api/storage/delete", "storage_delete_file", CSRF_Protect(storage_delete_file), methods=["POST"])
     homedock_www.add_url_rule("/api/storage/create-folder", "storage_create_folder", CSRF_Protect(storage_create_folder), methods=["POST"])
     homedock_www.add_url_rule("/api/storage/rename", "storage_rename_item", CSRF_Protect(storage_rename_item), methods=["POST"])
+
+    from pymodules.hd_UITrash import trash_list, trash_restore, trash_delete, trash_empty
+
+    homedock_www.add_url_rule("/api/trash/list", "trash_list", CSRF_Protect(trash_list), methods=["GET"])
+    homedock_www.add_url_rule("/api/trash/restore", "trash_restore", CSRF_Protect(trash_restore), methods=["POST"])
+    homedock_www.add_url_rule("/api/trash/delete", "trash_delete", CSRF_Protect(trash_delete), methods=["POST"])
+    homedock_www.add_url_rule("/api/trash/empty", "trash_empty", CSRF_Protect(trash_empty), methods=["POST"])
 
     from pymodules.hd_UIArchives import archive_list, archive_entry, archive_extract, archive_compress, archive_job, archive_cancel
 

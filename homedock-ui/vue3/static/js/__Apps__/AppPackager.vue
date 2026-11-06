@@ -146,7 +146,7 @@ import { useI18n } from "vue-i18n";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useWindowStore } from "../__Stores__/windowStore";
-import { providePackager, packageIconPath, formatFileSize, PREDEFINED_STORES } from "../__Composables__/usePackager";
+import { providePackager, packageIconPath, formatFileSize } from "../__Composables__/usePackager";
 import type { PackagerView } from "../__Composables__/usePackager";
 
 import { Icon } from "@iconify/vue";
@@ -186,7 +186,7 @@ const { themeClasses } = useTheme();
 const windowStore = useWindowStore();
 
 const packager = providePackager();
-const { view, busySections, externalApps, importedApps, validApps, deletingApp, exportingApp, isPackageBeingInstalled, isImported, detailsApp, showDetails, exportPackage, deletePackage, badgeApp, showBadgeDialog, openBadgeDialog, showOverwriteDialog, overwriteData, closeConflictDialog, handleFiles, usedDevHooks, showThirdPartyDialog, thirdPartyPreview, isImportingThirdParty, thirdPartySelectedSlugs, importedFromStore, toggleThirdPartyPkg, thirdPartyToggleAll, closeThirdPartyDialog, confirmThirdPartyImport, showExportStoreDialog, selectedStoreApps, isExportingStore, toggleStoreAppSelection, selectAllStoreApps, closeExportStoreDialog, exportStore, showImportStoreDialog, importStorePreview, importStoreSelectedSlugs, isImportingStore, toggleImportStorePkg, importStoreToggleAll, closeImportStoreDialog, confirmImportStore } = packager;
+const { view, busySections, externalApps, importedApps, validApps, deletingApp, exportingApp, isPackageBeingInstalled, isImported, detailsApp, showDetails, exportPackage, deletePackage, badgeApp, showBadgeDialog, openBadgeDialog, showOverwriteDialog, overwriteData, closeConflictDialog, handleFiles, usedDevHooks, showThirdPartyDialog, thirdPartyPreview, isImportingThirdParty, thirdPartySelectedSlugs, toggleThirdPartyPkg, thirdPartyToggleAll, closeThirdPartyDialog, confirmThirdPartyImport, showExportStoreDialog, selectedStoreApps, isExportingStore, toggleStoreAppSelection, selectAllStoreApps, closeExportStoreDialog, exportStore, showImportStoreDialog, importStorePreview, importStoreSelectedSlugs, isImportingStore, toggleImportStorePkg, importStoreToggleAll, closeImportStoreDialog, confirmImportStore } = packager;
 
 const rootRef = ref<HTMLElement | null>(null);
 const scrollRef = ref<HTMLElement | null>(null);
@@ -207,7 +207,7 @@ watch(
 
 const sidebarCounts = computed<Partial<Record<PackagerView, number>>>(() => ({
   packages: externalApps.value.length,
-  stores: PREDEFINED_STORES.filter((store) => importedFromStore(store).length > 0).length,
+  stores: packager.isCheckingStores.value ? undefined : packager.availableStores.value.length,
 }));
 
 const statusMessage = computed(() => {
@@ -256,6 +256,7 @@ function updateMobileLayout(width: number) {
 
 onMounted(() => {
   packager.refreshAll(false);
+  packager.checkStoresAvailability();
 
   if (rootRef.value) {
     updateMobileLayout(rootRef.value.clientWidth);

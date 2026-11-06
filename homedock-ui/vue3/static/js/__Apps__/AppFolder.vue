@@ -5,14 +5,7 @@
 
 <template>
   <div class="folder-view-container" :class="themeClasses.folderContainerBg">
-    <div class="folder-breadcrumb" :class="[themeClasses.folderBreadcrumbBg, themeClasses.folderBreadcrumbBorder]">
-      <Icon :icon="desktopIcon" class="breadcrumb-icon" :class="themeClasses.folderBreadcrumbIcon" />
-      <span class="breadcrumb-text" :class="themeClasses.folderBreadcrumbText">{{ $t("Desktop") }}</span>
-      <Icon :icon="chevronRightIcon" class="breadcrumb-separator" :class="themeClasses.folderBreadcrumbSeparator" />
-      <Icon :icon="folderIcon" class="breadcrumb-icon" :class="themeClasses.folderBreadcrumbIcon" />
-      <span class="breadcrumb-text folder-name" :class="themeClasses.folderBreadcrumbText">{{ folderName }}</span>
-      <span class="app-count" :class="themeClasses.folderAppCount">({{ totalItemCount }} {{ $t("apps") }})</span>
-    </div>
+    <FolderBreadcrumb :icon="folderIcon" :name="folderName" :count="`${totalItemCount} ${$t('apps')}`" />
 
     <div v-if="totalItemCount === 0" class="empty-folder-state">
       <Icon :icon="folderOpenOutlineIcon" class="empty-icon" :class="themeClasses.folderEmptyIcon" />
@@ -23,7 +16,7 @@
     <div class="folder-apps-grid" ref="containerRef" @contextmenu="handleDesktopContextMenu" @mousedown="handleGridMouseDown">
       <SelectionBox :visible="isSelectingArea" :style="selectionBoxStyle" />
       <TransitionGroup name="icon-appear">
-        <div v-for="(app, index) in folderApps" :key="app.id" :data-app-id="app.id" :class="['desktop-icon group flex flex-col items-center gap-1 cursor-pointer p-3 rounded-lg w-[100px] z-[1] select-none outline-hidden border', isMobile ? 'touch-pan-y' : 'touch-none', !(selectedApp === app.id || selectedApps.has(app.id)) && ['border-transparent', 'shadow-[0_0_0_1px_transparent]'], (selectedApp === app.id || selectedApps.has(app.id)) && [themeClasses.desktopIconBgSelected, themeClasses.desktopIconBorderSelected, themeClasses.desktopIconShadowSelected], isDragging && (draggedApp === app.id || selectedApps.has(app.id)) ? 'opacity-50 !cursor-grabbing' : 'hover:-translate-y-0.5 active:cursor-grabbing']" :style="getIconStyle(folderShortcuts.length + index)" @mousedown="handleMouseDown($event, app)" @click="handleClick(app, $event)" @dblclick="handleDoubleClick(app)" @contextmenu="handleContextMenu($event, app)" @touchstart="handleTouchStart($event, app)" @touchmove="handleTouchMove" @touchend="handleTouchEnd($event, app)" :title="`${app.display_name || app.name} (${app.status})`">
+        <div v-for="(app, index) in folderApps" :key="app.id" :data-app-id="app.id" :data-select-id="`app:${app.id}`" :class="['desktop-icon group flex flex-col items-center gap-1 cursor-pointer p-3 rounded-lg w-[100px] z-[1] select-none outline-hidden border', isMobile ? 'touch-pan-y' : 'touch-none', !(selectedApp === app.id || selectedApps.has(app.id)) && ['border-transparent', 'shadow-[0_0_0_1px_transparent]'], (selectedApp === app.id || selectedApps.has(app.id)) && [themeClasses.desktopIconBgSelected, themeClasses.desktopIconBorderSelected, themeClasses.desktopIconShadowSelected], isDragging && (draggedApp === app.id || selectedApps.has(app.id)) ? 'opacity-50 !cursor-grabbing' : 'hover:-translate-y-0.5 active:cursor-grabbing']" :style="getIconStyle(folderShortcuts.length + index)" @mousedown="handleMouseDown($event, app)" @click="handleClick(app, $event)" @dblclick="handleDoubleClick(app)" @contextmenu="handleContextMenu($event, app)" @touchstart="handleTouchStart($event, app)" @touchmove="handleTouchMove" @touchend="handleTouchEnd($event, app)" :title="`${app.display_name || app.name} (${app.status})`">
           <div :class="['relative w-16 h-16 flex items-center justify-center transition-transform duration-200 pointer-events-none', themeClasses.desktopIconContainerScaleHover]">
             <AppIconGraphic :image-src="app.image_path" :size="APP_ICON_SIZE" :status="app.status" />
             <AppBusyOverlay :visible="isBusy(app.id)" />
@@ -36,7 +29,7 @@
       </TransitionGroup>
 
       <TransitionGroup name="icon-appear">
-        <div v-for="(shortcutIcon, index) in folderShortcuts" :key="shortcutIcon.id" :data-shortcut-id="shortcutIcon.id" :class="['desktop-icon group flex flex-col items-center gap-1 cursor-pointer p-3 rounded-lg w-[100px] z-[1] select-none outline-hidden border', isMobile ? 'touch-pan-y' : 'touch-none', !(selectedSystemIcon === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) && ['border-transparent', 'shadow-[0_0_0_1px_transparent]'], (selectedSystemIcon === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) && [themeClasses.desktopIconBgSelected, themeClasses.desktopIconBorderSelected, themeClasses.desktopIconShadowSelected], isDragging && (draggedShortcut === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) ? 'opacity-50 !cursor-grabbing' : 'hover:-translate-y-0.5 active:cursor-grabbing']" :style="getIconStyle(index)" @mousedown="handleShortcutMouseDown($event, shortcutIcon)" @click="handleShortcutClick(shortcutIcon, $event)" @dblclick="handleShortcutDoubleClick(shortcutIcon)" @contextmenu="handleShortcutContextMenu($event, shortcutIcon)" @touchstart="handleShortcutTouchStart($event, shortcutIcon)" :title="systemIconName(shortcutIcon)">
+        <div v-for="(shortcutIcon, index) in folderShortcuts" :key="shortcutIcon.id" :data-shortcut-id="shortcutIcon.id" :data-select-id="`shortcut:${shortcutIcon.id}`" :class="['desktop-icon group flex flex-col items-center gap-1 cursor-pointer p-3 rounded-lg w-[100px] z-[1] select-none outline-hidden border', isMobile ? 'touch-pan-y' : 'touch-none', !(selectedSystemIcon === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) && ['border-transparent', 'shadow-[0_0_0_1px_transparent]'], (selectedSystemIcon === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) && [themeClasses.desktopIconBgSelected, themeClasses.desktopIconBorderSelected, themeClasses.desktopIconShadowSelected], isDragging && (draggedShortcut === shortcutIcon.id || selectedSystemIcons.has(shortcutIcon.id)) ? 'opacity-50 !cursor-grabbing' : 'hover:-translate-y-0.5 active:cursor-grabbing']" :style="getIconStyle(index)" @mousedown="handleShortcutMouseDown($event, shortcutIcon)" @click="handleShortcutClick(shortcutIcon, $event)" @dblclick="handleShortcutDoubleClick(shortcutIcon)" @contextmenu="handleShortcutContextMenu($event, shortcutIcon)" @touchstart="handleShortcutTouchStart($event, shortcutIcon)" :title="systemIconName(shortcutIcon)">
           <div :class="['relative w-16 h-16 flex items-center justify-center transition-transform duration-200 pointer-events-none', themeClasses.desktopIconContainerScaleHover]">
             <template v-if="shortcutIcon.shortcut">
               <Transition name="icon-switch" mode="out-in">
@@ -89,6 +82,7 @@ import { useTheme } from "../__Themes__/ThemeSelector";
 import { useCsrfToken } from "../__Composables__/useCsrfToken";
 import { useDialog } from "../__Composables__/useDialog";
 import { useDesktopDragSelection } from "../__Composables__/useDesktopDragSelection";
+import { useAreaSelection } from "../__Composables__/useAreaSelection";
 import { useDesktopDragAndDrop } from "../__Composables__/useDesktopDragAndDrop";
 import { useDesktopDragGhost } from "../__Composables__/useDesktopDragGhost";
 
@@ -96,6 +90,7 @@ import type { GridConfig, SelectionState } from "../__Composables__/desktopDragT
 
 import DragGhost, { type DragGhostItem } from "../__Components__/DragGhost.vue";
 import SelectionBox from "../__Components__/SelectionBox.vue";
+import FolderBreadcrumb from "../__Components__/FolderBreadcrumb.vue";
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import ContextMenu, { type ContextMenuItem } from "../__Components__/ContextMenu.vue";
 import StatusBar from "../__Components__/StatusBar.vue";
@@ -110,11 +105,9 @@ import ShortcutGraphic from "../__Components__/ShortcutGraphic.vue";
 import { startContainer, stopContainer, restartContainer, pauseContainer, unpauseContainer, uninstallContainer, updateContainer } from "../__Services__/DockerActions";
 
 import { Icon } from "@iconify/vue";
-import desktopIcon from "@iconify-icons/mdi/desktop-mac";
 import folderIcon from "@iconify-icons/mdi/folder";
 import folderOpenOutlineIcon from "@iconify-icons/mdi/folder-open-outline";
 import folderOpenIcon from "@iconify-icons/mdi/folder-open";
-import chevronRightIcon from "@iconify-icons/mdi/chevron-right";
 import openIcon from "@iconify-icons/mdi/open-in-new";
 import playIcon from "@iconify-icons/mdi/play";
 import stopIcon from "@iconify-icons/mdi/stop";
@@ -168,9 +161,6 @@ const {
   selectedApps,
   selectedSystemIcon,
   selectedSystemIcons,
-  isSelectingArea,
-  selectionBox,
-  selectionBoxStyle: composableSelectionBoxStyle,
   selectItem,
   clearSelection,
 } = useDesktopDragSelection({
@@ -350,8 +340,6 @@ const folderShortcuts = computed(() => {
 
 const totalItemCount = computed(() => folderApps.value.length + folderShortcuts.value.length);
 
-const selectionBoxStyle = composableSelectionBoxStyle;
-
 function getStatusBadgeClass(status: string): string {
   const statusClasses: Record<string, string> = {
     running: themeClasses.value.statusBadgeRunning,
@@ -416,98 +404,33 @@ function handleClick(app: DockerApp, e?: MouseEvent) {
   selectItem({ type: "app", id: app.id }, { ctrl: isCtrlPressed });
 }
 
-const SELECTION_PADDING = 16;
+const APP_PREFIX = "app:";
+const SHORTCUT_PREFIX = "shortcut:";
 
-function handleGridMouseDown(e: MouseEvent) {
-  if (isMobile.value) return;
-  if ((e.target as HTMLElement).closest(".desktop-icon")) return;
-  if (e.button !== 0) return;
-
-  const containerRect = containerRef.value?.getBoundingClientRect();
-  if (!containerRect) return;
-
-  clearSelection();
-
-  const rawX = e.clientX - containerRect.left;
-  const rawY = e.clientY - containerRect.top;
-
-  const startX = Math.max(SELECTION_PADDING, Math.min(rawX, containerRect.width - SELECTION_PADDING));
-  const startY = Math.max(SELECTION_PADDING, Math.min(rawY, containerRect.height - SELECTION_PADDING));
-
-  isSelectingArea.value = true;
-  selectionBox.value.startX = startX;
-  selectionBox.value.startY = startY;
-  selectionBox.value.currentX = startX;
-  selectionBox.value.currentY = startY;
-
-  document.addEventListener("mousemove", handleGridMouseMove);
-  document.addEventListener("mouseup", handleGridMouseUp);
-}
-
-function handleGridMouseMove(e: MouseEvent) {
-  if (!isSelectingArea.value) return;
-
-  const containerRect = containerRef.value?.getBoundingClientRect();
-  if (!containerRect) return;
-
-  const rawX = e.clientX - containerRect.left;
-  const rawY = e.clientY - containerRect.top;
-
-  selectionBox.value.currentX = Math.max(SELECTION_PADDING, Math.min(rawX, containerRect.width - SELECTION_PADDING));
-  selectionBox.value.currentY = Math.max(SELECTION_PADDING, Math.min(rawY, containerRect.height - SELECTION_PADDING));
-
-  updateSelectedAppsInBox();
-}
-
-function handleGridMouseUp(_e: MouseEvent) {
-  if (!isSelectingArea.value) return;
-
-  isSelectingArea.value = false;
-
-  document.removeEventListener("mousemove", handleGridMouseMove);
-  document.removeEventListener("mouseup", handleGridMouseUp);
-}
-
-function updateSelectedAppsInBox() {
-  const boxX = Math.min(selectionBox.value.startX, selectionBox.value.currentX);
-  const boxY = Math.min(selectionBox.value.startY, selectionBox.value.currentY);
-  const boxWidth = Math.abs(selectionBox.value.currentX - selectionBox.value.startX);
-  const boxHeight = Math.abs(selectionBox.value.currentY - selectionBox.value.startY);
-
-  selectedApps.value.clear();
-  selectedSystemIcons.value.clear();
-
-  const boxLeft = boxX;
-  const boxTop = boxY;
-  const boxRight = boxX + boxWidth;
-  const boxBottom = boxY + boxHeight;
-
-  const cols = maxCols.value || 1;
-
-  const intersectsIndex = (index: number): boolean => {
-    const row = Math.floor(index / cols);
-    const col = index % cols;
-
-    const iconLeft = ICON_PADDING.value + col * GRID_SIZE_X.value;
-    const iconTop = ICON_PADDING.value + row * GRID_SIZE_Y.value;
-    const iconRight = iconLeft + 100;
-    const iconBottom = iconTop + 130;
-
-    return boxLeft < iconRight && boxRight > iconLeft && boxTop < iconBottom && boxBottom > iconTop;
-  };
-
-  folderShortcuts.value.forEach((icon, index) => {
-    if (intersectsIndex(index)) {
-      selectedSystemIcons.value.add(icon.id);
-    }
-  });
-
-  folderApps.value.forEach((app, index) => {
-    if (intersectsIndex(folderShortcuts.value.length + index)) {
-      selectedApps.value.add(app.id);
-    }
-  });
-}
+const {
+  isSelectingArea,
+  selectionBoxStyle,
+  handleMouseDown: handleGridMouseDown,
+} = useAreaSelection({
+  containerRef,
+  enabled: () => !isMobile.value,
+  getSelection: () => {
+    const ids = new Set<string>();
+    [...selectedApps.value, ...(selectedApp.value ? [selectedApp.value] : [])].forEach((id) => ids.add(APP_PREFIX + id));
+    [...selectedSystemIcons.value, ...(selectedSystemIcon.value ? [selectedSystemIcon.value] : [])].forEach((id) => ids.add(SHORTCUT_PREFIX + id));
+    return ids;
+  },
+  setSelection: (ids) => {
+    selectedApp.value = null;
+    selectedSystemIcon.value = null;
+    selectedApps.value.clear();
+    selectedSystemIcons.value.clear();
+    ids.forEach((id) => {
+      if (id.startsWith(APP_PREFIX)) selectedApps.value.add(id.slice(APP_PREFIX.length));
+      else if (id.startsWith(SHORTCUT_PREFIX)) selectedSystemIcons.value.add(id.slice(SHORTCUT_PREFIX.length));
+    });
+  },
+});
 
 const ghostOffset = ref({ x: 0, y: 0 });
 
@@ -1225,9 +1148,6 @@ onUnmounted(() => {
   document.removeEventListener("touchend", handleDragTouchEnd);
   document.removeEventListener("touchcancel", handleDragTouchEnd);
 
-  document.removeEventListener("mousemove", handleGridMouseMove);
-  document.removeEventListener("mouseup", handleGridMouseUp);
-
   if (isDragging.value) {
     desktopStore.clearDraggedApps();
   }
@@ -1240,39 +1160,6 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-/* Breadcrumb */
-.folder-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1rem;
-  border-bottom: 1px solid transparent;
-}
-
-.breadcrumb-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.breadcrumb-separator {
-  width: 16px;
-  height: 16px;
-}
-
-.breadcrumb-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.folder-name {
-  font-weight: 600;
-}
-
-.app-count {
-  font-size: 0.75rem;
-  margin-left: 0.25rem;
 }
 
 /* Empty state */

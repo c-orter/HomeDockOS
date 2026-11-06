@@ -28,6 +28,7 @@ ALLOWED_LANGUAGES = ("en", "es", "de", "fr", "it", "pt", "zh", "ru", "uk", "ja",
 ALLOWED_CLOCK_FORMATS = ("24h", "12h")
 ALLOWED_WEEK_STARTS = ("sunday", "monday")
 ALLOWED_APPEARANCES = ("redmond", "cupertino")
+ALLOWED_MOTIONS = ("playful", "standard")
 
 
 def _clamp_session_timeout(value):
@@ -60,6 +61,12 @@ def _clamp_appearance(value):
     if isinstance(value, str) and value in ALLOWED_APPEARANCES:
         return value
     return "redmond"
+
+
+def _clamp_motion(value):
+    if isinstance(value, str) and value in ALLOWED_MOTIONS:
+        return value
+    return "playful"
 
 
 def check_and_generate_config():
@@ -97,6 +104,7 @@ def check_and_generate_config():
             "selected_theme": "default",
             "selected_back": "back1.jpg",
             "selected_appearance": "redmond",
+            "selected_motion": "playful",
             "selected_language": "en",
             "clock_format": "24h",
             "week_start": "monday",
@@ -222,6 +230,10 @@ def check_and_update_config():
         if not config.has_option("Config", "selected_appearance"):
             config.set("Config", "selected_appearance", "redmond")
             missing_options.append("selected_appearance")
+
+        if not config.has_option("Config", "selected_motion"):
+            config.set("Config", "selected_motion", "playful")
+            missing_options.append("selected_motion")
 
         if missing_options:
             write_config(config, config_file)
@@ -358,6 +370,7 @@ def read_config():
         "clock_format": _clamp_clock_format(config.get("Config", "clock_format", fallback="24h")),
         "week_start": _clamp_week_start(config.get("Config", "week_start", fallback="monday")),
         "selected_appearance": _clamp_appearance(config.get("Config", "selected_appearance", fallback="redmond")),
+        "selected_motion": _clamp_motion(config.get("Config", "selected_motion", fallback="playful")),
     }
 
     # HDOS00123

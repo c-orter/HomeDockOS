@@ -560,6 +560,9 @@ def disksplus_delete_file():
     except ValueError:
         return jsonify({"error": "security_violation"}), 403
 
+    if os.path.realpath(file_path) == os.path.realpath(base_dir):
+        return jsonify({"error": "invalid_path"}), 400
+
     try:
         if os.path.isdir(file_path):
             shutil.rmtree(file_path)

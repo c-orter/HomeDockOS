@@ -146,8 +146,8 @@
               <Icon :icon="donateIcon" :class="[themeClasses.aboutIcon]" size="20px" />
               <p :class="['text-base font-semibold', themeClasses.aboutDescription]">{{ $t("Support HomeDock OS") }}</p>
             </div>
-            <p :class="['text-sm leading-relaxed', themeClasses.aboutDescription]">{{ $t("HomeDock OS is made with care by a self-funded small team that loves building and shaping the future of the personal cloud. We don't accept donations, but by trying HomeDock OS Cloud Instances you're helping us create the next generation of features and experiences everyone deserves.") }}</p>
-            <a href="https://dashboard.homedock.cloud/" target="_blank" rel="noopener noreferrer" :class="['inline-block px-4 py-2 rounded-lg font-semibold transition-colors', themeClasses.aboutDonateButton]"> {{ $t("Try Cloud Instances") }} </a>
+            <p :class="['text-sm leading-relaxed', themeClasses.aboutDescription]">{{ $t("HomeDock OS is made with care by a self-funded small team that loves building and shaping the future of the personal cloud. We don't accept donations: Enterprise is what keeps HomeDock OS free for everyone, and a star on GitHub or a recommendation to a business that could use it goes a long way.") }}</p>
+            <a href="https://docs.homedock.cloud/enterprise/overview/" target="_blank" rel="noopener noreferrer" :class="['inline-block px-4 py-2 rounded-lg font-semibold transition-colors', themeClasses.aboutDonateButton]"> {{ $t("Discover Enterprise") }} </a>
           </div>
 
           <div :class="['rounded-lg p-6 space-y-3', themeClasses.aboutCard]">

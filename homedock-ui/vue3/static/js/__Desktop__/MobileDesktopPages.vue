@@ -18,6 +18,10 @@
                   <Icon :icon="arrowTopRightIcon" class="w-3 h-3 text-blue-600" />
                 </div>
               </template>
+              <template v-else-if="(item as any).appId === TRASH_ICON_ID">
+                <AppIconGraphic :icon="systemIconGlyph(item)" :color="systemIconColor(item)" :size="APP_ICON_SIZE" />
+                <CountBadge :count="trashStore.items.length" />
+              </template>
               <AppIconGraphic v-else :icon="systemIconGlyph(item)" :color="systemIconColor(item)" :size="APP_ICON_SIZE" />
             </div>
             <span :class="[themeClasses.desktopIconText, 'text-xs text-center w-full overflow-hidden text-ellipsis whitespace-nowrap pointer-events-none font-medium']" style="line-height: 1.125rem">{{ item.name }}</span>
@@ -68,7 +72,8 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useDesktopStore, type DockerApp, type DesktopFolder, type SystemDesktopIcon } from "../__Stores__/desktopStore";
+import { useDesktopStore, TRASH_ICON_ID, type DockerApp, type DesktopFolder, type SystemDesktopIcon } from "../__Stores__/desktopStore";
+import { useTrashStore } from "../__Stores__/useTrashStore";
 import { useWidgetsStore, type WidgetInstance } from "../__Stores__/useWidgetsStore";
 import { useDesktopSyncStore } from "../__Stores__/useDesktopSyncStore";
 import { getWidgetDims } from "../__Config__/WidgetDefaultDetails";
@@ -82,6 +87,7 @@ import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import AppBusyOverlay from "../__Components__/AppBusyOverlay.vue";
 
 import ShortcutGraphic from "../__Components__/ShortcutGraphic.vue";
+import CountBadge from "../__Components__/CountBadge.vue";
 import { getAppById, ENTERPRISE_APP_COLOR } from "../__Config__/WindowDefaultDetails";
 import DesktopFolderIcon from "./DesktopFolderIcon.vue";
 import UpdatedDot from "../__Components__/UpdatedDot.vue";
@@ -141,6 +147,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const desktopStore = useDesktopStore();
+const trashStore = useTrashStore();
 const { isBusy } = useBusyApps();
 const widgetsStore = useWidgetsStore();
 const desktopSync = useDesktopSyncStore();

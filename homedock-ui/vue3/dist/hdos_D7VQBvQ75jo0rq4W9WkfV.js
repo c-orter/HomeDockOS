@@ -1,0 +1,1 @@
+import{_t as e}from"./hdos_Ei8JofcnxkjwMtt_ZAcia.js";import{J as t,Ut as n,gn as r,gt as i}from"./hdos_B508z3v_JfpK2nzgMijjB.js";function a(a){let o=Symbol(`contextKey`);return{useProvide:(t,a)=>{let s=r({});return i(o,s),n(()=>{e(s,t,a||{})}),s},useInject:()=>t(o,a)||{}}}export{a as t};

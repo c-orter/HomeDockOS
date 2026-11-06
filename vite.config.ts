@@ -6,10 +6,11 @@ import vue from "@vitejs/plugin-vue";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/postcss";
 import fortuneSheetNoEval from "./homedock-ui/vite-plugins/fortuneSheetNoEval.ts";
+import pptxViewerFixes from "./homedock-ui/vite-plugins/pptxViewerFixes.ts";
 
 export default defineConfig(({ mode }) => ({
   base: mode === "production" ? "/homedock-ui/vue3/dist/" : "/",
-  plugins: [vue(), react({ include: /\/__Islands__\/.*\.tsx$/ }), fortuneSheetNoEval()],
+  plugins: [vue(), react({ include: /\/__Islands__\/.*\.tsx$/ }), fortuneSheetNoEval(), pptxViewerFixes()],
   resolve: {
     dedupe: ["vue", "react", "react-dom"],
   },

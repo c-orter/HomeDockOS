@@ -230,7 +230,7 @@ import { useWindowStore } from "../__Stores__/windowStore";
 import { useDisksPlusStore } from "../__Stores__/useDisksPlusStore";
 import { announceFilesChanged, useArchiveJobsStore } from "../__Stores__/useArchiveJobsStore";
 import { BROWSER_IMAGE_EXTENSIONS } from "../__Composables__/useThumbnails";
-import { CODE_EXTENSIONS, MEDIA_EXTENSIONS, PDF_EXTENSIONS, SHEETS_EXTENSIONS, TEXT_EXTENSIONS, WRITER_EXTENSIONS } from "../__Config__/FileAssociations";
+import { CODE_EXTENSIONS, MEDIA_EXTENSIONS, PDF_EXTENSIONS, SHEETS_EXTENSIONS, SLIDES_EXTENSIONS, TEXT_EXTENSIONS, WRITER_EXTENSIONS } from "../__Config__/FileAssociations";
 import { fileExtension } from "../__Config__/FileIcons";
 import { MAX_UNLOCK_PASSWORD_LENGTH, archiveErrorCode, archiveErrorMessage, isZipName, listArchive, normalizeBinaryError, parentFolder, readArchiveEntry, startExtract, type ArchiveEntry, type ArchiveFileRef, type ArchiveListing, type ArchiveSkipReason } from "../__Utils__/ArchiveClient";
 import { LocalArchiveError, openLocalArchive, type LocalArchive } from "../__Utils__/ArchiveLocal";
@@ -876,7 +876,9 @@ function openEntry(entry: ArchiveEntry) {
   const lowerName = entry.name.toLowerCase();
 
   withEntryBuffer(entry, (buffer) => {
-    if (TEXT_EXTENSIONS.has(extension) || TEXT_EXTENSIONS.has(lowerName) || CODE_EXTENSIONS.has(extension) || CODE_EXTENSIONS.has(lowerName)) {
+    if (SHEETS_EXTENSIONS.has(extension)) {
+      windowStore.openWindow("sheets", { allowMultiple: true, data: { sheetsFile: { name: entry.name, buffer } } });
+    } else if (TEXT_EXTENSIONS.has(extension) || TEXT_EXTENSIONS.has(lowerName) || CODE_EXTENSIONS.has(extension) || CODE_EXTENSIONS.has(lowerName)) {
       const appId = CODE_EXTENSIONS.has(extension) || CODE_EXTENSIONS.has(lowerName) ? "code" : "notepad";
       windowStore.openFileInApp(appId, { data: { textFile: { name: entry.name, content: new TextDecoder().decode(buffer) } } });
     } else if (BROWSER_IMAGE_EXTENSIONS.has(extension)) {
@@ -884,11 +886,11 @@ function openEntry(entry: ArchiveEntry) {
     } else if (MEDIA_EXTENSIONS.has(extension)) {
       windowStore.openFileInApp("mediaplayer", { data: { mediaFile: { name: entry.name, extension, buffer } } });
     } else if (PDF_EXTENSIONS.has(extension)) {
-      windowStore.openFileInApp("pdfviewer", { data: { pdfFile: { name: entry.name, buffer } } });
-    } else if (SHEETS_EXTENSIONS.has(extension)) {
-      windowStore.openFileInApp("sheets", { data: { sheetsFile: { name: entry.name, buffer } } });
+      windowStore.openWindow("pdfviewer", { allowMultiple: true, data: { pdfFile: { name: entry.name, buffer } } });
     } else if (WRITER_EXTENSIONS.has(extension)) {
-      windowStore.openFileInApp("writer", { data: { writerFile: { name: entry.name, buffer } } });
+      windowStore.openWindow("writer", { allowMultiple: true, data: { writerFile: { name: entry.name, buffer } } });
+    } else if (SLIDES_EXTENSIONS.has(extension)) {
+      windowStore.openWindow("slides", { allowMultiple: true, data: { slidesFile: { name: entry.name, buffer } } });
     } else if (isZipName(entry.name)) {
       windowStore.openWindow("zipfile", { allowMultiple: true, data: { localFile: new File([buffer], entry.name) } });
     } else {

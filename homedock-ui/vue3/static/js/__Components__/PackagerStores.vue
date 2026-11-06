@@ -14,7 +14,7 @@
     </div>
 
     <div class="stores-grid">
-      <div v-for="store in PREDEFINED_STORES" :key="store.id" :class="[themeClasses.storeInfoBar]" class="flex flex-col gap-3 rounded-2xl border p-4">
+      <div v-for="store in availableStores" :key="store.id" :class="[themeClasses.storeInfoBar]" class="flex flex-col gap-3 rounded-2xl border p-4">
         <div class="flex items-center gap-3 min-w-0">
           <span class="store-logo flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0 text-white text-lg font-extrabold" :style="{ background: store.color }">{{ store.name.charAt(0) }}</span>
           <div class="min-w-0">
@@ -40,6 +40,17 @@
         </div>
 
         <TaskProgress v-if="loadingStoreUrl === store.url" :percent="progressPercent" :label="progressLabel" :detail="progressDetail" />
+      </div>
+
+      <div v-if="isCheckingStores" :class="[themeClasses.storeInfoBar]" class="flex flex-col gap-3 rounded-2xl border p-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <span :class="[themeClasses.storeCardInstallingPill]" class="flex items-center justify-center w-12 h-12 rounded-xl flex-shrink-0">
+            <Icon :icon="loadingIcon" class="w-5 h-5 animate-spin" />
+          </span>
+          <p :class="[themeClasses.storeCardSubtitle]" class="m-0 min-w-0 text-sm leading-snug">{{ $t("Checking stores...") }}</p>
+        </div>
+        <div class="h-8"></div>
+        <div class="h-7 mt-auto"></div>
       </div>
     </div>
 
@@ -100,7 +111,7 @@ const HOW_IT_WORKS = [
 
 const { t } = useI18n();
 const { themeClasses } = useTheme();
-const { thirdPartyUrl, loadingStoreUrl, storeProgress, busySections, importedFromStore, previewThirdPartyStore } = usePackager();
+const { thirdPartyUrl, loadingStoreUrl, storeProgress, busySections, availableStores, isCheckingStores, importedFromStore, previewThirdPartyStore } = usePackager();
 
 const isPredefined = (url: string) => PREDEFINED_STORES.some((store) => store.url === url);
 
