@@ -42,7 +42,8 @@
 
           <template v-else-if="phase === 'stopped' && !busy">
             <h3 :class="[themeClasses.terminalStateTitle]" class="text-sm font-semibold mb-1">{{ $t("The browser is stopped") }}</h3>
-            <p :class="[themeClasses.terminalStateText]" class="text-xs leading-relaxed mb-3">{{ $t("Your profile, with its logins and bookmarks, is kept for the next start.") }}</p>
+            <p :class="[themeClasses.terminalStateText]" class="text-xs leading-relaxed mb-2">{{ $t("Your profile, with its logins and bookmarks, is kept for the next start.") }}</p>
+            <p :class="[themeClasses.terminalStateText]" class="text-xs leading-relaxed mb-3">{{ $t("The browser reaches the internet through a filter that blocks your home network and this server. Because of that filter, sites that use QUIC fall back to regular connections, which can be a little slower.") }}</p>
             <button :class="[themeClasses.appPropsActionButtonPrimaryBg, themeClasses.appPropsActionButtonPrimaryBorder, themeClasses.appPropsActionButtonPrimaryText, themeClasses.appPropsActionButtonPrimaryBgHover]" class="px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer" @click="begin">{{ $t("Start the browser") }}</button>
           </template>
 
