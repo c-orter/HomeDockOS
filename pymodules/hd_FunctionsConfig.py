@@ -39,21 +39,6 @@ def _clamp_session_timeout(value):
     return minutes if minutes in ALLOWED_DISKSPLUS_SESSION_MINUTES else 10
 
 
-DEFAULT_BROWSER_IDLE_MINUTES = 15
-BROWSER_IDLE_MINUTES_RANGE = (1, 1440)
-
-
-def clamp_browser_idle_minutes(value):
-    try:
-        minutes = int(value)
-    except (TypeError, ValueError):
-        return DEFAULT_BROWSER_IDLE_MINUTES
-
-    low, high = BROWSER_IDLE_MINUTES_RANGE
-
-    return minutes if low <= minutes <= high else DEFAULT_BROWSER_IDLE_MINUTES
-
-
 def _clamp_language(value):
     if isinstance(value, str) and value in ALLOWED_LANGUAGES:
         return value
@@ -116,7 +101,6 @@ def check_and_generate_config():
             "default_external_drive": default_external_drive,
             "require_protected_paths_password": "True",
             "disksplus_session_timeout_minutes": "10",
-            "browser_idle_minutes": str(DEFAULT_BROWSER_IDLE_MINUTES),
             "selected_theme": "default",
             "selected_back": "back1.jpg",
             "selected_appearance": "redmond",
@@ -230,10 +214,6 @@ def check_and_update_config():
         if not config.has_option("Config", "disksplus_session_timeout_minutes"):
             config.set("Config", "disksplus_session_timeout_minutes", "10")
             missing_options.append("disksplus_session_timeout_minutes")
-
-        if not config.has_option("Config", "browser_idle_minutes"):
-            config.set("Config", "browser_idle_minutes", str(DEFAULT_BROWSER_IDLE_MINUTES))
-            missing_options.append("browser_idle_minutes")
 
         if not config.has_option("Config", "selected_language"):
             config.set("Config", "selected_language", "en")
@@ -386,7 +366,6 @@ def read_config():
         "host_shell_enabled": config.getboolean("Config", "host_shell_enabled", fallback=False),
         "require_protected_paths_password": config.getboolean("Config", "require_protected_paths_password", fallback=True),
         "disksplus_session_timeout_minutes": _clamp_session_timeout(config.get("Config", "disksplus_session_timeout_minutes", fallback="10")),
-        "browser_idle_minutes": clamp_browser_idle_minutes(config.get("Config", "browser_idle_minutes", fallback=str(DEFAULT_BROWSER_IDLE_MINUTES))),
         "selected_language": _clamp_language(config.get("Config", "selected_language", fallback="en")),
         "clock_format": _clamp_clock_format(config.get("Config", "clock_format", fallback="24h")),
         "week_start": _clamp_week_start(config.get("Config", "week_start", fallback="monday")),

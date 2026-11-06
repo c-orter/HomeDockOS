@@ -14,6 +14,7 @@ resolves to a private address, or changes its answer between a check and a conne
 
 import asyncio
 import ipaddress
+import json
 import os
 import socket
 import sys
@@ -77,8 +78,88 @@ class Refused(Exception):
         self.reason = reason
 
 
-async def resolve(host, port, loop=None):
-    """The checked address to connect to. Every answer for the name must be public, otherwise the name is refused."""
+# Never opened by an allowlist entry, whatever it says: this machine itself, link-local (cloud metadata lives there),
+# multicast and the unspecified address.
+_NEVER_ALLOWED = tuple(ipaddress.ip_network(n) for n in ("0.0.0.0/8", "127.0.0.0/8", "169.254.0.0/16", "224.0.0.0/4", "255.255.255.255/32", "::/128", "::1/128", "fe80::/10", "ff00::/8"))
+
+# The container engine's own network API. Never reachable through an allowlist entry.
+_NEVER_PORTS = (2375, 2376)
+
+
+def _unmapped(address):
+    ip = ipaddress.ip_address(address)
+
+    return ip.ipv4_mapped if ip.version == 6 and ip.ipv4_mapped is not None else ip
+
+
+class Rules:
+    """What the admin opened (allow) and what stays shut regardless (deny). Both empty by default, so only the public internet is reachable."""
+
+    def __init__(self, allow=(), deny=()):
+        self.allow = []
+        self.deny = []
+
+        for entry in allow:
+            net = ipaddress.ip_network(entry["net"], strict=False) if entry.get("net") else None
+            host = str(entry["host"]).lower() if entry.get("host") else None
+
+            if net is not None or host is not None:
+                self.allow.append({"net": net, "host": host, "port": int(entry["port"]) if entry.get("port") else None})
+
+        for entry in deny:
+            self.deny.append(ipaddress.ip_network(entry, strict=False))
+
+    @classmethod
+    def from_env(cls, environ=None):
+        raw = (environ if environ is not None else os.environ).get("HD_EGRESS_RULES", "")
+
+        if not raw:
+            return cls()
+
+        try:
+            data = json.loads(raw)
+
+            return cls(data.get("allow", []), data.get("deny", []))
+        except (ValueError, KeyError, TypeError, AttributeError):
+            print("egress proxy: ignoring unreadable rules; only the public internet is reachable", file=sys.stderr)
+
+            return cls()
+
+    def denied(self, address):
+        ip = _unmapped(address)
+
+        return any(ip in net for net in self.deny if net.version == ip.version)
+
+    def permits(self, host, address, port):
+        """True when an entry opens this exact destination, and it is not one that can never be opened."""
+
+        ip = _unmapped(address)
+
+        if port in _NEVER_PORTS or any(ip in net for net in _NEVER_ALLOWED if net.version == ip.version):
+            return False
+
+        name = host.strip("[]").lower()
+
+        for entry in self.allow:
+            if entry["port"] is not None and entry["port"] != port:
+                continue
+
+            if entry["net"] is not None and entry["net"].version == ip.version and ip in entry["net"]:
+                return True
+
+            if entry["host"] is not None and entry["host"] == name:
+                return True
+
+        return False
+
+
+RULES = Rules()
+
+
+async def resolve(host, port, loop=None, rules=None):
+    """The checked address to connect to. Every answer for the name must be public, or be opened by an allowlist entry, and none may be on the deny list; otherwise the name is refused."""
+
+    rules = rules or RULES
 
     if not 0 < port < 65536:
         raise Refused(403, "Port not allowed")
@@ -105,8 +186,15 @@ async def resolve(host, port, loop=None):
     if not answers:
         raise Refused(502, "Could not resolve the name")
 
-    if not all(is_public(a) for a in answers):
-        raise Refused(403, "Destination is not a public internet address")
+    for address in answers:
+        try:
+            if rules.denied(address):
+                raise Refused(403, "Destination is not allowed")
+        except ValueError:
+            raise Refused(403, "Destination is not a public internet address")
+
+        if not is_public(address) and not rules.permits(host, address, port):
+            raise Refused(403, "Destination is not a public internet address")
 
     return answers[0]
 
@@ -254,6 +342,8 @@ async def serve():
 
 
 if __name__ == "__main__":
+    RULES = Rules.from_env()
+
     try:
         asyncio.run(serve())
     except KeyboardInterrupt:

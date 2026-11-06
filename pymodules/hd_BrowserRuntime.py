@@ -7,12 +7,15 @@ https://www.banshee.pro
 
 import json
 import os
+import socket
 import threading
 import time
 import urllib.request
 
 import docker
 
+from pymodules import hd_BrowserAllowlist as allowlist
+from pymodules import hd_BrowserSettings as browser_settings
 from pymodules.hd_BrowserEngine import CHROMIUM_USER, INIT_CAPABILITIES, PROXY_PORT, SANDBOX_PROBE, EgressProxyImage, ImageUnavailable, SelkiesChromiumEngine
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_FunctionsGlobals import running_OS
@@ -24,6 +27,7 @@ BROWSER_LABEL = "homedock.browser"
 CONTAINER_NAME = "homedock-browser"
 NETWORK_NAME = "homedock_browser"
 EGRESS_NETWORK_NAME = "homedock_browser_egress"
+APP_NETWORK_NAME = "homedock_network"
 PROXY_CONTAINER_NAME = "homedock-browser-proxy"
 PROFILE_VOLUME = "homedock_browser_profile"
 
@@ -33,11 +37,6 @@ PROXY_NANO_CPUS = 500_000_000
 PROXY_START_TIMEOUT = 20
 
 SECCOMP_PROFILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hd_BrowserSeccomp.json")
-
-MEMORY_LIMIT = "2g"
-SHM_SIZE = "1g"
-PIDS_LIMIT = 512
-NANO_CPUS = 1_000_000_000
 
 START_TIMEOUT = 90
 POLL_INTERVAL = 1
@@ -134,17 +133,19 @@ def sandbox_cause():
 
 
 def _hardening():
-    """Fixed hardening. Nothing here is editable from the UI."""
+    """The security settings are fixed and not editable from the UI. Only the resource limits come from Settings, validated to a range, and they apply on the next start."""
+
+    limits = browser_settings.limits()
 
     return {
         "cap_drop": ["ALL"],
         "cap_add": list(INIT_CAPABILITIES),
         "security_opt": ["no-new-privileges", f"seccomp={seccomp_profile()}"],
-        "mem_limit": MEMORY_LIMIT,
-        "memswap_limit": MEMORY_LIMIT,
-        "pids_limit": PIDS_LIMIT,
-        "nano_cpus": NANO_CPUS,
-        "shm_size": SHM_SIZE,
+        "mem_limit": limits["mem_limit"],
+        "memswap_limit": limits["mem_limit"],
+        "pids_limit": limits["pids_limit"],
+        "nano_cpus": limits["nano_cpus"],
+        "shm_size": limits["shm_size"],
         "privileged": False,
     }
 
@@ -218,11 +219,14 @@ def _start_proxy(client, internal_network):
     if stale is not None:
         _remove(stale)
 
+    rules = allowlist.proxy_rules(_deny_addresses(client))
+
     proxy = client.containers.create(
         proxy_reference,
         name=PROXY_CONTAINER_NAME,
         detach=True,
         network=egress.name,
+        environment={"HD_EGRESS_RULES": json.dumps(rules, separators=(",", ":"))},
         labels={BROWSER_LABEL: "1"},
         restart_policy={"Name": "no"},
         **_proxy_hardening(),
@@ -230,11 +234,87 @@ def _start_proxy(client, internal_network):
 
     try:
         internal_network.connect(proxy, aliases=[PROXY_CONTAINER_NAME])
+
+        # Allowed apps live on the shared app network. Only the proxy joins it, and the proxy still refuses everything the list does not name.
+        if allowlist.has_apps():
+            _join_app_network(client, proxy)
+
         proxy.start()
         _wait_proxy(proxy)
     except Exception:
         _remove(proxy)
         raise
+
+
+def _join_app_network(client, proxy):
+    try:
+        client.networks.get(APP_NETWORK_NAME).connect(proxy)
+    except docker.errors.NotFound:
+        pass
+
+
+def _deny_addresses(client):
+    """Addresses the allowlist can never open: HomeDock itself, and the host's side of the browser's networks. Best effort from where HomeDock stands."""
+
+    addresses = set()
+
+    try:
+        if is_docker:
+            own = own_container(client)
+
+            if own is not None:
+                own.reload()
+
+                for network in own.attrs.get("NetworkSettings", {}).get("Networks", {}).values():
+                    addresses.update(a for a in (network.get("IPAddress"), network.get("GlobalIPv6Address")) if a)
+
+        for name in (NETWORK_NAME, EGRESS_NETWORK_NAME, "bridge"):
+            for found in client.networks.list(names=[name]):
+                for config in (found.attrs.get("IPAM") or {}).get("Config") or []:
+                    if config.get("Gateway"):
+                        addresses.add(config["Gateway"])
+    except docker.errors.DockerException:
+        pass
+
+    if is_docker:
+        try:
+            addresses.add(socket.gethostbyname("host.docker.internal"))
+        except OSError:
+            pass
+    else:
+        import psutil
+
+        for entries in psutil.net_if_addrs().values():
+            addresses.update(entry.address.split("%")[0] for entry in entries if entry.family in (socket.AF_INET, socket.AF_INET6))
+
+    return addresses
+
+
+def refresh_proxy():
+    """Restarts only the proxy, so a changed allowlist applies at once. Open connections drop and the browser reconnects."""
+
+    client = _client()
+
+    if _existing(client, PROXY_CONTAINER_NAME) is None:
+        return False
+
+    _start_proxy(client, _ensure_network(client))
+
+    return True
+
+
+def reset_profile():
+    """Deletes the browser's profile: logins, cookies, history, bookmarks. The browser must not be running."""
+
+    client = _client()
+
+    if _existing(client) is not None:
+        raise BrowserError("still_running", "Stop the browser first.")
+
+    try:
+        client.volumes.get(PROFILE_VOLUME).remove(force=True)
+    except docker.errors.NotFound:
+        pass
 
 
 def _wait_proxy(proxy):

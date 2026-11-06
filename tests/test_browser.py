@@ -11,11 +11,14 @@ from flask_login import LoginManager
 
 from pymodules import hd_BrowserEngine as engine_module
 from pymodules import hd_BrowserRuntime as runtime
+from pymodules import hd_BrowserSettings as settings
 from pymodules import hd_UIBrowser as browser
 
 
 @pytest.fixture(autouse=True)
-def clean_state(monkeypatch):
+def clean_state(monkeypatch, tmp_path):
+    monkeypatch.setattr(settings, "BROWSER_FOLDER", str(tmp_path / "_browser"))
+    monkeypatch.setattr(settings, "SETTINGS_FILE", str(tmp_path / "_browser" / "settings.json"))
     browser.revoke_tickets()
     runtime._probed.clear()
     runtime._state.update(phase="stopped", code="", detail="")
@@ -485,8 +488,8 @@ def test_the_container_is_created_with_the_fixed_spec(monkeypatch):
     assert "no-new-privileges" in kwargs["security_opt"]
     assert any(opt.startswith("seccomp=") and "unconfined" not in opt for opt in kwargs["security_opt"])
     assert kwargs["privileged"] is False
-    assert kwargs["pids_limit"] == runtime.PIDS_LIMIT
-    assert kwargs["mem_limit"] == runtime.MEMORY_LIMIT
+    assert kwargs["pids_limit"] == 512
+    assert kwargs["mem_limit"] == "2048m" and kwargs["shm_size"] == "1024m" and kwargs["nano_cpus"] == 1_000_000_000
     assert kwargs["network"] == runtime.NETWORK_NAME
     assert "ports" not in kwargs
     assert "network_mode" not in kwargs
@@ -802,12 +805,9 @@ def test_the_download_guard_assumes_a_download_when_it_cannot_tell(monkeypatch):
     assert runtime.downloading() is True
 
 
-def test_the_idle_timeout_comes_from_settings_and_is_clamped(monkeypatch):
-    from pymodules import hd_FunctionsConfig as cfg
+def test_the_idle_timeout_defaults_to_fifteen_minutes_and_follows_settings():
+    assert browser.idle_timeout_seconds() == 15 * 60
 
-    assert cfg.DEFAULT_BROWSER_IDLE_MINUTES == 15
-    assert [cfg.clamp_browser_idle_minutes(v) for v in ("30", 0, -5, 99999, "abc", None, "1440", 1)] == [30, 15, 15, 15, 15, 15, 1440, 1]
-
-    monkeypatch.setattr(cfg, "read_config", lambda: {"browser_idle_minutes": 45})
+    settings.save({"idle_minutes": 45})
 
     assert browser.idle_timeout_seconds() == 45 * 60

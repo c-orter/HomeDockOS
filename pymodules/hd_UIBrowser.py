@@ -14,7 +14,9 @@ import time
 from flask import jsonify, request
 from flask_login import current_user, login_required
 
+from pymodules import hd_BrowserAllowlist as allowlist
 from pymodules import hd_BrowserRuntime as runtime
+from pymodules import hd_BrowserSettings as settings
 from pymodules import hd_BrowserTransfer as transfer
 from pymodules import hd_SubdomainRouter as router
 from pymodules.hd_SubdomainRouter import HOP_BY_HOP_HEADERS, _get_session, _get_uncapped_session, _pump_backend_to_client, _pump_client_to_backend, _send_simple_response, _stream_request_body
@@ -132,14 +134,7 @@ _idle_lock = threading.Lock()
 def idle_timeout_seconds():
     """Read on every check, so a changed setting applies without a restart."""
 
-    from pymodules.hd_FunctionsConfig import DEFAULT_BROWSER_IDLE_MINUTES, clamp_browser_idle_minutes, read_config
-
-    try:
-        minutes = clamp_browser_idle_minutes(read_config().get("browser_idle_minutes", DEFAULT_BROWSER_IDLE_MINUTES))
-    except Exception:
-        minutes = DEFAULT_BROWSER_IDLE_MINUTES
-
-    return minutes * 60
+    return settings.load()["idle_minutes"] * 60
 
 
 def idle_tick(now=None):
@@ -279,6 +274,141 @@ def api_browser_files_refresh():
         return jsonify({"success": False, "code": "upload_failed", "detail": str(e)}), 500
 
     return jsonify({"success": True, "count": count, "notices": transfer.notices_after(0)})
+
+
+def _image_status():
+    engine = runtime.engine()
+
+    try:
+        present = engine.has_image(runtime._client())
+    except Exception:
+        present = False
+
+    return {"reference": engine.image_reference(), "base": engine.base_reference(), "present": present}
+
+
+def _settings_payload():
+    return {
+        "success": True,
+        "settings": settings.load(),
+        "defaults": settings.DEFAULTS,
+        "ranges": {field: list(bounds) for field, bounds in settings.RANGES.items()},
+        "allowlist": allowlist.entries(),
+        "image": _image_status(),
+        "running": runtime.running_container() is not None,
+    }
+
+
+@login_required
+def api_browser_settings():
+    return jsonify(_settings_payload())
+
+
+@login_required
+def api_browser_settings_save():
+    """Applies on the next start of the browser, except the idle timeout, which is read as it counts down."""
+
+    try:
+        values = settings.save(request.get_json(silent=True))
+    except settings.SettingsError as e:
+        return jsonify({"success": False, "field": e.field, "error": e.message}), 400
+
+    return jsonify({**_settings_payload(), "settings": values})
+
+
+def _fresh_auth(payload):
+    """The same bar as the host shell: the password again, and a 2FA code when 2FA is on. Returns an error response, or None when it passed."""
+
+    from pymodules import hd_HostShell as host_shell
+
+    try:
+        host_shell.authorize(request.remote_addr, payload.get("password"), payload.get("code"))
+    except host_shell.HostShellError as e:
+        return jsonify({"success": False, "code": e.code}), e.status
+
+    return None
+
+
+def _json_object():
+    payload = request.get_json(silent=True)
+
+    return payload if isinstance(payload, dict) else {}
+
+
+def _refresh_proxy_quietly():
+    try:
+        runtime.refresh_proxy()
+    except Exception as e:
+        print(f" ! Browser proxy refresh failed: {type(e).__name__}: {e}")
+
+
+@login_required
+def api_browser_allowlist_add():
+    payload = _json_object()
+    failure = _fresh_auth(payload)
+
+    if failure is not None:
+        return failure
+
+    try:
+        entry = allowlist.add(payload.get("entry"))
+    except allowlist.AllowlistError as e:
+        return jsonify({"success": False, "code": "invalid_entry", "error": e.message}), e.status
+
+    allowlist.audit("allow-add", request.remote_addr, current_user.get_id(), allowlist.describe(entry))
+    _refresh_proxy_quietly()
+
+    return jsonify({"success": True, "entry": entry, "allowlist": allowlist.entries()})
+
+
+@login_required
+def api_browser_allowlist_remove():
+    entry = allowlist.remove(str(_json_object().get("id", "")))
+
+    if entry is None:
+        return jsonify({"success": False, "code": "not_found"}), 404
+
+    allowlist.audit("allow-remove", request.remote_addr, current_user.get_id(), allowlist.describe(entry))
+    _refresh_proxy_quietly()
+
+    return jsonify({"success": True, "allowlist": allowlist.entries()})
+
+
+@login_required
+def api_browser_allowlist_apps():
+    """Installed apps for the picker: every container except HomeDock's own and the browser's."""
+
+    try:
+        names = sorted(c.name for c in runtime._client().containers.list(all=True) if runtime.BROWSER_LABEL not in (c.labels or {}) and c.name != "homedock-os")
+    except Exception:
+        names = []
+
+    return jsonify({"success": True, "apps": names})
+
+
+@login_required
+def api_browser_reset():
+    """Deletes the profile (logins, cookies, history). Needs the password again, and stops the browser first."""
+
+    payload = _json_object()
+    failure = _fresh_auth(payload)
+
+    if failure is not None:
+        return failure
+
+    runtime.stop()
+    revoke_tickets()
+
+    try:
+        runtime.reset_profile()
+    except runtime.BrowserError as e:
+        return jsonify({"success": False, "code": e.code, "error": e.detail}), 409
+    except Exception as e:
+        return jsonify({"success": False, "code": "reset_failed", "error": str(e)}), 500
+
+    allowlist.audit("profile-reset", request.remote_addr, current_user.get_id(), "profile")
+
+    return jsonify({**runtime.status(), "success": True})
 
 
 @login_required
