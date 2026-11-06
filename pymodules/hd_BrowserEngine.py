@@ -5,6 +5,7 @@ See LICENSE.md or https://polyformproject.org/licenses/strict/1.0.0/
 https://www.banshee.pro
 """
 
+import hashlib
 import io
 import tarfile
 
@@ -39,6 +40,71 @@ CHROMIUM_USER = "911:911"
 SANDBOX_PROBE = ["unshare", "--user", "--pid", "--net", "--fork", "true"]
 
 
+# The egress proxy is HomeDock's own small program (hd_BrowserEgressProxy.py) on the same Python base image the
+# HomeDock container uses, pinned by digest (the multi-arch index of python:3.12-alpine). It is built on this machine
+# like the browser image, and the image tag carries a hash of the script so a changed script rebuilds it.
+PROXY_BASE_REPOSITORY = "python"
+PROXY_BASE_DIGEST = "sha256:5789aa194f757888f41fa3d48e14b6feaa1b57c0af0b56fcb1372d6474d3bff0"
+PROXY_REPOSITORY = "homedock/browser-egress"
+PROXY_PORT = 3128
+PROXY_USER = "65534:65534"
+
+_PROXY_DOCKERFILE = """FROM {base}
+COPY proxy.py /proxy.py
+USER {user}
+EXPOSE {port}
+ENTRYPOINT ["python", "-I", "/proxy.py"]
+"""
+
+
+class EgressProxyImage:
+    def __init__(self, script_path):
+        self.script_path = script_path
+
+    def _script(self):
+        with open(self.script_path, "rb") as f:
+            return f.read()
+
+    def base_reference(self):
+        return f"{PROXY_BASE_REPOSITORY}@{PROXY_BASE_DIGEST}"
+
+    def image_reference(self):
+        return f"{PROXY_REPOSITORY}:{hashlib.sha256(self._script() + PROXY_BASE_DIGEST.encode()).hexdigest()[:12]}"
+
+    def _build_context(self):
+        buffer = io.BytesIO()
+
+        with tarfile.open(fileobj=buffer, mode="w") as archive:
+            for name, data in (
+                ("Dockerfile", _PROXY_DOCKERFILE.format(base=self.base_reference(), user=PROXY_USER, port=PROXY_PORT).encode("utf-8")),
+                ("proxy.py", self._script()),
+            ):
+                info = tarfile.TarInfo(name)
+                info.size = len(data)
+                archive.addfile(info, io.BytesIO(data))
+
+        buffer.seek(0)
+
+        return buffer
+
+    def ensure_image(self, client, progress=None):
+        try:
+            client.images.get(self.image_reference())
+            return
+        except docker.errors.ImageNotFound:
+            pass
+
+        if progress:
+            progress("pulling")
+
+        client.images.pull(self.base_reference())
+
+        if progress:
+            progress("building")
+
+        client.images.build(fileobj=self._build_context(), custom_context=True, tag=self.image_reference(), rm=True, forcerm=True)
+
+
 class SelkiesChromiumEngine:
     name = "selkies-chromium"
     internal_port = 3000
@@ -52,8 +118,23 @@ class SelkiesChromiumEngine:
     def image_reference(self):
         return f"{DERIVED_REPOSITORY}:{SELKIES_BASE_DIGEST.split(':')[1][:12]}"
 
-    def environment(self):
-        return {"TITLE": "HomeDock OS Browser"}
+    def environment(self, proxy=None):
+        env = {"TITLE": "HomeDock OS Browser"}
+
+        if proxy:
+            env["CHROME_CLI"] = " ".join(self.proxy_flags(proxy))
+
+        return env
+
+    def proxy_flags(self, proxy):
+        """Chromium is told to send everything through the egress proxy, loopback included. QUIC is off because UDP cannot go through it, and WebRTC may not use UDP outside it."""
+
+        return [
+            f"--proxy-server=http://{proxy}",
+            "--proxy-bypass-list=<-loopback>",
+            "--disable-quic",
+            "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+        ]
 
     def tmpfs(self):
         return {"/tmp": "rw,nosuid,size=256m"}

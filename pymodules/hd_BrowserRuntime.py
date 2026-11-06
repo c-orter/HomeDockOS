@@ -13,7 +13,7 @@ import urllib.request
 
 import docker
 
-from pymodules.hd_BrowserEngine import CHROMIUM_USER, INIT_CAPABILITIES, SANDBOX_PROBE, SelkiesChromiumEngine
+from pymodules.hd_BrowserEngine import CHROMIUM_USER, INIT_CAPABILITIES, PROXY_PORT, SANDBOX_PROBE, EgressProxyImage, SelkiesChromiumEngine
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_FunctionsGlobals import running_OS
 from pymodules.hd_FunctionsHostSelector import is_docker
@@ -23,7 +23,14 @@ BROWSER_LABEL = "homedock.browser"
 
 CONTAINER_NAME = "homedock-browser"
 NETWORK_NAME = "homedock_browser"
+EGRESS_NETWORK_NAME = "homedock_browser_egress"
+PROXY_CONTAINER_NAME = "homedock-browser-proxy"
 PROFILE_VOLUME = "homedock_browser_profile"
+
+PROXY_MEMORY_LIMIT = "128m"
+PROXY_PIDS_LIMIT = 128
+PROXY_NANO_CPUS = 500_000_000
+PROXY_START_TIMEOUT = 20
 
 SECCOMP_PROFILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hd_BrowserSeccomp.json")
 
@@ -38,6 +45,7 @@ POLL_INTERVAL = 1
 BUSY_PHASES = ("pulling", "building", "checking", "starting")
 
 _engine = SelkiesChromiumEngine()
+_proxy_image = EgressProxyImage(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hd_BrowserEgressProxy.py"))
 
 _state = {"phase": "stopped", "code": "", "detail": ""}
 _lock = threading.Lock()
@@ -150,6 +158,78 @@ def _ensure_network(client):
     return client.networks.create(NETWORK_NAME, driver="bridge", internal=True, labels={BROWSER_LABEL: "1"})
 
 
+def _ensure_egress_network(client):
+    """The proxy's own way out. Only the proxy is ever attached to it."""
+
+    found = [n for n in client.networks.list(names=[EGRESS_NETWORK_NAME]) if n.name == EGRESS_NETWORK_NAME]
+
+    if found:
+        return found[0]
+
+    return client.networks.create(EGRESS_NETWORK_NAME, driver="bridge", labels={BROWSER_LABEL: "1"})
+
+
+def _proxy_hardening():
+    return {
+        "cap_drop": ["ALL"],
+        "security_opt": ["no-new-privileges"],
+        "read_only": True,
+        "mem_limit": PROXY_MEMORY_LIMIT,
+        "memswap_limit": PROXY_MEMORY_LIMIT,
+        "pids_limit": PROXY_PIDS_LIMIT,
+        "nano_cpus": PROXY_NANO_CPUS,
+        "privileged": False,
+    }
+
+
+def _start_proxy(client, internal_network):
+    """Runs the egress proxy: created on the network that reaches the internet, then attached to the internal one under a fixed name the browser dials."""
+
+    _proxy_image.ensure_image(client, progress=lambda phase: _set_phase(phase))
+
+    egress = _ensure_egress_network(client)
+
+    stale = _existing(client, PROXY_CONTAINER_NAME)
+
+    if stale is not None:
+        _remove(stale)
+
+    proxy = client.containers.create(
+        _proxy_image.image_reference(),
+        name=PROXY_CONTAINER_NAME,
+        detach=True,
+        network=egress.name,
+        labels={BROWSER_LABEL: "1"},
+        restart_policy={"Name": "no"},
+        **_proxy_hardening(),
+    )
+
+    try:
+        internal_network.connect(proxy, aliases=[PROXY_CONTAINER_NAME])
+        proxy.start()
+        _wait_proxy(proxy)
+    except Exception:
+        _remove(proxy)
+        raise
+
+
+def _wait_proxy(proxy):
+    deadline = time.monotonic() + PROXY_START_TIMEOUT
+
+    while time.monotonic() < deadline:
+        proxy.reload()
+
+        if proxy.status == "running":
+            return
+
+        if proxy.status in ("exited", "dead"):
+            raise BrowserError("proxy_exited", "The browser's egress proxy stopped while starting.")
+
+        time.sleep(0.5)
+
+    raise BrowserError("proxy_timeout", "The browser's egress proxy did not start in time.")
+
+
 def _ensure_volume(client):
     try:
         client.volumes.get(PROFILE_VOLUME)
@@ -157,9 +237,9 @@ def _ensure_volume(client):
         client.volumes.create(PROFILE_VOLUME, labels={BROWSER_LABEL: "1"})
 
 
-def _existing(client):
+def _existing(client, name=CONTAINER_NAME):
     try:
-        return client.containers.get(CONTAINER_NAME)
+        return client.containers.get(name)
     except docker.errors.NotFound:
         return None
 
@@ -249,6 +329,8 @@ def _launch():
 
         connect_container(network, own)
 
+    _start_proxy(client, network)
+
     stale = _existing(client)
 
     if stale is not None:
@@ -258,7 +340,7 @@ def _launch():
         _engine.image_reference(),
         name=CONTAINER_NAME,
         detach=True,
-        environment=_engine.environment(),
+        environment=_engine.environment(proxy=f"{PROXY_CONTAINER_NAME}:{PROXY_PORT}"),
         tmpfs=_engine.tmpfs(),
         volumes={PROFILE_VOLUME: {"bind": _engine.config_mount, "mode": "rw"}},
         network=NETWORK_NAME,
@@ -272,6 +354,7 @@ def _launch():
         _wait_ready(container)
     except Exception:
         _remove(container)
+        _remove_proxy(client)
         raise
 
 
@@ -306,12 +389,22 @@ def start():
     threading.Thread(target=_run, name="hd-browser-start", daemon=True).start()
 
 
+def _remove_proxy(client):
+    proxy = _existing(client, PROXY_CONTAINER_NAME)
+
+    if proxy is not None:
+        _remove(proxy)
+
+
 def stop():
     try:
-        container = _existing(_client())
+        client = _client()
+        container = _existing(client)
 
         if container is not None:
             _remove(container)
+
+        _remove_proxy(client)
     except docker.errors.DockerException as e:
         _set_phase("error", "docker_error", str(e))
         return

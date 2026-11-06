@@ -367,17 +367,24 @@ class FakeContainers:
 
 class FakeNetworks:
     def __init__(self, internal=None):
-        self.existing = None if internal is None else SimpleNamespace(name=runtime.NETWORK_NAME, attrs={"Internal": internal})
+        self.items = {}
         self.created = []
+        self.connected = []
+
+        if internal is not None:
+            self.items[runtime.NETWORK_NAME] = self._make(runtime.NETWORK_NAME, internal)
+
+    def _make(self, name, internal):
+        return SimpleNamespace(name=name, attrs={"Internal": internal}, connect=lambda container, **kw: self.connected.append((name, container, kw)))
 
     def list(self, names=None):
-        return [self.existing] if self.existing else []
+        return [n for k, n in self.items.items() if not names or k in names]
 
     def create(self, name, **kwargs):
         self.created.append((name, kwargs))
-        self.existing = SimpleNamespace(name=name, attrs={"Internal": kwargs.get("internal", False)})
+        self.items[name] = self._make(name, kwargs.get("internal", False))
 
-        return self.existing
+        return self.items[name]
 
 
 def fake_client(probe_error=None, networks=None):
@@ -459,7 +466,7 @@ def test_the_container_is_created_with_the_fixed_spec(monkeypatch):
 
     assert runtime._state["phase"] == "running"
 
-    image, kwargs = client.containers.created[0]
+    image, kwargs = next(c for c in client.containers.created if c[1]["name"] == runtime.CONTAINER_NAME)
 
     assert image == runtime.engine().image_reference()
     assert "@sha256:" in runtime.engine().base_reference()
@@ -476,6 +483,81 @@ def test_the_container_is_created_with_the_fixed_spec(monkeypatch):
     assert all("docker.sock" not in str(bind) for bind in kwargs["volumes"]) and set(kwargs["volumes"]) == {runtime.PROFILE_VOLUME}
     assert kwargs["labels"] == {runtime.BROWSER_LABEL: "1"}
     assert client.networks.created[0][1]["internal"] is True
+
+
+def launch(monkeypatch):
+    client = fake_client()
+    monkeypatch.setattr(runtime, "_client", lambda: client)
+    monkeypatch.setattr(runtime, "_reachable_from_here", lambda: True)
+    monkeypatch.setattr(runtime, "is_docker", False)
+    monkeypatch.setattr(runtime, "_wait_ready", lambda container: None)
+    runtime._run()
+
+    return client
+
+
+def test_the_browser_is_pointed_at_the_proxy_and_nothing_else(monkeypatch):
+    client = launch(monkeypatch)
+    _, browser_kwargs = next(c for c in client.containers.created if c[1]["name"] == runtime.CONTAINER_NAME)
+    flags = browser_kwargs["environment"]["CHROME_CLI"].split(" ")
+
+    assert f"--proxy-server=http://{runtime.PROXY_CONTAINER_NAME}:{runtime.PROXY_PORT}" in flags
+    assert "--proxy-bypass-list=<-loopback>" in flags
+    assert "--disable-quic" in flags
+    assert browser_kwargs["network"] == runtime.NETWORK_NAME
+
+
+def test_only_the_proxy_touches_the_network_that_reaches_the_internet(monkeypatch):
+    client = launch(monkeypatch)
+    names = {n: kw for n, kw in client.networks.created}
+
+    assert names[runtime.NETWORK_NAME]["internal"] is True
+    assert not names[runtime.EGRESS_NETWORK_NAME].get("internal")
+
+    proxy_image, proxy_kwargs = next(c for c in client.containers.created if c[1]["name"] == runtime.PROXY_CONTAINER_NAME)
+    _, browser_kwargs = next(c for c in client.containers.created if c[1]["name"] == runtime.CONTAINER_NAME)
+
+    assert proxy_kwargs["network"] == runtime.EGRESS_NETWORK_NAME
+    assert browser_kwargs["network"] != runtime.EGRESS_NETWORK_NAME
+    assert [(n, kw["aliases"]) for n, _, kw in client.networks.connected] == [(runtime.NETWORK_NAME, [runtime.PROXY_CONTAINER_NAME])]
+
+
+def test_the_proxy_container_is_locked_down(monkeypatch):
+    client = launch(monkeypatch)
+    _, kwargs = next(c for c in client.containers.created if c[1]["name"] == runtime.PROXY_CONTAINER_NAME)
+
+    assert kwargs["cap_drop"] == ["ALL"] and "cap_add" not in kwargs
+    assert kwargs["read_only"] is True
+    assert kwargs["privileged"] is False
+    assert "no-new-privileges" in kwargs["security_opt"]
+    assert "volumes" not in kwargs and "ports" not in kwargs
+    assert kwargs["labels"] == {runtime.BROWSER_LABEL: "1"}
+
+
+def test_stopping_removes_the_proxy_with_the_browser(monkeypatch):
+    client = launch(monkeypatch)
+    removed = []
+
+    for name, c in client.containers.items.items():
+        c.remove = lambda force=False, n=name: removed.append(n)
+
+    runtime.stop()
+
+    assert set(removed) == {runtime.CONTAINER_NAME, runtime.PROXY_CONTAINER_NAME}
+
+
+def test_the_proxy_image_is_pinned_and_rebuilds_when_the_script_changes(tmp_path):
+    script = tmp_path / "p.py"
+    script.write_text("one")
+    image = engine_module.EgressProxyImage(str(script))
+    first = image.image_reference()
+
+    assert "@sha256:" in image.base_reference()
+    assert image.image_reference() == first
+
+    script.write_text("two")
+
+    assert image.image_reference() != first
 
 
 def test_the_browser_network_is_internal(monkeypatch):
