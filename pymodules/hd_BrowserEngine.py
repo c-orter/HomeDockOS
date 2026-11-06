@@ -110,6 +110,8 @@ class SelkiesChromiumEngine:
     internal_port = 3000
     health_path = "/"
     config_mount = "/config"
+    # Where Chromium saves downloads in this image.
+    download_dir = "/config/Downloads"
     capabilities = {"clipboard": True, "audio": True}
 
     def base_reference(self):

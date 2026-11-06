@@ -617,3 +617,187 @@ def test_status_reports_unavailable_without_docker(monkeypatch):
 
     assert runtime.status()["available"] is False
     assert runtime.status()["phase"] == "unavailable"
+
+
+# sessions, take-over, idle stop
+
+
+def test_a_newer_ticket_displaces_the_older_one():
+    first = browser.issue_ticket("admin", "ip")
+    second = browser.issue_ticket("admin", "ip")
+
+    assert not browser.ticket_live(first)
+    assert browser.ticket_live(second)
+    assert browser.ticket_alive(first)
+
+
+def test_taking_back_displaces_the_window_that_took_over():
+    first = browser.issue_ticket("admin", "ip")
+    second = browser.issue_ticket("admin", "ip")
+    third = browser.issue_ticket("admin", "ip")
+
+    assert [browser.ticket_live(t) for t in (first, second, third)] == [False, False, True]
+
+
+def test_a_displaced_window_still_counts_as_open_until_it_closes():
+    first = browser.issue_ticket("admin", "ip")
+    browser.issue_ticket("admin", "ip")
+
+    assert browser.open_sessions() == 2
+
+    browser.release_ticket(first)
+
+    assert browser.open_sessions() == 1
+
+
+def test_a_window_that_stops_renewing_stops_counting(monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr(browser.time, "monotonic", lambda: clock[0])
+    browser.issue_ticket("admin", "ip")
+    clock[0] += browser.TICKET_TTL + 1
+
+    assert browser.open_sessions() == 0
+
+
+def test_renewing_a_displaced_ticket_says_so_and_keeps_it_counting(client):
+    first = client.post("/session").get_json()["ticket"]
+    client.post("/session")
+
+    response = client.post("/renew", json={"ticket": first})
+
+    assert response.status_code == 409
+    assert response.get_json()["code"] == "displaced"
+    assert browser.ticket_alive(first)
+
+
+def test_closing_a_window_releases_only_its_ticket(client, monkeypatch):
+    app = client.application
+    app.add_url_rule("/close", "close", browser.api_browser_session_close, methods=["POST"])
+    first = client.post("/session").get_json()["ticket"]
+    second = client.post("/session").get_json()["ticket"]
+
+    client.post("/close", json={"ticket": second})
+
+    assert not browser.ticket_alive(second)
+    assert browser.ticket_alive(first)
+
+
+def test_the_relay_turns_a_displaced_ticket_away():
+    first = browser.issue_ticket("admin", "ip")
+    browser.issue_ticket("admin", "ip")
+
+    status, _, _ = asyncio.run(call_http(relay, scope_for(f"/browser/{first}/index.html")))
+
+    assert status == 409
+
+
+def test_the_relay_closes_a_displaced_websocket():
+    first = browser.issue_ticket("admin", "ip")
+    browser.issue_ticket("admin", "ip")
+
+    async def go():
+        sent = []
+        incoming = [{"type": "websocket.connect"}]
+
+        async def receive():
+            return incoming.pop(0)
+
+        async def send(message):
+            sent.append(message)
+
+        await relay(scope_for(f"/browser/{first}/api/websockets", kind="websocket"), receive, send)
+
+        return sent
+
+    assert asyncio.run(go()) == [{"type": "websocket.close", "code": 4409}]
+
+
+@pytest.fixture
+def idle(monkeypatch):
+    stopped = []
+    monkeypatch.setattr(runtime, "status", lambda: {"phase": "running"})
+    monkeypatch.setattr(runtime, "stop", lambda: stopped.append(True))
+    monkeypatch.setattr(runtime, "downloading", lambda: False)
+    monkeypatch.setattr(browser, "idle_timeout_seconds", lambda: 900)
+    browser._idle["since"] = None
+
+    return stopped
+
+
+def test_the_browser_stops_after_the_idle_timeout_with_no_windows(idle):
+    assert browser.idle_tick(now=0) is False
+    assert browser.idle_tick(now=899) is False
+    assert browser.idle_tick(now=900) is True
+    assert idle == [True]
+
+
+def test_an_open_window_keeps_the_browser_running(idle):
+    browser.issue_ticket("admin", "ip")
+
+    for now in (0, 5000, 100000):
+        assert browser.idle_tick(now=now) is False
+
+    assert idle == []
+
+
+def test_closing_the_last_window_restarts_the_idle_clock(idle):
+    ticket = browser.issue_ticket("admin", "ip")
+    browser.idle_tick(now=0)
+    browser.release_ticket(ticket)
+
+    assert browser.idle_tick(now=1000) is False
+    assert browser.idle_tick(now=1899) is False
+    assert browser.idle_tick(now=1900) is True
+
+
+def test_a_download_in_progress_is_never_cut_off(idle, monkeypatch):
+    monkeypatch.setattr(runtime, "downloading", lambda: True)
+    browser.idle_tick(now=0)
+
+    assert browser.idle_tick(now=5000) is False
+    assert idle == []
+
+    monkeypatch.setattr(runtime, "downloading", lambda: False)
+
+    assert browser.idle_tick(now=5001) is True
+
+
+def test_a_stopped_browser_has_nothing_to_stop(idle, monkeypatch):
+    monkeypatch.setattr(runtime, "status", lambda: {"phase": "stopped"})
+
+    assert browser.idle_tick(now=0) is False
+    assert browser.idle_tick(now=99999) is False
+    assert idle == []
+
+
+def test_the_download_guard_looks_for_unfinished_downloads(monkeypatch):
+    commands = []
+    running = SimpleNamespace(status="running", exec_run=lambda cmd: commands.append(cmd) or SimpleNamespace(exit_code=0))
+    monkeypatch.setattr(runtime, "_client", lambda: SimpleNamespace(containers=SimpleNamespace(get=lambda name: running)))
+
+    assert runtime.downloading() is True
+    assert ".crdownload" in commands[0][-1] and runtime.engine().download_dir in commands[0][-1]
+
+    running.exec_run = lambda cmd: SimpleNamespace(exit_code=1)
+
+    assert runtime.downloading() is False
+
+
+def test_the_download_guard_assumes_a_download_when_it_cannot_tell(monkeypatch):
+    def broken():
+        raise docker.errors.DockerException("daemon went away")
+
+    monkeypatch.setattr(runtime, "_client", broken)
+
+    assert runtime.downloading() is True
+
+
+def test_the_idle_timeout_comes_from_settings_and_is_clamped(monkeypatch):
+    from pymodules import hd_FunctionsConfig as cfg
+
+    assert cfg.DEFAULT_BROWSER_IDLE_MINUTES == 15
+    assert [cfg.clamp_browser_idle_minutes(v) for v in ("30", 0, -5, 99999, "abc", None, "1440", 1)] == [30, 15, 15, 15, 15, 15, 1440, 1]
+
+    monkeypatch.setattr(cfg, "read_config", lambda: {"browser_idle_minutes": 45})
+
+    assert browser.idle_timeout_seconds() == 45 * 60

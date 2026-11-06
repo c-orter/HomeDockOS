@@ -22,7 +22,7 @@ ROUTE_PREFIX = "/browser/"
 
 # A ticket lives while the open window keeps renewing it. A window that closes stops renewing, so the ticket dies within this many seconds.
 TICKET_TTL = 120
-TICKET_WATCH_INTERVAL = 10
+TICKET_WATCH_INTERVAL = 2
 
 _ROUTE_RE = re.compile(r"^/browser/([A-Za-z0-9_-]{20,64})(/.*)?$")
 
@@ -48,14 +48,43 @@ def _prune(now):
 
 
 def issue_ticket(operator, ip):
+    """Mints a ticket. Only one stream is live at a time, so every older ticket is displaced: it keeps counting as an open window but no longer carries the stream."""
+
     ticket = secrets.token_urlsafe(32)
     now = time.monotonic()
 
     with _tickets_lock:
         _prune(now)
-        _tickets[ticket] = {"expires": now + TICKET_TTL, "operator": operator, "ip": ip}
+
+        for entry in _tickets.values():
+            entry["displaced"] = True
+
+        _tickets[ticket] = {"expires": now + TICKET_TTL, "operator": operator, "ip": ip, "displaced": False}
 
     return ticket
+
+
+def release_ticket(ticket):
+    with _tickets_lock:
+        return _tickets.pop(ticket, None) is not None
+
+
+def ticket_live(ticket):
+    """Alive and not displaced: the one ticket allowed to carry the stream."""
+
+    with _tickets_lock:
+        entry = _tickets.get(ticket)
+
+        return entry is not None and entry["expires"] >= time.monotonic() and not entry["displaced"]
+
+
+def open_sessions():
+    """How many windows are attached, displaced ones included."""
+
+    with _tickets_lock:
+        _prune(time.monotonic())
+
+        return len(_tickets)
 
 
 def renew_ticket(ticket):
@@ -88,6 +117,70 @@ def ticket_alive(ticket):
 def revoke_tickets():
     with _tickets_lock:
         _tickets.clear()
+
+
+IDLE_CHECK_INTERVAL = 15
+
+_idle = {"since": None, "thread": None}
+_idle_lock = threading.Lock()
+
+
+def idle_timeout_seconds():
+    """Read on every check, so a changed setting applies without a restart."""
+
+    from pymodules.hd_FunctionsConfig import DEFAULT_BROWSER_IDLE_MINUTES, clamp_browser_idle_minutes, read_config
+
+    try:
+        minutes = clamp_browser_idle_minutes(read_config().get("browser_idle_minutes", DEFAULT_BROWSER_IDLE_MINUTES))
+    except Exception:
+        minutes = DEFAULT_BROWSER_IDLE_MINUTES
+
+    return minutes * 60
+
+
+def idle_tick(now=None):
+    """One look at the browser. Stops it once it has had no open window for the idle timeout, and never while a download is running. Returns True when it stopped it."""
+
+    now = time.monotonic() if now is None else now
+
+    if runtime.status()["phase"] != "running" or open_sessions() > 0:
+        _idle["since"] = None
+        return False
+
+    if _idle["since"] is None:
+        _idle["since"] = now
+        return False
+
+    if now - _idle["since"] < idle_timeout_seconds():
+        return False
+
+    if runtime.downloading():
+        return False
+
+    runtime.stop()
+    revoke_tickets()
+    _idle["since"] = None
+
+    return True
+
+
+def _idle_loop():
+    while True:
+        time.sleep(IDLE_CHECK_INTERVAL)
+
+        try:
+            idle_tick()
+        except Exception as e:
+            print(f" ! Browser idle check failed: {type(e).__name__}: {e}")
+
+
+def start_idle_monitor():
+    with _idle_lock:
+        if _idle["thread"] is not None:
+            return
+
+        _idle["thread"] = threading.Thread(target=_idle_loop, name="hd-browser-idle", daemon=True)
+        _idle["thread"].start()
 
 
 @login_required
@@ -125,15 +218,33 @@ def api_browser_session():
     return jsonify({"success": True, "ticket": ticket, "path": f"{ROUTE_PREFIX}{ticket}/", "ttl": TICKET_TTL})
 
 
-@login_required
-def api_browser_session_renew():
+def _ticket_from_body():
     payload = request.get_json(silent=True)
     ticket = payload.get("ticket") if isinstance(payload, dict) else None
 
-    if not isinstance(ticket, str) or renew_ticket(ticket) is None:
+    return ticket if isinstance(ticket, str) else None
+
+
+@login_required
+def api_browser_session_renew():
+    entry = renew_ticket(_ticket_from_body())
+
+    if entry is None:
         return jsonify({"success": False, "code": "expired"}), 404
 
+    if entry["displaced"]:
+        return jsonify({"success": False, "code": "displaced"}), 409
+
     return jsonify({"success": True, "ttl": TICKET_TTL})
+
+
+@login_required
+def api_browser_session_close():
+    """Closing the window ends only its session; the browser keeps running until it has been idle long enough."""
+
+    release_ticket(_ticket_from_body())
+
+    return jsonify({"success": True})
 
 
 def _header(scope, name):
@@ -214,8 +325,14 @@ async def _serve_http(scope, receive, send, ticket, rest):
         await _send_simple_response(send, 204, [*cors, *extra, (b"content-length", b"0")], b"")
         return
 
-    if renew_ticket(ticket) is None:
+    entry = renew_ticket(ticket)
+
+    if entry is None:
         await _send_simple_response(send, *_plain(403, "This browser session has expired."))
+        return
+
+    if entry["displaced"]:
+        await _send_simple_response(send, *_plain(409, "This browser session was taken over by another window."))
         return
 
     # aiohttp is an optional dependency, loaded on first use by the router that already depends on it
@@ -276,7 +393,7 @@ async def _serve_http(scope, receive, send, ticket, rest):
 
 
 async def _watch_ticket(ticket):
-    while ticket_alive(ticket):
+    while ticket_live(ticket):
         await asyncio.sleep(TICKET_WATCH_INTERVAL)
 
 
@@ -286,8 +403,14 @@ async def _serve_websocket(scope, receive, send, ticket, rest):
     if message["type"] != "websocket.connect":
         return
 
-    if not _origin_allowed(scope) or renew_ticket(ticket) is None:
+    entry = renew_ticket(ticket) if _origin_allowed(scope) else None
+
+    if entry is None:
         await send({"type": "websocket.close", "code": 4403})
+        return
+
+    if entry["displaced"]:
+        await send({"type": "websocket.close", "code": 4409})
         return
 
     if not router._load_aiohttp():
@@ -358,6 +481,7 @@ async def _serve_browser(scope, receive, send):
 
 
 def wrap_asgi_with_browser(downstream):
+    start_idle_monitor()
 
     async def browser_router(scope, receive, send):
         if scope["type"] in ("http", "websocket") and scope.get("path", "").startswith(ROUTE_PREFIX):

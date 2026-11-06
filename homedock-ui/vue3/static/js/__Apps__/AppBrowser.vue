@@ -27,7 +27,13 @@
 
       <div v-else class="absolute inset-0 overflow-auto p-4">
         <div class="max-w-md mx-auto">
-          <template v-if="phase === 'unavailable'">
+          <template v-if="displaced">
+            <h3 :class="[themeClasses.terminalStateTitle]" class="text-sm font-semibold mb-1">{{ $t("The browser is open in another window") }}</h3>
+            <p :class="[themeClasses.terminalStateText]" class="text-xs leading-relaxed mb-3">{{ $t("Only one window can show the browser at a time. Taking it back moves the view here and pauses the other window.") }}</p>
+            <button :class="[themeClasses.appPropsActionButtonPrimaryBg, themeClasses.appPropsActionButtonPrimaryBorder, themeClasses.appPropsActionButtonPrimaryText, themeClasses.appPropsActionButtonPrimaryBgHover]" class="px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer" @click="takeBack">{{ $t("Take it back") }}</button>
+          </template>
+
+          <template v-else-if="phase === 'unavailable'">
             <h3 :class="[themeClasses.terminalStateTitle]" class="text-sm font-semibold mb-1">{{ $t("The browser needs Docker") }}</h3>
             <p :class="[themeClasses.terminalStateText]" class="text-xs leading-relaxed">{{ $t("HomeDock OS could not reach the container engine, so there is nothing to run the browser in.") }}</p>
           </template>
@@ -83,7 +89,7 @@ interface BrowserStatus {
 }
 
 const POLL_MS = 1000;
-const RENEW_MS = 30000;
+const RENEW_MS = 5000;
 
 const { t } = useI18n();
 const { themeClasses } = useTheme();
@@ -93,6 +99,7 @@ const phase = ref("stopped");
 const code = ref("");
 const detail = ref("");
 const frameSrc = ref("");
+const displaced = ref(false);
 const stage = ref<HTMLElement | null>(null);
 
 let poll: ReturnType<typeof setInterval> | null = null;
@@ -151,12 +158,29 @@ async function openSession() {
   }
 }
 
+// Another window opened the browser, so this one stops carrying the stream. It keeps renewing, which keeps it counted as open.
+async function takeBack() {
+  try {
+    await openSession();
+    displaced.value = false;
+  } catch {
+    phase.value = "error";
+    detail.value = t("The browser is running, but a session could not be opened.");
+  }
+}
+
 // A ticket that lapsed (a sleeping laptop, a long network drop) is replaced, which reloads the stream.
 async function renewTicket() {
   try {
     await axios.post("/api/browser/session/renew", { ticket }, { headers: headers() });
   } catch (error: any) {
-    if (error?.response?.status === 404 && !disposed) {
+    if (error?.response?.data?.code === "displaced") {
+      displaced.value = true;
+      frameSrc.value = "";
+      return;
+    }
+
+    if (error?.response?.status === 404 && !disposed && !displaced.value) {
       try {
         await openSession();
       } catch {
@@ -198,6 +222,7 @@ async function tick() {
 async function begin() {
   clearTimers();
   frameSrc.value = "";
+  displaced.value = false;
 
   try {
     const response = await axios.post<BrowserStatus>("/api/browser/start", {}, { headers: headers() });
@@ -239,8 +264,13 @@ function toggleFullscreen() {
 
 onMounted(begin);
 
+// Closing the window ends only this window's session. The browser keeps running until it has been idle long enough.
 onBeforeUnmount(() => {
   disposed = true;
   clearTimers();
+
+  if (ticket) {
+    axios.post("/api/browser/session/close", { ticket }, { headers: headers() }).catch(() => {});
+  }
 });
 </script>

@@ -412,6 +412,22 @@ def stop():
     _set_phase("stopped")
 
 
+def downloading():
+    """True while Chromium is writing a download (it keeps a .crdownload file until done). If that cannot be checked, the answer is True, so a download is never cut off by a guess."""
+
+    try:
+        container = _existing(_client())
+
+        if container is None or container.status != "running":
+            return False
+
+        result = container.exec_run(["sh", "-c", f"ls {_engine.download_dir}/*.crdownload >/dev/null 2>&1"])
+
+        return result.exit_code == 0
+    except Exception:
+        return True
+
+
 def status():
     """{available, phase, code, detail, capabilities}. A browser that kept running across a HomeDock restart reports running."""
 
