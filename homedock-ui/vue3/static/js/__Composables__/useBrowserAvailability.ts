@@ -11,12 +11,13 @@ export const browserAvailable = ref(false);
 
 let requested = false;
 
-export async function loadBrowserAvailability() {
+// Every request to HomeDock's API carries its CSRF token, GETs included, so the caller passes the one it holds.
+export async function loadBrowserAvailability(csrfToken: string) {
   if (requested) return;
   requested = true;
 
   try {
-    const response = await axios.get("/api/browser/status");
+    const response = await axios.get("/api/browser/status", { headers: { "X-HomeDock-CSRF-Token": csrfToken } });
     browserAvailable.value = !!response.data?.available;
   } catch {
     requested = false;

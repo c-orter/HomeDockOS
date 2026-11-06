@@ -220,7 +220,7 @@ function showNotices(list: TransferNotice[]) {
 
 async function pollTransfers() {
   try {
-    const response = await axios.get("/api/browser/transfers", { params: { after: lastNoticeId } });
+    const response = await axios.get("/api/browser/transfers", { params: { after: lastNoticeId }, headers: headers() });
     showNotices(response.data.notices || []);
   } catch {
     // The notices are a courtesy; the next poll tries again.
@@ -287,7 +287,7 @@ async function renewTicket() {
 // One step of watching the start: it ends the poll on a terminal phase and opens the stream the moment the browser runs.
 async function tick() {
   try {
-    const response = await axios.get<BrowserStatus>("/api/browser/status");
+    const response = await axios.get<BrowserStatus>("/api/browser/status", { headers: headers() });
     apply(response.data);
   } catch {
     phase.value = "error";

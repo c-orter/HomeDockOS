@@ -166,7 +166,7 @@ function take(data: any) {
 
 async function load() {
   try {
-    take((await axios.get("/api/browser/settings")).data);
+    take((await axios.get("/api/browser/settings", { headers: headers() })).data);
   } catch {
     listError.value = t("The browser settings could not be loaded.");
   }
@@ -195,7 +195,7 @@ async function onKindChange() {
 
   if (draft.kind === "app" && !apps.value.length) {
     try {
-      apps.value = (await axios.get("/api/browser/allowlist/apps")).data.apps || [];
+      apps.value = (await axios.get("/api/browser/allowlist/apps", { headers: headers() })).data.apps || [];
     } catch {
       apps.value = [];
     }

@@ -462,17 +462,30 @@ def _launch():
         raise
 
 
+MAX_DETAIL = 300
+
+
+def readable(error):
+    """An engine error as one short line the window can show. Engines sometimes echo what they were given (the whole seccomp profile, for one), which is a wall of JSON to a person."""
+
+    text = getattr(error, "explanation", None) or str(error)
+    text = text.replace(seccomp_profile(), "<seccomp profile>")
+    text = " ".join(text.split())
+
+    return text if len(text) <= MAX_DETAIL else text[: MAX_DETAIL - 1] + "…"
+
+
 def _run():
     try:
         _launch()
     except BrowserError as e:
-        _set_phase("error", e.code, e.detail)
+        _set_phase("error", e.code, readable(e.detail))
         return
     except docker.errors.DockerException as e:
-        _set_phase("error", "docker_error", str(e))
+        _set_phase("error", "docker_error", readable(e))
         return
     except Exception as e:
-        _set_phase("error", "unexpected", str(e))
+        _set_phase("error", "unexpected", readable(e))
         return
 
     _set_phase("running")

@@ -137,7 +137,7 @@ const props = defineProps<Props>();
 
 const activeKey = ref("1");
 
-loadBrowserAvailability();
+loadBrowserAvailability(csrfToken.value);
 
 const SETTINGS_TABS: Record<string, string> = { user: "1", system: "2", storage: "3", theme: "4", browser: "5" };
 

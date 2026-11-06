@@ -145,6 +145,30 @@ def test_runtime_remembers_when_it_ran_an_older_image_instead():
     assert runtime._pull_failed_at["at"] is not None
 
 
+def test_an_engine_error_that_echoes_the_seccomp_profile_is_shown_as_one_short_line():
+    error = docker.errors.APIError(f'container create: opening seccomp profile failed: open {runtime.seccomp_profile()}: file name too long')
+
+    text = runtime.readable(error)
+
+    assert "<seccomp profile>" in text and "SCMP_ACT" not in text
+    assert len(text) <= runtime.MAX_DETAIL and "\n" not in text
+
+
+def test_a_long_error_is_cut_and_a_short_one_is_left_alone():
+    assert runtime.readable("x" * 1000).endswith("…") and len(runtime.readable("x" * 1000)) == runtime.MAX_DETAIL
+    assert runtime.readable("The browser did not answer in time.") == "The browser did not answer in time."
+    assert runtime.readable("") == ""
+
+
+def test_a_failed_start_puts_the_short_text_in_the_window(monkeypatch):
+    monkeypatch.setattr(runtime, "_launch", lambda: (_ for _ in ()).throw(docker.errors.APIError("boom " + runtime.seccomp_profile())))
+
+    runtime._run()
+
+    assert runtime._state["phase"] == "error" and runtime._state["code"] == "docker_error"
+    assert "SCMP_ACT" not in runtime._state["detail"] and len(runtime._state["detail"]) <= runtime.MAX_DETAIL
+
+
 def running(image):
     return SimpleNamespace(status="running", attrs={"Config": {"Image": image}})
 
