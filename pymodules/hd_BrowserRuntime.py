@@ -412,6 +412,15 @@ def stop():
     _set_phase("stopped")
 
 
+def running_container():
+    try:
+        container = _existing(_client())
+
+        return container if container is not None and container.status == "running" else None
+    except docker.errors.DockerException:
+        return None
+
+
 def downloading():
     """True while Chromium is writing a download (it keeps a .crdownload file until done). If that cannot be checked, the answer is True, so a download is never cut off by a guess."""
 

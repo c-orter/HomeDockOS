@@ -136,7 +136,10 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/container-terminal/session", "api_container_terminal_session", CSRF_Protect(api_container_terminal_session), methods=["POST"])
 
-    from pymodules.hd_UIBrowser import api_browser_session, api_browser_session_close, api_browser_session_renew, api_browser_start, api_browser_status, api_browser_stop
+    from pymodules.hd_UIBrowser import api_browser_files_refresh, api_browser_session, api_browser_session_close, api_browser_session_renew, api_browser_start, api_browser_status, api_browser_stop, api_browser_transfers
+
+    homedock_www.add_url_rule("/api/browser/transfers", "api_browser_transfers", CSRF_Protect(api_browser_transfers), methods=["GET"])
+    homedock_www.add_url_rule("/api/browser/files/refresh", "api_browser_files_refresh", CSRF_Protect(api_browser_files_refresh), methods=["POST"])
 
     homedock_www.add_url_rule("/api/browser/status", "api_browser_status", CSRF_Protect(api_browser_status), methods=["GET"])
     homedock_www.add_url_rule("/api/browser/start", "api_browser_start", CSRF_Protect(api_browser_start), methods=["POST"])

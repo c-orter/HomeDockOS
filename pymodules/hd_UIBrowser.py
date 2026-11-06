@@ -15,6 +15,7 @@ from flask import jsonify, request
 from flask_login import current_user, login_required
 
 from pymodules import hd_BrowserRuntime as runtime
+from pymodules import hd_BrowserTransfer as transfer
 from pymodules import hd_SubdomainRouter as router
 from pymodules.hd_SubdomainRouter import HOP_BY_HOP_HEADERS, _get_session, _get_uncapped_session, _pump_backend_to_client, _pump_client_to_backend, _send_simple_response, _stream_request_body
 
@@ -120,6 +121,7 @@ def revoke_tickets():
 
 
 IDLE_CHECK_INTERVAL = 15
+TRANSFER_INTERVAL = 3
 
 _idle = {"since": None, "thread": None}
 _idle_lock = threading.Lock()
@@ -164,14 +166,39 @@ def idle_tick(now=None):
     return True
 
 
+def transfer_tick():
+    """Moves finished downloads into the dropzone. Returns how many moved."""
+
+    container = runtime.running_container()
+
+    if container is None:
+        transfer.reset_previous()
+        return 0
+
+    from pymodules.hd_FunctionsConfig import read_config
+
+    username = str(read_config().get("user_name", "")).lower()
+
+    return transfer.sync_downloads(container, runtime.engine().download_dir, username) if username else 0
+
+
 def _idle_loop():
+    ticks = 0
+
     while True:
-        time.sleep(IDLE_CHECK_INTERVAL)
+        time.sleep(TRANSFER_INTERVAL)
+        ticks += 1
 
         try:
-            idle_tick()
+            transfer_tick()
         except Exception as e:
-            print(f" ! Browser idle check failed: {type(e).__name__}: {e}")
+            print(f" ! Browser download sync failed: {type(e).__name__}: {e}")
+
+        if ticks % (IDLE_CHECK_INTERVAL // TRANSFER_INTERVAL) == 0:
+            try:
+                idle_tick()
+            except Exception as e:
+                print(f" ! Browser idle check failed: {type(e).__name__}: {e}")
 
 
 def start_idle_monitor():
@@ -215,7 +242,51 @@ def api_browser_session():
 
     ticket = issue_ticket(current_user.get_id(), request.remote_addr)
 
+    if _username():
+        threading.Thread(target=_push_uploads_quietly, args=(_username(),), name="hd-browser-uploads", daemon=True).start()
+
     return jsonify({"success": True, "ticket": ticket, "path": f"{ROUTE_PREFIX}{ticket}/", "ttl": TICKET_TTL})
+
+
+def _username():
+    return str(current_user.get_id() or "").lower()
+
+
+def _push_uploads_quietly(username):
+    try:
+        container = runtime.running_container()
+
+        if container is not None:
+            transfer.push_uploads(container, username)
+    except Exception as e:
+        print(f" ! Browser upload folder failed: {type(e).__name__}: {e}")
+
+
+@login_required
+def api_browser_files_refresh():
+    """Makes the files now in the dropzone's Browser folder available to the browser's file dialog."""
+
+    container = runtime.running_container()
+
+    if container is None:
+        return jsonify({"success": False, "code": "not_running"}), 409
+
+    try:
+        count = transfer.push_uploads(container, _username())
+    except Exception as e:
+        return jsonify({"success": False, "code": "upload_failed", "detail": str(e)}), 500
+
+    return jsonify({"success": True, "count": count, "notices": transfer.notices_after(0)})
+
+
+@login_required
+def api_browser_transfers():
+    try:
+        after = int(request.args.get("after", 0))
+    except ValueError:
+        after = 0
+
+    return jsonify({"success": True, "notices": transfer.notices_after(after)})
 
 
 def _ticket_from_body():

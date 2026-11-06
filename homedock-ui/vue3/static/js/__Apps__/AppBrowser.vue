@@ -12,6 +12,12 @@
       </span>
 
       <div class="ml-auto flex items-center gap-1">
+        <button v-if="running" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="p-1 rounded cursor-pointer" :title="$t('Send the files in your dropzone\'s Browser folder to the browser. They appear under Uploads in its file dialog.')" :aria-label="$t('Send files to the browser')" @click="sendFiles">
+          <Icon :icon="uploadIcon" class="w-4 h-4" />
+        </button>
+        <button :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="p-1 rounded cursor-pointer" :title="$t('Downloads')" :aria-label="$t('Downloads')" @click="openDownloads">
+          <Icon :icon="downloadsIcon" class="w-4 h-4" />
+        </button>
         <button v-if="running" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="p-1 rounded cursor-pointer" :title="$t('Fullscreen')" :aria-label="$t('Fullscreen')" @click="toggleFullscreen">
           <Icon :icon="fullscreenIcon" class="w-4 h-4" />
         </button>
@@ -19,6 +25,13 @@
           <Icon :icon="stopIcon" class="w-4 h-4" />
         </button>
       </div>
+    </div>
+
+    <div v-if="notice" class="flex items-center gap-2 px-2 py-1 text-xs border-b flex-shrink-0" :class="[themeClasses.utilityToolbarBorder, themeClasses.windowText]" role="status">
+      <span class="truncate min-w-0">{{ notice }}</span>
+      <button class="ml-auto p-0.5 rounded cursor-pointer" :class="themeClasses.windowButtonBgHover" :aria-label="$t('Dismiss')" @click="notice = ''">
+        <Icon :icon="closeIcon" class="w-3.5 h-3.5" />
+      </button>
     </div>
 
     <div ref="stage" class="relative flex-1 min-h-0" :class="themeClasses.terminalSurface">
@@ -80,6 +93,10 @@ import spinIcon from "@iconify-icons/mdi/loading";
 import reloadIcon from "@iconify-icons/mdi/reload";
 import stopIcon from "@iconify-icons/mdi/stop";
 import fullscreenIcon from "@iconify-icons/mdi/fullscreen";
+import uploadIcon from "@iconify-icons/mdi/upload";
+import downloadsIcon from "@iconify-icons/mdi/folder-download";
+import closeIcon from "@iconify-icons/mdi/close";
+import { useWindowStore } from "../__Stores__/windowStore";
 
 interface BrowserStatus {
   available: boolean;
@@ -100,6 +117,9 @@ const code = ref("");
 const detail = ref("");
 const frameSrc = ref("");
 const displaced = ref(false);
+const notice = ref("");
+const windowStore = useWindowStore();
+let lastNoticeId = 0;
 const stage = ref<HTMLElement | null>(null);
 
 let poll: ReturnType<typeof setInterval> | null = null;
@@ -158,6 +178,47 @@ async function openSession() {
   }
 }
 
+interface TransferNotice {
+  id: number;
+  kind: string;
+  name: string;
+  reason: string;
+}
+
+function describe(n: TransferNotice) {
+  if (n.kind === "saved") return t("Saved {name} to the Browser folder in your dropzone.", { name: n.name });
+  if (n.kind === "rejected") return t("{name} was not kept. {reason}", { name: n.name, reason: n.reason });
+  return t("{name} was not sent to the browser. {reason}", { name: n.name, reason: n.reason });
+}
+
+function showNotices(list: TransferNotice[]) {
+  for (const n of list) lastNoticeId = Math.max(lastNoticeId, n.id);
+  if (list.length) notice.value = describe(list[list.length - 1]);
+}
+
+async function pollTransfers() {
+  try {
+    const response = await axios.get("/api/browser/transfers", { params: { after: lastNoticeId } });
+    showNotices(response.data.notices || []);
+  } catch {
+    // The notices are a courtesy; the next poll tries again.
+  }
+}
+
+async function sendFiles() {
+  try {
+    const response = await axios.post("/api/browser/files/refresh", {}, { headers: headers() });
+    showNotices(response.data.notices || []);
+    notice.value = notice.value || t("{count} file(s) are ready under Uploads in the browser's file dialog.", { count: response.data.count });
+  } catch {
+    notice.value = t("The files could not be sent to the browser.");
+  }
+}
+
+function openDownloads() {
+  windowStore.openWindow("fileexplorer", { allowMultiple: true, data: { initialLocation: "dropzone", initialPath: "Browser" } });
+}
+
 // Another window opened the browser, so this one stops carrying the stream. It keeps renewing, which keeps it counted as open.
 async function takeBack() {
   try {
@@ -173,6 +234,7 @@ async function takeBack() {
 async function renewTicket() {
   try {
     await axios.post("/api/browser/session/renew", { ticket }, { headers: headers() });
+    pollTransfers();
   } catch (error: any) {
     if (error?.response?.data?.code === "displaced") {
       displaced.value = true;
