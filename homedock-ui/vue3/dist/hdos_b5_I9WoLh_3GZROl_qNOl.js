@@ -1,0 +1,1 @@
+export{i as attachTypeApi,r as default,a as getInstance,o as getKeyThenIncreaseKey,s as typeList}from"./hdos_OeGYJZ8-OGM2pq2i2Tgbp.js";

@@ -7,77 +7,113 @@
   <div class="flex flex-col h-full overflow-hidden">
     <div ref="containerRef" class="flex-1 overflow-y-auto overflow-x-hidden px-4 pb-4">
       <section class="home-section">
-        <h2 :class="[themeClasses.storeModalAppName]" class="home-section-title">{{ $t("Folders") }}</h2>
-        <div class="folder-grid">
-          <button v-for="folder in storageFolders" :key="folder" type="button" class="folder-tile" @click="openStorageFolder(folder)">
-            <FolderGraphic :emblem="specialFolderIcons[folder]" :emblem-key="folder" :size="60" />
-            <span :class="[themeClasses.explorerItemName]" class="folder-name">{{ $t(folder) }}</span>
-          </button>
+        <button type="button" :class="[themeClasses.storeModalAppName]" class="home-section-header" @click="toggleSection('folders')">
+          <Icon :icon="chevronRightIcon" :class="['home-section-chevron', !isCollapsed('folders') && 'home-section-chevron-open']" />
+          <span>{{ $t("Folders") }}</span>
+          <span :class="[themeClasses.appPropsInfoLabel]" class="home-section-count">{{ storageFolders.length }}</span>
+        </button>
+        <div :class="['expand-wrapper', isCollapsed('folders') && 'collapsed']">
+          <div class="expand-content">
+            <div class="folder-grid">
+              <button v-for="folder in storageFolders" :key="folder" type="button" class="folder-tile" @click="openStorageFolder(folder)">
+                <FolderGraphic :emblem="specialFolderIcons[folder]" :emblem-key="folder" :size="60" />
+                <span :class="[themeClasses.explorerItemName]" class="folder-name">{{ $t(folder) }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       <section class="home-section">
-        <h2 :class="[themeClasses.storeModalAppName, themeClasses.storeListSeparator]" class="home-section-title home-section-divided">{{ $t("Devices and drives") }}</h2>
-        <div class="card-grid">
-          <button v-for="drive in drives" :key="drive.key" type="button" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.aeroExtraScope]" class="home-card" :title="$t('Open in File Explorer')" @click="openDrive(drive.disk)">
-            <span class="flex items-center gap-3 min-w-0">
-              <AppIconGraphic :icon="drive.icon" :color="drive.color" :size="40" />
-              <span class="flex flex-col flex-1 min-w-0 text-left">
-                <span class="flex items-center gap-1.5 min-w-0">
-                  <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-semibold truncate">{{ drive.name }}</span>
-                  <Icon v-if="drive.tracked" :icon="pinIcon" :class="[themeClasses.appPropsInfoLabel]" class="w-3 h-3 flex-shrink-0" :title="$t('Tracked external disk')" />
+        <button type="button" :class="[themeClasses.storeModalAppName]" class="home-section-header" @click="toggleSection('drives')">
+          <Icon :icon="chevronRightIcon" :class="['home-section-chevron', !isCollapsed('drives') && 'home-section-chevron-open']" />
+          <span>{{ $t("Devices and drives") }}</span>
+          <span :class="[themeClasses.appPropsInfoLabel]" class="home-section-count">{{ drives.length }}</span>
+        </button>
+        <div :class="['expand-wrapper', isCollapsed('drives') && 'collapsed']">
+          <div class="expand-content">
+            <div class="place-grid">
+              <button v-for="drive in drives" :key="drive.key" type="button" class="place-tile" :title="drive.subtitle" @click="openDrive(drive.disk)">
+                <DriveGraphic :media-type="drive.disk.media_type" :system="drive.system" :size="56" />
+                <span class="place-info">
+                  <span class="flex items-center gap-1.5 min-w-0">
+                    <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-medium truncate">{{ drive.name }}</span>
+                    <Icon v-if="drive.tracked" :icon="pinIcon" :class="[themeClasses.appPropsInfoLabel]" class="w-3 h-3 flex-shrink-0" :title="$t('Tracked external disk')" />
+                  </span>
+                  <span class="usage-track">
+                    <span class="usage-fill" :class="drive.percent >= FULL_THRESHOLD ? 'usage-fill-full' : ''" :style="{ width: `${drive.percent}%` }"></span>
+                  </span>
+                  <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] tabular-nums truncate">{{ $t("{free} free of {total}", { free: drive.free, total: drive.total }) }}</span>
                 </span>
-                <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] truncate">{{ drive.subtitle }}</span>
-              </span>
-              <span :class="[themeClasses.appPropsInfoValue]" class="text-[13px] font-semibold tabular-nums flex-shrink-0">{{ drive.percent }}%</span>
-            </span>
-            <span class="usage-track">
-              <span class="usage-fill" :class="drive.percent >= FULL_THRESHOLD ? 'usage-fill-full' : ''" :style="{ width: `${drive.percent}%` }"></span>
-            </span>
-            <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] tabular-nums text-left">{{ $t("{free} free of {total}", { free: drive.free, total: drive.total }) }}</span>
-          </button>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       <section class="home-section">
-        <h2 :class="[themeClasses.storeModalAppName, themeClasses.storeListSeparator]" class="home-section-title home-section-divided">{{ $t("Locations") }}</h2>
-        <div class="card-grid">
-          <button v-for="location in locations" :key="location.key" type="button" :class="[themeClasses.appPropsUsageCardBg, themeClasses.appPropsUsageCardBorder, themeClasses.aeroExtraScope]" class="home-card" :disabled="location.disabled" @click="location.open()">
-            <span class="flex items-center gap-3 min-w-0">
-              <AppIconGraphic :icon="location.icon" :color="location.color" :size="40" />
-              <span class="flex flex-col flex-1 min-w-0 text-left">
-                <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-semibold truncate">{{ $t(location.name) }}</span>
-                <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] truncate">{{ location.subtitle }}</span>
-              </span>
-              <Icon v-if="location.locked" :icon="lockIcon" :class="[themeClasses.appPropsInfoLabel]" class="w-3.5 h-3.5 flex-shrink-0" />
-            </span>
-          </button>
+        <button type="button" :class="[themeClasses.storeModalAppName]" class="home-section-header" @click="toggleSection('locations')">
+          <Icon :icon="chevronRightIcon" :class="['home-section-chevron', !isCollapsed('locations') && 'home-section-chevron-open']" />
+          <span>{{ $t("Locations") }}</span>
+          <span :class="[themeClasses.appPropsInfoLabel]" class="home-section-count">{{ locations.length }}</span>
+        </button>
+        <div :class="['expand-wrapper', isCollapsed('locations') && 'collapsed']">
+          <div class="expand-content">
+            <div class="place-grid">
+              <button v-for="location in locations" :key="location.key" type="button" class="place-tile" :disabled="location.disabled" @click="location.open()">
+                <FolderGraphic :emblem="location.icon" :emblem-key="location.key" :color="location.color" :size="56" />
+                <span class="place-info">
+                  <span class="flex items-center gap-1.5 min-w-0">
+                    <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-medium truncate">{{ $t(location.name) }}</span>
+                    <Icon v-if="location.locked" :icon="lockIcon" :class="[themeClasses.appPropsInfoLabel]" class="w-3 h-3 flex-shrink-0" />
+                  </span>
+                  <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] truncate">{{ location.subtitle }}</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       <section v-for="group in appGroups" :key="group.title" class="home-section">
-        <h2 :class="[themeClasses.storeModalAppName, themeClasses.storeListSeparator]" class="home-section-title home-section-divided">{{ $t(group.title) }}</h2>
-        <div class="app-launchpad-grid" :style="launchpadGridStyle">
-          <div v-for="app in group.apps" :key="app.id" @click="app.id !== 'apphome' && openApp(app)" class="app-launchpad-item group cursor-pointer">
-            <AppIconGraphic :icon="app.icon" :color="app.color" :size="52" class="app-launchpad-icon" />
-            <span class="app-launchpad-name" :class="themeClasses.explorerItemName">{{ $t(app.name) }}</span>
+        <button type="button" :class="[themeClasses.storeModalAppName]" class="home-section-header" @click="toggleSection(group.title)">
+          <Icon :icon="chevronRightIcon" :class="['home-section-chevron', !isCollapsed(group.title) && 'home-section-chevron-open']" />
+          <span>{{ $t(group.title) }}</span>
+          <span :class="[themeClasses.appPropsInfoLabel]" class="home-section-count">{{ group.apps.length }}</span>
+        </button>
+        <div :class="['expand-wrapper', isCollapsed(group.title) && 'collapsed']">
+          <div class="expand-content">
+            <div class="app-launchpad-grid" :style="launchpadGridStyle">
+              <div v-for="app in group.apps" :key="app.id" @click="app.id !== 'apphome' && openApp(app)" class="app-launchpad-item group cursor-pointer">
+                <AppIconGraphic :icon="app.icon" :color="app.color" :size="52" class="app-launchpad-icon" />
+                <span class="app-launchpad-name" :class="themeClasses.explorerItemName">{{ $t(app.name) }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <section v-if="recentFiles.length" class="home-section">
-        <h2 :class="[themeClasses.storeModalAppName, themeClasses.storeListSeparator]" class="home-section-title home-section-divided">{{ $t("Recent Files") }}</h2>
-        <div class="recent-grid">
-          <button v-for="item in recentFiles" :key="recentKey(item)" type="button" class="recent-row" @click="openRecent(item)" @contextmenu.stop.prevent="openRecentMenu($event, item)">
-            <span class="flex h-8 w-8 shrink-0 items-center justify-center">
-              <FolderGraphic v-if="item.is_directory" :size="30" />
-              <FileGraphic v-else :name="baseName(item.name)" :size="30" />
-            </span>
-            <span class="flex flex-col flex-1 min-w-0 text-left">
-              <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-medium truncate">{{ baseName(item.name) }}</span>
-              <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] truncate">{{ relativeTime(item.accessed_at) }} · {{ recentLocation(item) }}</span>
-            </span>
-          </button>
+        <button type="button" :class="[themeClasses.storeModalAppName]" class="home-section-header" @click="toggleSection('recent')">
+          <Icon :icon="chevronRightIcon" :class="['home-section-chevron', !isCollapsed('recent') && 'home-section-chevron-open']" />
+          <span>{{ $t("Recent Files") }}</span>
+          <span :class="[themeClasses.appPropsInfoLabel]" class="home-section-count">{{ recentFiles.length }}</span>
+        </button>
+        <div :class="['expand-wrapper', isCollapsed('recent') && 'collapsed']">
+          <div class="expand-content">
+            <div class="recent-grid">
+              <button v-for="item in recentFiles" :key="recentKey(item)" type="button" class="recent-row" @click="openRecent(item)" @contextmenu.stop.prevent="openRecentMenu($event, item)">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center">
+                  <FolderGraphic v-if="item.is_directory" :size="30" />
+                  <FileGraphic v-else :name="baseName(item.name)" :size="30" />
+                </span>
+                <span class="flex flex-col flex-1 min-w-0 text-left">
+                  <span :class="[themeClasses.windowTitleTextFocused]" class="text-[13px] font-medium truncate">{{ baseName(item.name) }}</span>
+                  <span :class="[themeClasses.appPropsInfoLabel]" class="text-[11px] truncate">{{ relativeTime(item.accessed_at) }} · {{ recentLocation(item) }}</span>
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -129,6 +165,7 @@ import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import FolderGraphic from "../__Components__/FolderGraphic.vue";
+import DriveGraphic from "../__Components__/DriveGraphic.vue";
 import FileGraphic from "../__Components__/FileGraphic.vue";
 import ContextMenu, { type ContextMenuItem } from "../__Components__/ContextMenu.vue";
 import { shortcutTargetData } from "../__Stores__/desktopStore";
@@ -138,13 +175,9 @@ import historyRemoveIcon from "@iconify-icons/mdi/history";
 import { homedockIcon } from "../__Config__/HomeDockIcon";
 
 import { Icon } from "@iconify/vue";
-import usbFlashIcon from "@iconify-icons/mdi/usb-flash-drive";
-import harddiskPlusIcon from "@iconify-icons/mdi/harddisk-plus";
-import discIcon from "@iconify-icons/mdi/disc";
-import sdIcon from "@iconify-icons/mdi/sd";
 import lockIcon from "@iconify-icons/mdi/lock";
-import folderIcon from "@iconify-icons/mdi/folder";
-import harddiskIcon from "@iconify-icons/mdi/harddisk";
+import databaseIcon from "@iconify-icons/mdi/database";
+import chevronRightIcon from "@iconify-icons/mdi/chevron-right";
 import pinIcon from "@iconify-icons/mdi/pin";
 import cubeIcon from "@iconify-icons/mdi/cube";
 import cubeScanIcon from "@iconify-icons/mdi/cube-scan";
@@ -164,9 +197,6 @@ const csrfToken = useCsrfToken();
 
 const FOLDER_ORDER = ["Documents", "Photos", "Music", "Videos", "Downloads", "Archives", "Sources", "Notes"];
 const FULL_THRESHOLD = 90;
-const SYSTEM_DISK_COLOR = "#475569";
-const DISK_COLOR = "#64748b";
-const REMOVABLE_DISK_COLOR = "#0891b2";
 const RECENT_LIMIT = 8;
 
 const LOCATION_LABELS: Record<RecentItem["location"], string> = {
@@ -201,8 +231,7 @@ interface DriveCard {
   disk: DiskData;
   name: string;
   subtitle: string;
-  icon: any;
-  color: string;
+  system: boolean;
   percent: number;
   free: string;
   total: string;
@@ -225,6 +254,30 @@ const dropZoneSummary = ref<LocationSummary>({ size: 0, folders: 0, files: 0 });
 const storageFolderNames = ref<string[]>([]);
 const appDriveContainers = ref<AppDriveContainer[]>([]);
 
+const COLLAPSED_STORAGE_KEY = "homedock_home_collapsed";
+
+function readCollapsed(): string[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(COLLAPSED_STORAGE_KEY) || "[]");
+    return Array.isArray(value) ? value.filter((item) => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+const collapsedSections = ref<string[]>(readCollapsed());
+
+function isCollapsed(section: string): boolean {
+  return collapsedSections.value.includes(section);
+}
+
+function toggleSection(section: string) {
+  collapsedSections.value = isCollapsed(section) ? collapsedSections.value.filter((item) => item !== section) : [...collapsedSections.value, section];
+  try {
+    localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsedSections.value));
+  } catch {}
+}
+
 const containerRef = ref<HTMLElement | null>(null);
 const containerWidth = ref(0);
 
@@ -245,22 +298,6 @@ const storageFolders = computed(() => {
   const present = new Set(storageFolderNames.value);
   return FOLDER_ORDER.filter((folder) => present.size === 0 || present.has(folder));
 });
-
-function iconForMediaType(mediaType: string) {
-  switch (mediaType) {
-    case "nvme":
-      return harddiskPlusIcon;
-    case "ssd":
-    case "hdd":
-      return harddiskIcon;
-    case "usb":
-      return usbFlashIcon;
-    case "optical":
-      return discIcon;
-    default:
-      return sdIcon;
-  }
-}
 
 function formatGb(gb: number): string {
   const value = Math.max(0, gb || 0);
@@ -292,8 +329,7 @@ function driveCard(disk: DiskData, isSystem: boolean): DriveCard {
     disk,
     name: isSystem ? disk.label || t("System Disk") : disk.label || disk.device,
     subtitle: diskSubtitle({ ...disk, is_system: isSystem }),
-    icon: iconForMediaType(disk.media_type),
-    color: isSystem ? SYSTEM_DISK_COLOR : disk.removable && !disk.internal ? REMOVABLE_DISK_COLOR : DISK_COLOR,
+    system: isSystem,
     percent: Math.round(disk.usage_percent || 0),
     free: formatGb(disk.free_gb ?? disk.total_gb - disk.used_gb),
     total: formatGb(disk.total_gb),
@@ -329,7 +365,7 @@ const locations = computed<LocationCard[]>(() => [
     key: "storage",
     name: "Storage",
     subtitle: summaryText(storageSummary.value),
-    icon: folderIcon,
+    icon: databaseIcon,
     color: "#0ea5e9",
     open: () => openFileExplorer({ initialLocation: "storage" }),
   },
@@ -338,7 +374,7 @@ const locations = computed<LocationCard[]>(() => [
     name: "Drop Zone",
     subtitle: `${t("Encrypted")} · ${formatBytes(dropZoneSummary.value.size)}`,
     icon: cubeIcon,
-    color: "#16a34a",
+    color: "#4f46e5",
     open: () => openFileExplorer({ initialLocation: "dropzone" }),
   },
   {
@@ -346,7 +382,7 @@ const locations = computed<LocationCard[]>(() => [
     name: "App Drive",
     subtitle: `${appDriveContainers.value.length} ${t("apps")}`,
     icon: cubeScanIcon,
-    color: "#d97706",
+    color: "#0d9488",
     locked: appDriveContainers.value.some((container) => container.has_external),
     disabled: !firstAppDriveContainer.value,
     open: () => openFileExplorer({ initialLocation: "appdrive", initialContainer: firstAppDriveContainer.value }),
@@ -499,17 +535,58 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.home-section-title {
-  margin: 0 0 0.625rem;
-  padding-top: 1rem;
-  font-size: 15px;
-  font-weight: 700;
+.home-section {
+  padding-top: 0.75rem;
 }
 
-.home-section-divided {
-  margin-top: 1.25rem;
-  padding-top: 0.875rem;
-  border-top-width: 1px;
+.home-section-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.375rem -0.375rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.home-section-header:hover {
+  background-color: rgba(127, 127, 127, 0.1);
+}
+
+.home-section-chevron {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+.home-section-chevron-open {
+  transform: rotate(90deg);
+}
+
+.home-section-count {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.expand-wrapper {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.2s ease-out;
+}
+
+.expand-wrapper.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.expand-wrapper > .expand-content {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .folder-grid {
@@ -548,35 +625,50 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.card-grid {
+.place-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.25rem 0.5rem;
 }
 
-.home-card {
+.place-tile {
   display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
-  padding: 0.875rem;
-  border-radius: 1rem;
+  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
   cursor: pointer;
-  transition: box-shadow 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
-.home-card:hover:not(:disabled) {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.45);
+.place-tile:hover:not(:disabled) {
+  background-color: rgba(127, 127, 127, 0.08);
 }
 
-.home-card:disabled {
+.place-tile:active:not(:disabled) {
+  background-color: rgba(127, 127, 127, 0.14);
+}
+
+.place-tile:disabled {
   cursor: default;
-  opacity: 0.6;
+  opacity: 0.55;
+}
+
+.place-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
 }
 
 .usage-track {
   display: block;
-  height: 6px;
+  height: 5px;
   border-radius: 9999px;
   overflow: hidden;
   background-color: rgba(127, 127, 127, 0.16);

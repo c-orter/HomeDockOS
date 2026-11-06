@@ -21,9 +21,7 @@
         </Transition>
       </FolderGraphic>
 
-      <Transition name="badge-pop">
-        <div v-if="itemCount > 0" :key="itemCount" :class="['absolute bottom-0 -right-0.5 min-w-[20px] h-5 flex items-center justify-center px-1.5 rounded-[10px] text-[0.65rem] font-semibold z-[20] pointer-events-none', themeClasses.folderBadgeBg, themeClasses.folderBadgeText, themeClasses.folderBadgeBorder, themeClasses.folderBadgeShadow]">{{ itemCount }}</div>
-      </Transition>
+      <CountBadge :count="itemCount" />
     </div>
     <span class="folder-name" :class="[themeClasses.desktopIconText]"><UpdatedDot :visible="hasUpdatedApps" />{{ folder.name }}</span>
   </div>
@@ -42,6 +40,7 @@ import FolderGraphic from "../__Components__/FolderGraphic.vue";
 import AppIconGraphic from "../__Components__/AppIconGraphic.vue";
 import ShortcutGraphic from "../__Components__/ShortcutGraphic.vue";
 import UpdatedDot from "../__Components__/UpdatedDot.vue";
+import CountBadge from "../__Components__/CountBadge.vue";
 
 import { getShortcutPresetIcon, getShortcutIconUrl } from "../__Config__/ShortcutIcons";
 import { getAppById } from "../__Config__/WindowDefaultDetails";
@@ -466,29 +465,6 @@ function handleContextMenu(e: MouseEvent) {
     transform: translateY(-20px) scale(0.5) rotate(15deg);
   }
   to {
-    opacity: 1;
-  }
-}
-
-/* Badge Pop Animation */
-.badge-pop-enter-active {
-  animation: badge-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.badge-pop-leave-active {
-  animation: badge-pop 0.3s reverse;
-}
-
-@keyframes badge-pop {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
     opacity: 1;
   }
 }

@@ -255,6 +255,7 @@ const originalTheme = {
   selected_theme: themeData!.selected_theme,
   selected_back: themeData!.selected_back,
   selected_appearance: themeData!.selected_appearance ?? "redmond",
+  selected_motion: themeData!.selected_motion ?? "playful",
   selected_language: settingsData!.selected_language,
   clock_format: settingsData!.clock_format,
   week_start: settingsData!.week_start,
@@ -293,6 +294,7 @@ const formData = reactive({
     selected_theme: themeData.selected_theme,
     selected_back: themeData.selected_back,
     selected_appearance: themeData.selected_appearance ?? "redmond",
+    selected_motion: themeData.selected_motion ?? "playful",
     selected_language: settingsData.selected_language,
     clock_format: settingsData.clock_format,
     week_start: settingsData.week_start,
@@ -301,11 +303,12 @@ const formData = reactive({
 
 onBeforeUnmount(() => {
   tabObserver?.disconnect();
-  if (updateTheme && (formData.theme.selected_theme !== originalTheme.selected_theme || formData.theme.selected_back !== originalTheme.selected_back || formData.theme.selected_appearance !== originalTheme.selected_appearance)) {
+  if (updateTheme && (formData.theme.selected_theme !== originalTheme.selected_theme || formData.theme.selected_back !== originalTheme.selected_back || formData.theme.selected_appearance !== originalTheme.selected_appearance || formData.theme.selected_motion !== originalTheme.selected_motion)) {
     updateTheme({
       selected_theme: originalTheme.selected_theme,
       selected_back: originalTheme.selected_back,
       selected_appearance: originalTheme.selected_appearance,
+      selected_motion: originalTheme.selected_motion,
     });
   }
   if (formData.theme.selected_language !== originalTheme.selected_language) {
@@ -379,6 +382,7 @@ const handleSubmit = async () => {
       originalTheme.selected_theme = formData.theme.selected_theme || "";
       originalTheme.selected_back = formData.theme.selected_back || "";
       originalTheme.selected_appearance = formData.theme.selected_appearance || "redmond";
+      originalTheme.selected_motion = formData.theme.selected_motion || "playful";
       originalTheme.selected_language = formData.theme.selected_language || "en";
       originalTheme.clock_format = formData.theme.clock_format || "24h";
       originalTheme.week_start = formData.theme.week_start || "monday";

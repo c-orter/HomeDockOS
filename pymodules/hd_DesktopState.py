@@ -18,8 +18,8 @@ from pymodules.hd_FunctionsGlobals import user_packages_desktop_state_folder, us
 
 MODES = ("desktop", "mobile")
 CELL_LENGTH = {"desktop": 2, "mobile": 3}
-DEFAULT_ICONS = ("apphome", "fileexplorer")
-DEFAULT_PINNED = ("apphome", "fileexplorer", "packager", "controlhub", "settings", "about")
+DEFAULT_ICONS = ("apphome", "fileexplorer", "trash")
+DEFAULT_PINNED = ("apphome", "fileexplorer", "appstore", "controlhub", "settings", "about")
 WIDGET_SIZES = ("s", "m", "l")
 
 MAX_DEVICES = 64

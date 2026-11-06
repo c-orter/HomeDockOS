@@ -7,7 +7,7 @@ import { inject, computed } from "vue";
 
 import type { PrismAppearance } from "@prism-wm/core";
 
-import type { ThemeData } from "../__Types__/ThemeData";
+import type { ThemeData, WindowMotion } from "../__Types__/ThemeData";
 
 export const themes: Record<string, Record<string, string>> = {
   default: {
@@ -140,11 +140,6 @@ export const themes: Record<string, Record<string, string>> = {
     desktopWidgetControlBg: "bg-gray-500/10",
     widgetPreviewBg: "bg-linear-to-br/srgb from-gray-200 to-gray-300",
     desktopWidgetControlBgHover: "hover:bg-gray-500/20",
-
-    folderBadgeBg: "bg-blue-500/95",
-    folderBadgeText: "text-white",
-    folderBadgeBorder: "border-2 border-black/30",
-    folderBadgeShadow: "shadow-[0_2px_4px_rgba(0,0,0,0.2)]",
 
     statusBadgeRunning: "bg-green-500",
     statusBadgeExited: "bg-red-500",
@@ -1033,11 +1028,6 @@ export const themes: Record<string, Record<string, string>> = {
     widgetPreviewBg: "bg-linear-to-br/srgb from-zinc-700 to-zinc-900",
     desktopWidgetControlBgHover: "hover:bg-white/20",
 
-    folderBadgeBg: "bg-blue-500/95",
-    folderBadgeText: "text-white",
-    folderBadgeBorder: "border-2 border-zinc-900/40",
-    folderBadgeShadow: "shadow-[0_2px_4px_rgba(0,0,0,0.4)]",
-
     statusBadgeRunning: "bg-green-500",
     statusBadgeExited: "bg-red-500",
     statusBadgePaused: "bg-amber-500",
@@ -1925,11 +1915,6 @@ export const themes: Record<string, Record<string, string>> = {
     widgetPreviewBg: "bg-linear-to-br/srgb from-transparent via-white/5 to-white/10",
     desktopWidgetControlBgHover: "hover:bg-white/25",
 
-    folderBadgeBg: "bg-blue-500/95",
-    folderBadgeText: "text-white",
-    folderBadgeBorder: "border-2 border-zinc-900/40",
-    folderBadgeShadow: "shadow-[0_2px_4px_rgba(0,0,0,0.4)]",
-
     statusBadgeRunning: "bg-green-500",
     statusBadgeExited: "bg-red-500",
     statusBadgePaused: "bg-amber-500",
@@ -2711,9 +2696,12 @@ export function useTheme() {
   // Window chrome layout, kept reactive so switching it repaints live.
   const appearance = computed<PrismAppearance>(() => (themeConfig.selected_appearance === "cupertino" ? "cupertino" : "redmond"));
 
+  const motion = computed<WindowMotion>(() => (themeConfig.selected_motion === "standard" ? "standard" : "playful"));
+
   return {
     selected_theme: themeConfig.selected_theme,
     themeClasses,
     appearance,
+    motion,
   };
 }

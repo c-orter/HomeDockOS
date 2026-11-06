@@ -24,7 +24,7 @@
               <Form layout="vertical" :model="formState" :rules="rules" @finish="handleFinish" @finishFailed="handleFinishFailed">
                 <Form.Item name="username">
                   <label class="text-gray-300" for="username">{{ $t("Username") }}</label>
-                  <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" class="h-10 group inputUser login-field" autocomplete="username" v-model:value="formState.username" :placeholder="$t('Username...')" :maxlength="30" :status="validationStatus" required @focus="showCloudInstances">
+                  <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" class="h-10 group inputUser login-field" autocomplete="username" v-model:value="formState.username" :placeholder="$t('Username...')" :maxlength="30" :status="validationStatus" required @focus="showLoginTips">
                     <template #prefix>
                       <Icon :icon="accountIcon" class="mr-0.5 transition duration-300" :class="[themeClasses.formIcon, { 'text-gray-300 group-hover:text-blue-500': validationStatus !== 'error', 'text-red-500': validationStatus === 'error' }]" width="16" height="16" />
                     </template>
@@ -33,7 +33,7 @@
                 <div class="mt-2"></div>
                 <Form.Item name="">
                   <label class="text-gray-300" for="password">{{ $t("Password") }}</label>
-                  <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" class="h-10 group login-field" autocomplete="current-password" v-model:value="formState.password" :type="passwordVisible ? 'text' : 'password'" placeholder="••••••••" :status="validationStatus" :maxlength="30" required @focus="showCloudInstances">
+                  <Input :class="[themeClasses.scopeSelector, themeClasses.loginFormInput]" class="h-10 group login-field" autocomplete="current-password" v-model:value="formState.password" :type="passwordVisible ? 'text' : 'password'" placeholder="••••••••" :status="validationStatus" :maxlength="30" required @focus="showLoginTips">
                     <template #prefix>
                       <Icon :icon="passIcon" class="mr-0.5 transition duration-300" :class="[themeClasses.formIcon, { 'text-gray-300 group-hover:text-blue-500': validationStatus !== 'error', 'text-red-500': validationStatus === 'error' }]" width="16" height="16" />
                     </template>
@@ -116,7 +116,7 @@
         </div>
         <div class="login-glare" :class="themeClasses.loginCardGlare" :style="glareStyle"></div>
       </div>
-      <CloudInstances :isVisible="cloudInstancesVisible" @update:isVisible="cloudInstancesVisible = $event" />
+      <LoginTips :isVisible="loginTipsVisible" @update:isVisible="loginTipsVisible = $event" />
     </div>
   </div>
 </template>
@@ -196,7 +196,7 @@ import TopComment from "../__Components__/TopComment.vue";
 import HomeDockLogo3D from "../__Components__/HomeDockLogo3D.vue";
 import StaticOscillatingLines from "../__Components__/StaticOscillatingLines.vue";
 import SplashScreen from "../__Components__/SplashScreen.vue";
-import CloudInstances from "../__Components__/CloudInstances.vue";
+import LoginTips from "../__Components__/LoginTips.vue";
 
 const formState = ref({
   username: "",
@@ -246,7 +246,7 @@ const rules: Record<string, Rule[]> = {
 };
 
 const passwordVisible = ref<boolean>(false);
-const cloudInstancesVisible = ref<boolean>(false);
+const loginTipsVisible = ref<boolean>(false);
 const isSubmitting = ref<boolean>(false);
 const csrfToken = ref<string | null>(document.querySelector('meta[name="homedock_csrf_token"]')?.getAttribute("content") || null);
 const validationStatus = ref<"error" | "warning" | undefined>(undefined);
@@ -291,8 +291,8 @@ const togglePasswordVisibility = (): void => {
   passwordVisible.value = !passwordVisible.value;
 };
 
-const showCloudInstances = (): void => {
-  cloudInstancesVisible.value = true;
+const showLoginTips = (): void => {
+  loginTipsVisible.value = true;
 };
 
 const handleFinish = async () => {

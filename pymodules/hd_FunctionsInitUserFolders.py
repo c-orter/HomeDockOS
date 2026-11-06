@@ -58,6 +58,10 @@ def init_all_directories():
 
     init_existing_users_storage()
 
+    from pymodules.hd_UITrash import start_trash_purge
+
+    start_trash_purge()
+
 
 DEFAULT_USER_STORAGE_FOLDERS = ["Notes", "Documents", "Photos", "Videos", "Music", "Downloads", "Sources", "Archives"]
 

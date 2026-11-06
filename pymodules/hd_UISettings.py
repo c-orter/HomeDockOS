@@ -14,7 +14,7 @@ from flask import jsonify, session, request
 from flask_login import login_required
 
 from pymodules.hd_BaseDomain import validate_base_domain
-from pymodules.hd_FunctionsConfig import read_config, write_config, ALLOWED_DISKSPLUS_SESSION_MINUTES, ALLOWED_LANGUAGES, ALLOWED_CLOCK_FORMATS, ALLOWED_WEEK_STARTS, ALLOWED_APPEARANCES
+from pymodules.hd_FunctionsConfig import read_config, write_config, ALLOWED_DISKSPLUS_SESSION_MINUTES, ALLOWED_LANGUAGES, ALLOWED_CLOCK_FORMATS, ALLOWED_WEEK_STARTS, ALLOWED_APPEARANCES, ALLOWED_MOTIONS
 from pymodules.hd_FunctionsHandleCSRFToken import regenerate_csrf_token
 from pymodules.hd_FunctionsGlobals import current_directory
 from pymodules.hd_CryptoServer import decrypt_json_from_client
@@ -99,6 +99,10 @@ def api_save_settings():
         if selected_appearance not in ALLOWED_APPEARANCES:
             selected_appearance = "redmond"
 
+        selected_motion = theme_data.get("selected_motion", "playful")
+        if selected_motion not in ALLOWED_MOTIONS:
+            selected_motion = "playful"
+
         selected_language = theme_data.get("selected_language", "en")
         if selected_language not in ALLOWED_LANGUAGES:
             selected_language = "en"
@@ -175,6 +179,7 @@ def api_save_settings():
             "selected_theme": selected_theme,
             "selected_back": selected_back,
             "selected_appearance": selected_appearance,
+            "selected_motion": selected_motion,
             "selected_language": selected_language,
             "clock_format": clock_format,
             "week_start": week_start,

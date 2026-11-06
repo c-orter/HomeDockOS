@@ -5,7 +5,7 @@
 
 import { defineStore } from "pinia";
 import { WindowManagerStore } from "@prism-wm/core";
-import type { WindowState as PrismWindowState } from "@prism-wm/core";
+import type { WindowState as PrismWindowState, SnapSide } from "@prism-wm/core";
 import type { IconifyIcon } from "@iconify/vue";
 import { getAppById } from "../__Config__/WindowDefaultDetails";
 import { t } from "../__Languages__";
@@ -31,7 +31,7 @@ export interface PreSnapBounds {
   height: number;
 }
 
-export type SnapPreviewSide = "left" | "right" | null;
+export type SnapPreviewSide = SnapSide;
 
 declare global {
   var __homedock_prism_store__: WindowManagerStore | undefined;
@@ -48,6 +48,8 @@ const core: WindowManagerStore = (globalThis.__homedock_prism_store__ ??= new Wi
     if (!win) return true;
     return window.dispatchEvent(new CustomEvent(`homedock:request-close-${win.id}`, { cancelable: true }));
   },
+
+  getMinimizeTarget: (id) => document.querySelector(`[data-taskbar-window="${CSS.escape(id)}"]`)?.getBoundingClientRect() ?? null,
 }));
 
 const useWindowStoreBase = defineStore("window", {
@@ -163,7 +165,7 @@ const useWindowStoreBase = defineStore("window", {
       core.setSnapPreview(side);
     },
 
-    snapWindow(windowId: string, side: "left" | "right", taskbarHeight: number) {
+    snapWindow(windowId: string, side: Exclude<SnapSide, null>, taskbarHeight: number) {
       core.snapWindow(windowId, side, taskbarHeight);
     },
 

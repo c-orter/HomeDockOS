@@ -23,6 +23,12 @@
                 <span>{{ $t("Download") }}</span>
               </div>
             </MenuItem>
+            <MenuItem v-if="format !== 'xlsx'" key="download-xlsx" :disabled="!api" @click="downloadAsXlsx">
+              <div class="flex items-center gap-2">
+                <Icon :icon="excelIcon" class="w-4 h-4" />
+                <span>{{ $t("Download as Excel Workbook") }}</span>
+              </div>
+            </MenuItem>
             <MenuDivider />
             <MenuItem key="about" @click="showAboutDialog = true">
               <div class="flex items-center gap-2">
@@ -64,6 +70,7 @@
           </div>
           <div :class="['text-[10px] md:text-xs md:leading-4 space-y-2 leading-relaxed', themeClasses.statusBarInfo]">
             <p>{{ $t("Sheets opens and edits Excel spreadsheets (.xlsx). Saving writes the changes back to the same file.") }}</p>
+            <p>{{ $t("CSV and TSV files open as a single sheet and are saved back as plain text, keeping their separator. Formatting and formulas are kept only when downloading as an Excel workbook.") }}</p>
           </div>
         </div>
       </template>
@@ -89,6 +96,7 @@ import downloadIcon from "@iconify-icons/mdi/download";
 import exitIcon from "@iconify-icons/mdi/exit-to-app";
 import spreadsheetIcon from "@iconify-icons/mdi/file-table-box";
 import aboutIcon from "@iconify-icons/mdi/information-outline";
+import excelIcon from "@iconify-icons/mdi/microsoft-excel";
 
 import { useTheme } from "../__Themes__/ThemeSelector";
 import { useWindowStore } from "../__Stores__/windowStore";
@@ -105,10 +113,21 @@ import WindowLoading from "../__Components__/WindowLoading.vue";
 import { notifyError, notifySuccess } from "../__Components__/Notifications.vue";
 
 import type { SheetsApi } from "../__Islands__/Sheets.island";
+import { sheetFormat, type SheetFormat } from "../__Islands__/sheetsCsv";
 
 const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-const ABOUT_FORMATS: UtilityFormat[] = [{ name: "Excel Workbook (.xlsx)", support: "Open and save" }];
+const FORMAT_MIMES: Record<SheetFormat, string> = {
+  xlsx: XLSX_MIME,
+  csv: "text/csv",
+  tsv: "text/tab-separated-values",
+};
+
+const ABOUT_FORMATS: UtilityFormat[] = [
+  { name: "Excel Workbook (.xlsx)", support: "Open and save" },
+  { name: "Comma-Separated Values (.csv)", support: "Open and save" },
+  { name: "Tab-Separated Values (.tsv)", support: "Open and save" },
+];
 
 const ABOUT_CREDITS = ["FortuneSheet", "FortuneExcel", "ExcelJS", "React"];
 
@@ -138,6 +157,8 @@ const pendingFile = shallowRef<ExternalBinaryFile | null>(null);
 let resolveSaveAs: ((saved: boolean) => void) | null = null;
 
 const fileName = computed(() => target.value?.name || `${t("New spreadsheet")}.xlsx`);
+
+const format = computed(() => sheetFormat(file.value?.name || "spreadsheet.xlsx"));
 
 const islandProps = computed(() => ({
   source: file.value?.buffer ?? null,
@@ -215,7 +236,7 @@ async function save(): Promise<boolean> {
   saving.value = true;
 
   try {
-    await saveToSource(current, await api.value.exportXlsx(), XLSX_MIME);
+    await saveToSource(current, await api.value.exportFile(), FORMAT_MIMES[format.value]);
     notifySuccess(t("File saved"), savedDescription(current), themeClasses.value.scopeSelector);
     isModified.value = false;
     return true;
@@ -231,7 +252,17 @@ async function downloadCopy() {
   if (!api.value) return;
 
   try {
-    triggerDownload(await api.value.exportXlsx(), fileName.value);
+    triggerDownload(await api.value.exportFile(), fileName.value);
+  } catch {
+    notifyError(t("Failed to save file"));
+  }
+}
+
+async function downloadAsXlsx() {
+  if (!api.value) return;
+
+  try {
+    triggerDownload(await api.value.exportXlsx(), `${fileName.value.replace(/\.[^.]+$/, "")}.xlsx`);
   } catch {
     notifyError(t("Failed to save file"));
   }

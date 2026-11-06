@@ -19,6 +19,10 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
 </p>
 
 <p align="center">
+  <a href="https://hub.docker.com/r/bansheetech/homedock-os"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/docker-pulls-dark.png"><img alt="100K+ downloads only on Docker Hub. Thank you!" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/docker-pulls-light.png" width="58.9%"></picture></a>
+</p>
+
+<p align="center">
   <a href="https://www.homedock.cloud"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/website-dark.png"><img alt="Website" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/website-light.png" width="99"></picture></a>
   <a href="https://docs.homedock.cloud"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/docs-dark.png"><img alt="Documentation" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/docs-light.png" width="141"></picture></a>
   <a href="https://github.com/BansheeTech/HomeDockOS/blob/main/CHANGELOG.md"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/changelog-dark.png"><img alt="Changelog" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/buttons/changelog-light.png" width="114"></picture></a>
@@ -29,7 +33,7 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
 ---
 
 <p align="center">
-  <img alt="HomeDock OS in action: searching the Start menu, Jellyfin as an OnScreen App, Sheets, the PDF Viewer and Writer, photos with the Image Viewer, video and music with a live spectrum, Quick View, the App Store and Packet Snake" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/hdos-vid-26.webp" width="100%">
+  <img alt="HomeDock OS in action: searching the Start menu, Jellyfin as an OnScreen App, Sheets, the PDF Editor and Writer, photos with the Image Viewer, video and music with a live spectrum, Quick View, the App Store and Packet Snake" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/hdos-vid-26.webp" width="100%">
 </p>
 
 ---
@@ -43,8 +47,8 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
   </picture>
 </p>
 
-- **800+ apps** — 180+ curated in the official App Store, plus six community stores one click away.
-- **80+ file types** — Photos, camera RAWs, PSDs, spreadsheets, Word documents, PDFs, code, music and video, right in the browser.
+- **800+ apps** — 180+ curated in the official App Store, plus community stores one click away.
+- **80+ file types** — Photos, camera RAWs, PSDs, spreadsheets, CSVs, Word documents, PowerPoint presentations, PDFs, code, music and video, right in the browser.
 - **Zero plugins** — No office suite, no codecs, no image editor to install. It all ships inside HomeDock OS.
 - **3 OSes, 4 architectures** — Linux, macOS and Windows, on x86, x86_64, ARM and ARM64. Yes, even a Raspberry Pi Zero.
 - **1 certificate** — A single automatic Let's Encrypt wildcard covers every app you install, without opening a port for it.
@@ -90,7 +94,7 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
   <a href="https://www.homedock.cloud/apps/">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps-dark.png">
-      <img alt="800+ apps, one click away: 180+ curated in the official App Store, plus six community stores (Casa App Store, BigBearTechWorld, TMC Store, Zima App Store, Coolstore and Casa LinuxServer) converted to HomeDock OS packages automatically. Browse the catalogue." src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps-light.png" width="100%">
+      <img alt="800+ apps, one click away: 180+ curated in the official App Store, plus seven community stores (Casa App Store, BigBearTechWorld, ReCasa App Store, TMC Store, Zima App Store, Coolstore and Casa LinuxServer) converted to HomeDock OS packages automatically. Browse the catalogue." src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps-light.png" width="100%">
     </picture>
   </a>
 </p>
@@ -112,7 +116,7 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/store/community.png" width="36" alt=""></td>
-    <td><b>Six Community Stores</b><br><b>Casa App Store</b>, <b>BigBearTechWorld</b>, <b>TMC Store</b>, <b>Zima App Store</b>, <b>Coolstore</b> and <b>Casa LinuxServer</b>, one click each from Packager. Their apps are converted to HomeDock OS packages automatically, icons, volumes, networks and ports included, taking your catalogue past <b>800 applications</b>.</td>
+    <td><b>Seven Community Stores*</b><br><b>Casa App Store</b>, <b>BigBearTechWorld</b>, <b>ReCasa App Store</b>, <b>TMC Store</b>, <b>Zima App Store</b>, <b>Coolstore</b> and <b>Casa LinuxServer</b>, one click each from Packager. Their apps are converted to HomeDock OS packages automatically, icons, volumes, networks and ports included, taking your catalogue past <b>800 applications</b>.</td>
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/store/download-size.png" width="36" alt=""></td>
@@ -132,6 +136,8 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
   </tr>
 </table>
 
+<sub>* Community stores are run by their own maintainers and subject to availability. If one goes offline, it temporarily disappears from Packager until it's back.</sub>
+
 ---
 
 ## <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/icons/files.png" width="30" align="top" alt=""> Opens Your Files, No Plugins Required
@@ -139,15 +145,16 @@ Take control of the cloud like never before. **800+ self-hosted apps, a real des
 Double-click a file in the File Explorer and it opens right there, in your browser, with nothing extra to install. Photos show real thumbnails, and you can drop files from your computer straight onto any viewer.
 
 <p align="center">
-  <img alt="File icons for JPG, PNG, PSD, DNG, XLSX, DOCX, PDF, MD, PY, TS, ZIP, MP4, WEBM, MP3 and FLAC" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files-strip.png" width="100%">
+  <img alt="File icons for JPG, PNG, PSD, DNG, XLSX, CSV, DOCX, PPTX, PDF, MD, PY, TS, ZIP, MP4, WEBM, MP3 and FLAC" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files-strip.png" width="100%">
 </p>
 
 |                     | Formats |
 | :-----------------: | ------- |
 | <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/images.png" width="36" alt=""><br>**Images** | ![JPG](https://img.shields.io/badge/JPG-0d9488?style=flat-square) ![PNG](https://img.shields.io/badge/PNG-0d9488?style=flat-square) ![GIF](https://img.shields.io/badge/GIF-0d9488?style=flat-square) ![WebP](https://img.shields.io/badge/WebP-0d9488?style=flat-square) ![BMP](https://img.shields.io/badge/BMP-0d9488?style=flat-square) ![ICO](https://img.shields.io/badge/ICO-0d9488?style=flat-square) ![TIFF](https://img.shields.io/badge/TIFF-0d9488?style=flat-square) ![PSD](https://img.shields.io/badge/PSD-31A8FF?style=flat-square) ![AVIF](https://img.shields.io/badge/AVIF-0d9488?style=flat-square) ![TGA](https://img.shields.io/badge/TGA-0d9488?style=flat-square) ![DDS](https://img.shields.io/badge/DDS-0d9488?style=flat-square) ![ICNS](https://img.shields.io/badge/ICNS-0d9488?style=flat-square) ![JPEG 2000](https://img.shields.io/badge/JPEG_2000-0d9488?style=flat-square) ![QOI](https://img.shields.io/badge/QOI-0d9488?style=flat-square) |
 | <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/raw.png" width="36" alt=""><br>**Camera&nbsp;RAW** | ![DNG](https://img.shields.io/badge/DNG-f59e0b?style=flat-square) ![Canon CR2](https://img.shields.io/badge/Canon-CR2-f59e0b?style=flat-square) ![Nikon NEF NRW](https://img.shields.io/badge/Nikon-NEF_%C2%B7_NRW-f59e0b?style=flat-square) ![Sony ARW SRF SR2](https://img.shields.io/badge/Sony-ARW_%C2%B7_SRF_%C2%B7_SR2-f59e0b?style=flat-square) ![Panasonic RW2](https://img.shields.io/badge/Panasonic-RW2-f59e0b?style=flat-square) ![Pentax PEF](https://img.shields.io/badge/Pentax-PEF-f59e0b?style=flat-square) ![Samsung SRW](https://img.shields.io/badge/Samsung-SRW-f59e0b?style=flat-square) ![Fujifilm RAF](https://img.shields.io/badge/Fujifilm-RAF-f59e0b?style=flat-square) |
-| <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/spreadsheets.png" width="36" alt=""><br>**Spreadsheets** | ![XLSX](https://img.shields.io/badge/XLSX-16a34a?style=flat-square) opened and **edited** in **Sheets**, with formulas and formatting kept intact |
-| <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/documents.png" width="36" alt=""><br>**Documents** | ![DOCX](https://img.shields.io/badge/DOCX-2563eb?style=flat-square) opened and **edited** in **Writer** · ![PDF](https://img.shields.io/badge/PDF-dc2626?style=flat-square) in the PDF Viewer · ![TXT](https://img.shields.io/badge/TXT-64748b?style=flat-square) ![Markdown](https://img.shields.io/badge/Markdown-64748b?style=flat-square) with live preview in Notepad |
+| <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/spreadsheets.png" width="36" alt=""><br>**Spreadsheets** | ![XLSX](https://img.shields.io/badge/XLSX-16a34a?style=flat-square) opened and **edited** in **Sheets**, with formulas and formatting kept intact · ![CSV](https://img.shields.io/badge/CSV-16a34a?style=flat-square) ![TSV](https://img.shields.io/badge/TSV-16a34a?style=flat-square) edited as a sheet and saved back with their own separator |
+| <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/documents.png" width="36" alt=""><br>**Documents** | ![DOCX](https://img.shields.io/badge/DOCX-2563eb?style=flat-square) opened and **edited** in **Writer** · ![PDF](https://img.shields.io/badge/PDF-dc2626?style=flat-square) in the **PDF Editor**: search, fill in forms, **annotate**, **sign** and reorder pages · ![TXT](https://img.shields.io/badge/TXT-64748b?style=flat-square) ![Markdown](https://img.shields.io/badge/Markdown-64748b?style=flat-square) with live preview in Notepad |
+| <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/presentations.png" width="36" alt=""><br>**Presentations** | ![PPTX](https://img.shields.io/badge/PPTX-ea580c?style=flat-square) opened in **Slides**, with slide thumbnails and a full-screen presenter mode |
 | <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/code.png" width="36" alt=""><br>**Code** | ![Python](https://img.shields.io/badge/Python-0284c7?style=flat-square) ![JavaScript](https://img.shields.io/badge/JavaScript-0284c7?style=flat-square) ![TypeScript](https://img.shields.io/badge/TypeScript-0284c7?style=flat-square) ![Go](https://img.shields.io/badge/Go-0284c7?style=flat-square) ![Rust](https://img.shields.io/badge/Rust-0284c7?style=flat-square) ![Java](https://img.shields.io/badge/Java-0284c7?style=flat-square) ![C / C++](https://img.shields.io/badge/C_%C2%B7_C%2B%2B-0284c7?style=flat-square) ![C#](https://img.shields.io/badge/C%23-0284c7?style=flat-square) ![PHP](https://img.shields.io/badge/PHP-0284c7?style=flat-square) ![Ruby](https://img.shields.io/badge/Ruby-0284c7?style=flat-square) ![Swift](https://img.shields.io/badge/Swift-0284c7?style=flat-square) ![Kotlin](https://img.shields.io/badge/Kotlin-0284c7?style=flat-square) ![Shell](https://img.shields.io/badge/Shell-0284c7?style=flat-square) ![SQL](https://img.shields.io/badge/SQL-0284c7?style=flat-square) ![HTML](https://img.shields.io/badge/HTML-0284c7?style=flat-square) ![CSS](https://img.shields.io/badge/CSS-0284c7?style=flat-square) ![JSON](https://img.shields.io/badge/JSON-0284c7?style=flat-square) ![YAML](https://img.shields.io/badge/YAML-0284c7?style=flat-square) ![TOML](https://img.shields.io/badge/TOML-0284c7?style=flat-square) ![Dockerfile](https://img.shields.io/badge/Dockerfile-0284c7?style=flat-square) and more, 45 extensions with syntax highlighting |
 | <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/archives.png" width="36" alt=""><br>**Archives** | ![ZIP](https://img.shields.io/badge/ZIP-d97706?style=flat-square) ![TAR](https://img.shields.io/badge/TAR-d97706?style=flat-square) ![TAR.GZ](https://img.shields.io/badge/TAR.GZ-d97706?style=flat-square) ![TGZ](https://img.shields.io/badge/TGZ-d97706?style=flat-square) browsed, previewed and extracted in **Zipfile**, password-protected ZIPs included · compress anything to ZIP, with or without a password |
 | <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/files/video.png" width="36" alt=""><br>**Video** | ![MP4](https://img.shields.io/badge/MP4-7c3aed?style=flat-square) ![M4V](https://img.shields.io/badge/M4V-7c3aed?style=flat-square) ![WebM](https://img.shields.io/badge/WebM-7c3aed?style=flat-square) ![OGV](https://img.shields.io/badge/OGV-7c3aed?style=flat-square) |
@@ -257,17 +264,21 @@ Every file is checked against its **magic bytes** before it opens, so a renamed 
 ## <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/icons/tools.png" width="30" align="top" alt=""> Built-in Apps
 
 <p align="center">
-  <img alt="Writer editing a Word document, Sheets with an Excel spreadsheet and the PDF Viewer, opened from the File Explorer's Documents folder" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/screens/sheets-writer.webp" width="100%">
+  <img alt="Writer editing a Word document, Sheets with an Excel spreadsheet and the PDF Editor, opened from the File Explorer's Documents folder" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/screens/sheets-writer.webp" width="100%">
 </p>
 
 <table>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/sheets.png" width="36" alt=""></td>
-    <td><b>Sheets</b><br>Open, edit and save Excel spreadsheets.</td>
+    <td><b>Sheets</b><br>Open, edit and save Excel spreadsheets, CSV and TSV files.</td>
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/writer.png" width="36" alt=""></td>
     <td><b>Writer</b><br>Open, edit and save Word documents.</td>
+  </tr>
+  <tr>
+    <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/slides.png" width="36" alt=""></td>
+    <td><b>Slides</b><br>View PowerPoint presentations with slide thumbnails, and present them full screen.</td>
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/notepad.png" width="36" alt=""></td>
@@ -287,7 +298,7 @@ Every file is checked against its **magic bytes** before it opens, so a renamed 
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/pdf-viewer.png" width="36" alt=""></td>
-    <td><b>PDF Viewer</b><br>Powered by PDF.js.</td>
+    <td><b>PDF Editor</b><br>Search the text, fill in forms, highlight, write, draw, add images and sign, then save back to the same file. Reorder, delete or extract pages from the sidebar. Powered by PDF.js.</td>
   </tr>
   <tr>
     <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/zipfile.png" width="36" alt=""></td>
@@ -393,9 +404,43 @@ Whether you're using a Raspberry Pi, an old laptop or the latest workstation, Ho
 
 ---
 
+## <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/icons/story.png" width="30" align="top" alt=""> Why HomeDock OS Exists
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/story-dark.png">
+    <img alt="Built here first. Someone has to come up with the next idea. Just kidding: the whole self-hosting scene gets better when ideas travel, and we're far from running out of ours. Hardware-first: built around the box, cloud OSes that grew up around the hardware they shipped on. Software-first: built for the software, HomeDock OS runs on whatever machine you already own, with hardware optional." src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/story-light.png" width="100%">
+  </picture>
+</p>
+
+Several ideas that first shipped here now show up all over the self-hosting OS playground, often months later and in much bigger projects. Each date links to the commit that shipped it:
+
+<table>
+  <tr>
+    <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/desktop/prism.png" width="36" alt=""></td>
+    <td><b>A Real Window Manager in the Browser</b><br>Real windows instead of a dashboard of links, open source today as <a href="https://github.com/BansheeTech/prism-wm">Prism Window Manager</a> under the AGPL-3.0.<br><a href="https://github.com/BansheeTech/HomeDockOS/commit/41e6eab6450c584bfa86a54b81eb752272d79e43"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.0.1.82-dark.png"><img alt="First shipped in 2.0.1.82 on October 15, 2025" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.0.1.82-light.png" height="30"></picture></a> <a href="https://github.com/BansheeTech/HomeDockOS/commit/e4804203adc79de423e100ae9c5e17e7db5080a0"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.6.2.86-open-source-dark.png"><img alt="Open-sourced in 2.6.2.86 on October 2, 2026" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.6.2.86-open-source-light.png" height="30"></picture></a></td>
+  </tr>
+  <tr>
+    <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/storage/app-drive.png" width="36" alt=""></td>
+    <td><b>Your Apps' Files, One Click Away</b><br>App Drive opens every container volume in a regular file explorer, no terminal needed.<br><a href="https://github.com/BansheeTech/HomeDockOS/commit/7b9132e8ac727e18b00c10753333a8f8d6fcbdee"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.0.4.212-dark.png"><img alt="First shipped in 2.0.4.212 on December 21, 2025" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.0.4.212-light.png" height="30"></picture></a></td>
+  </tr>
+  <tr>
+    <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/notepad.png" width="36" alt=""><br><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/code.png" width="36" alt=""></td>
+    <td><b>A Notepad and a Code Editor, Built In</b><br>Text, Markdown and code, edited right in the browser.<br><a href="https://github.com/BansheeTech/HomeDockOS/commit/c275b3f90e76f0b4bc5c74a6e8e8145ca052a721"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.1.0.232-dark.png"><img alt="Notepad first shipped in 2.1.0.232 on January 16, 2026" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.1.0.232-light.png" height="30"></picture></a> <a href="https://github.com/BansheeTech/HomeDockOS/commit/2ac265285a12c007e2401d225b8c22c7e3d283f9"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.1.4.682-dark.png"><img alt="Code and the Markdown preview first shipped in 2.1.4.682 on April 26, 2026" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.1.4.682-light.png" height="30"></picture></a></td>
+  </tr>
+  <tr>
+    <td align="center" width="60"><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/sheets.png" width="36" alt=""><br><img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/apps/writer.png" width="36" alt=""></td>
+    <td><b>An Office Suite Nobody Had to Install</b><br>Sheets and Writer edit spreadsheets and Word documents right in the browser.<br><a href="https://github.com/BansheeTech/HomeDockOS/commit/e4804203adc79de423e100ae9c5e17e7db5080a0"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.6.2.86-dark.png"><img alt="First shipped in 2.6.2.86 on October 2, 2026" src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/shipped/2.6.2.86-light.png" height="30"></picture></a></td>
+  </tr>
+</table>
+
+After all, ideas only travel this far when they work.
+
+---
+
 ## <img src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/icons/open.png" width="30" align="top" alt=""> Built in the Open
 
-The pieces HomeDock OS is made of are becoming standalone open-source projects, one by one. The same code that runs your desktop, published so anyone can use it, audit it and build on it:
+The pieces HomeDock OS is made of are becoming standalone open-source projects, one by one, under real OSI-approved licenses (open source, totally true this time). HomeDock OS itself stays source-visible for now, and our [CONTRIBUTING](https://github.com/BansheeTech/HomeDockOS/blob/main/CONTRIBUTING.md) explains why and when that changes. The same code that runs your desktop, published so anyone can use it, audit it and build on it:
 
 <p align="center">
   <picture>
@@ -430,12 +475,12 @@ Every window, menu, dialog and date is translated into **11 languages**, and onl
   <a href="https://www.homedock.cloud/#get-homedock">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/pricing-dark.png">
-      <img alt="Self-hosting HomeDock OS is free. Always. Free: €0 forever, everything included, the full desktop and every feature, self-hosted on your own hardware, no trial, no account. Cloud Instances: €19.50/mo, optional, supports development, the same HomeDock OS as Free hosted and kept running for you, nothing held back from Free. Enterprise: custom pricing, on-premise only, with office, prospecting and AI modules and dedicated premium support." src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/pricing-light.png" width="100%">
+      <img alt="Running HomeDock OS at home is free. Always. Free: €0 forever, for personal use, the full desktop and every feature, runs on your own computer, no trial, no account, no strings, on Windows, macOS and Linux. Enterprise: custom pricing, on-premise, with office, prospecting and AI modules, tailored to your business, priority support and SLAs, and custom integrations." src="https://raw.githubusercontent.com/BansheeTech/Logo/refs/heads/main/homedock-os/readme/pricing-light.png" width="100%">
     </picture>
   </a>
 </p>
 
-**You never need to pay to self-host HomeDock OS.** Cloud Instances are the exact same software, hosted for you, and every subscription funds what comes next. If HomeDock OS makes your day-to-day a little easier and you'd like to give something back, that's the way to support us. Enterprise adds separate [Enterprise modules](https://docs.homedock.cloud/enterprise/overview/) for businesses running it on their own servers.
+**You never need to pay to self-host HomeDock OS.** Every feature ships in the free version. [Enterprise](https://docs.homedock.cloud/enterprise/overview/) adds separate modules, support and integrations for businesses running it on their own servers, and it is what keeps HomeDock OS free for everyone else. If it makes your day-to-day a little easier, a star on GitHub or a recommendation to a business that could use it goes a long way.
 
 ---
 

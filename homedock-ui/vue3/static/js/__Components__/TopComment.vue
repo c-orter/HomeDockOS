@@ -24,18 +24,14 @@ const commentContent = `
 <!--  @@@@   @@@   @@@                          -->
 <!--                                            -->
 <!--  Take Control of the Cloud with            -->
-<!--  HomeDock OS Cloud Instances, SSL-Ready    -->
-<!--  at unbeatable prices.                     -->
+<!--  HomeDock OS, on the machine you           -->
+<!--  already own.                              -->
 <!--                                            -->
-<!--  Whether you're starting a project,        -->
-<!--  hosting a website, or just exploring      -->
-<!--  cloud possibilities, HomeDock OS Cloud    -->
-<!--  makes it easy and affordable.             -->
+<!--  Like what you see? A star on GitHub       -->
+<!--  keeps a small team building:              -->
+<!--  https://github.com/BansheeTech/HomeDockOS -->
 <!--                                            -->
-<!--  Ready to simplify your online journey?    -->
-<!--  Visit us at https://www.homedock.cloud    -->
-<!--                                            -->
-<!--  HomeDock OS Local Instances comes with    -->
+<!--  HomeDock OS comes with                    -->
 <!--  ABSOLUTELY NO WARRANTY, to the extent     -->
 <!--  permitted by applicable law.              -->
 <!--                                            -->

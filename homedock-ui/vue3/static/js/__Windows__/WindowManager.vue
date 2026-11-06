@@ -4,7 +4,7 @@
 <!-- https://www.banshee.pro -->
 
 <template>
-  <PrismWindowManager :store="prismStore" :resolveComponent="resolveComponent" :resolveConfig="resolveConfig" :taskbarHeight="taskbarHeightPx" :isMobile="isMobile" :labels="labels" :classes="prismClasses" :appearance="appearance">
+  <PrismWindowManager :store="prismStore" :resolveComponent="resolveComponent" :resolveConfig="resolveConfig" :taskbarHeight="taskbarHeightPx" :isMobile="isMobile" :labels="labels" :classes="prismClasses" :appearance="appearance" :motion="motion">
     <template #icon="{ window }">
       <span v-if="window.icon" class="window-icon-wrap" :title="iconTitle(window)" @contextmenu.stop.prevent="(e: MouseEvent) => openSystemMenu(e, window)">
         <WindowIcon :window="{ appId: window.appId, icon: window.icon as string | IconifyIcon }" :size="isCupertino ? 16 : 20" />
@@ -59,7 +59,7 @@ import ContextMenu, { type ContextMenuItem } from "../__Components__/ContextMenu
 const windowStore = useWindowStore();
 const prismStore = getPrismStore();
 const { isMobile, taskbarHeightPx } = useResponsive();
-const { themeClasses, appearance } = useTheme();
+const { themeClasses, appearance, motion } = useTheme();
 const { t } = useI18n();
 
 const resolveComponent = (win: WindowState) => getAppById(win.appId)?.component ?? null;

@@ -5,8 +5,11 @@
 
 import type { PrismAppearance } from "@prism-wm/core";
 
+export type WindowMotion = "playful" | "standard";
+
 export interface ThemeData {
   selected_theme: string;
   selected_back: string;
   selected_appearance?: PrismAppearance;
+  selected_motion?: WindowMotion;
 }
