@@ -13,7 +13,7 @@ import urllib.request
 
 import docker
 
-from pymodules.hd_BrowserEngine import CHROMIUM_USER, INIT_CAPABILITIES, PROXY_PORT, SANDBOX_PROBE, EgressProxyImage, SelkiesChromiumEngine
+from pymodules.hd_BrowserEngine import CHROMIUM_USER, INIT_CAPABILITIES, PROXY_PORT, SANDBOX_PROBE, EgressProxyImage, ImageUnavailable, SelkiesChromiumEngine
 from pymodules.hd_ClassDockerClientManager import DockerClientManager
 from pymodules.hd_FunctionsGlobals import running_OS
 from pymodules.hd_FunctionsHostSelector import is_docker
@@ -47,7 +47,11 @@ BUSY_PHASES = ("pulling", "building", "checking", "starting")
 _engine = SelkiesChromiumEngine()
 _proxy_image = EgressProxyImage(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hd_BrowserEgressProxy.py"))
 
-_state = {"phase": "stopped", "code": "", "detail": ""}
+_state = {"phase": "stopped", "code": "", "detail": "", "progress": None}
+
+# After a failed pull the running browser is left alone for this long, so an offline server does not restart it on every open.
+PULL_RETRY_SECONDS = 900
+_pull_failed_at = {"at": None}
 _lock = threading.Lock()
 _probed = set()
 
@@ -76,7 +80,27 @@ def docker_available():
 
 def _set_phase(phase, code="", detail=""):
     with _lock:
-        _state.update(phase=phase, code=code, detail=detail)
+        _state.update(phase=phase, code=code, detail=detail, progress=None)
+
+
+def _set_progress(percent):
+    with _lock:
+        _state["progress"] = percent
+
+
+def _ensure_image(image, client):
+    """The reference to run, with a failed pull turned into an error the window can show."""
+
+    try:
+        reference = image.ensure_image(client, progress=lambda phase: _set_phase(phase), on_percent=_set_progress)
+    except ImageUnavailable as e:
+        _pull_failed_at["at"] = time.monotonic()
+        raise BrowserError(e.code, e.detail)
+
+    if reference != image.image_reference():
+        _pull_failed_at["at"] = time.monotonic()
+
+    return reference
 
 
 def seccomp_profile():
@@ -125,10 +149,10 @@ def _hardening():
     }
 
 
-def check_sandbox(client):
+def check_sandbox(client, image=None):
     """Refuses to start unless an unprivileged process in the container can create the namespaces Chromium's sandbox uses. There is no --no-sandbox fallback."""
 
-    image = _engine.image_reference()
+    image = image or _engine.image_reference()
 
     if image in _probed:
         return
@@ -185,7 +209,7 @@ def _proxy_hardening():
 def _start_proxy(client, internal_network):
     """Runs the egress proxy: created on the network that reaches the internet, then attached to the internal one under a fixed name the browser dials."""
 
-    _proxy_image.ensure_image(client, progress=lambda phase: _set_phase(phase))
+    proxy_reference = _ensure_image(_proxy_image, client)
 
     egress = _ensure_egress_network(client)
 
@@ -195,7 +219,7 @@ def _start_proxy(client, internal_network):
         _remove(stale)
 
     proxy = client.containers.create(
-        _proxy_image.image_reference(),
+        proxy_reference,
         name=PROXY_CONTAINER_NAME,
         detach=True,
         network=egress.name,
@@ -311,10 +335,10 @@ def _launch():
     if not _reachable_from_here():
         raise BrowserError("unsupported_platform", "HomeDock OS can only reach the browser from a Linux host or from inside its own container.")
 
-    _engine.ensure_image(client, progress=lambda phase: _set_phase(phase))
+    image = _ensure_image(_engine, client)
 
     _set_phase("checking")
-    check_sandbox(client)
+    check_sandbox(client, image)
 
     _set_phase("starting")
 
@@ -337,7 +361,7 @@ def _launch():
         _remove(stale)
 
     container = client.containers.create(
-        _engine.image_reference(),
+        image,
         name=CONTAINER_NAME,
         detach=True,
         environment=_engine.environment(proxy=f"{PROXY_CONTAINER_NAME}:{PROXY_PORT}"),
@@ -381,10 +405,18 @@ def start():
         if _state["phase"] in BUSY_PHASES:
             return
 
-        if _state["phase"] == "running" and upstream():
+    # A browser that kept running across a HomeDock restart is joined, not restarted, unless a HomeDock update pinned a newer image.
+    container = running_container()
+
+    if container is not None and not needs_replacing(container):
+        _set_phase("running")
+        return
+
+    with _lock:
+        if _state["phase"] in BUSY_PHASES:
             return
 
-        _state.update(phase="starting", code="", detail="")
+        _state.update(phase="starting", code="", detail="", progress=None)
 
     threading.Thread(target=_run, name="hd-browser-start", daemon=True).start()
 
@@ -410,6 +442,23 @@ def stop():
         return
 
     _set_phase("stopped")
+
+
+def needs_replacing(container):
+    """True when a running browser is on an older image than the one this HomeDock pins, and the newer one can be had: it is already here, or a pull has not just failed."""
+
+    wanted = _engine.image_reference()
+
+    if container.attrs.get("Config", {}).get("Image") == wanted:
+        return False
+
+    try:
+        if _engine.has_image(_client()):
+            return True
+    except docker.errors.DockerException:
+        return False
+
+    return _pull_failed_at["at"] is None or time.monotonic() - _pull_failed_at["at"] > PULL_RETRY_SECONDS
 
 
 def running_container():

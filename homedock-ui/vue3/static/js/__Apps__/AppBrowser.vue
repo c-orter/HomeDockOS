@@ -103,6 +103,7 @@ interface BrowserStatus {
   phase: string;
   code: string;
   detail: string;
+  progress?: number | null;
 }
 
 const POLL_MS = 1000;
@@ -117,6 +118,7 @@ const code = ref("");
 const detail = ref("");
 const frameSrc = ref("");
 const displaced = ref(false);
+const progress = ref<number | null>(null);
 const notice = ref("");
 const windowStore = useWindowStore();
 let lastNoticeId = 0;
@@ -135,7 +137,7 @@ const running = computed(() => phase.value === "running" && !!frameSrc.value);
 const statusLabel = computed(() => {
   switch (phase.value) {
     case "pulling":
-      return t("Downloading the browser image...");
+      return progress.value === null ? t("Downloading the browser image...") : t("Downloading the browser image... {percent}%", { percent: progress.value });
     case "building":
       return t("Preparing the browser image...");
     case "checking":
@@ -153,10 +155,15 @@ const statusLabel = computed(() => {
   }
 });
 
-const errorTitle = computed(() => (code.value === "sandbox_unavailable" ? t("The browser's sandbox can't be enabled on this host") : t("The browser could not start")));
+const errorTitle = computed(() => {
+  if (code.value === "sandbox_unavailable") return t("The browser's sandbox can't be enabled on this host");
+  if (code.value === "pull_failed") return t("The browser image could not be downloaded");
+  return t("The browser could not start");
+});
 
 function apply(status: BrowserStatus) {
   phase.value = status.phase;
+  progress.value = typeof status.progress === "number" ? status.progress : null;
   code.value = status.code || "";
   detail.value = status.detail || "";
 }
