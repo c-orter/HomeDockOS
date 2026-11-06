@@ -260,6 +260,16 @@ def test_the_storage_shim_goes_in_ahead_of_the_clients_scripts():
     assert browser._inject_shim(b"<p>no head</p>").startswith(b"<script>")
 
 
+def test_the_audio_shim_starts_muted_and_listens_only_to_the_parent_page():
+    page = browser._inject_shim(b"<html><head></head></html>")
+    shim = browser._AUDIO_SHIM.decode()
+
+    assert browser._AUDIO_SHIM in page and page.index(b"hd-audio") < page.index(b"</head>")
+    assert "muted=true" in shim
+    assert "e.source!==parent" in shim
+    assert 'd.type!=="hd-audio"' in shim
+
+
 def test_relay_answers_a_cors_preflight_only_for_a_live_ticket(monkeypatch):
     async def work(address):
         monkeypatch.setattr(runtime, "upstream", lambda: address)

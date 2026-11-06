@@ -12,6 +12,9 @@
       </span>
 
       <div class="ml-auto flex items-center gap-1">
+        <button v-if="running && audioAvailable" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="p-1 rounded cursor-pointer" :title="muted ? $t('Unmute') : $t('Mute')" :aria-label="muted ? $t('Unmute') : $t('Mute')" :aria-pressed="!muted" @click="toggleMute">
+          <Icon :icon="muted ? volumeOffIcon : volumeHighIcon" class="w-4 h-4" />
+        </button>
         <button v-if="running" :class="[themeClasses.windowText, themeClasses.windowButtonBgHover]" class="p-1 rounded cursor-pointer" :title="$t('Send the files in your dropzone\'s Browser folder to the browser. They appear under Uploads in its file dialog.')" :aria-label="$t('Send files to the browser')" @click="sendFiles">
           <Icon :icon="uploadIcon" class="w-4 h-4" />
         </button>
@@ -36,7 +39,7 @@
 
     <div ref="stage" class="relative flex-1 min-h-0" :class="themeClasses.terminalSurface">
       <!-- No allow-same-origin: the page inside gets an opaque origin and cannot read HomeDock's cookies, storage or API. -->
-      <iframe v-if="frameSrc" :src="frameSrc" class="absolute inset-0 w-full h-full border-0" sandbox="allow-scripts allow-forms allow-pointer-lock allow-downloads allow-popups" allow="fullscreen" :title="$t('Browser')" referrerpolicy="no-referrer"></iframe>
+      <iframe v-if="frameSrc" ref="frame" @load="sendAudioState" :src="frameSrc" class="absolute inset-0 w-full h-full border-0" sandbox="allow-scripts allow-forms allow-pointer-lock allow-downloads allow-popups" allow="fullscreen; clipboard-read; clipboard-write; autoplay" :title="$t('Browser')" referrerpolicy="no-referrer"></iframe>
 
       <div v-else class="absolute inset-0 overflow-auto p-4">
         <div class="max-w-md mx-auto">
@@ -96,6 +99,8 @@ import fullscreenIcon from "@iconify-icons/mdi/fullscreen";
 import uploadIcon from "@iconify-icons/mdi/upload";
 import downloadsIcon from "@iconify-icons/mdi/folder-download";
 import closeIcon from "@iconify-icons/mdi/close";
+import volumeOffIcon from "@iconify-icons/mdi/volume-off";
+import volumeHighIcon from "@iconify-icons/mdi/volume-high";
 import { useWindowStore } from "../__Stores__/windowStore";
 
 interface BrowserStatus {
@@ -104,6 +109,7 @@ interface BrowserStatus {
   code: string;
   detail: string;
   progress?: number | null;
+  capabilities?: { audio?: boolean; clipboard?: boolean };
 }
 
 const POLL_MS = 1000;
@@ -119,6 +125,9 @@ const detail = ref("");
 const frameSrc = ref("");
 const displaced = ref(false);
 const progress = ref<number | null>(null);
+const muted = ref(true);
+const audioAvailable = ref(true);
+const frame = ref<HTMLIFrameElement | null>(null);
 const notice = ref("");
 const windowStore = useWindowStore();
 let lastNoticeId = 0;
@@ -164,6 +173,7 @@ const errorTitle = computed(() => {
 function apply(status: BrowserStatus) {
   phase.value = status.phase;
   progress.value = typeof status.progress === "number" ? status.progress : null;
+  audioAvailable.value = status.capabilities?.audio !== false;
   code.value = status.code || "";
   detail.value = status.detail || "";
 }
@@ -179,6 +189,11 @@ async function openSession() {
   const response = await axios.post("/api/browser/session", {}, { headers: headers() });
   ticket = response.data.ticket;
   frameSrc.value = response.data.path;
+
+  // The clipboard API only exists on https pages and localhost. Pasting with Ctrl+V still works without it.
+  if (!window.isSecureContext && !notice.value) {
+    notice.value = t("Automatic clipboard sync needs this page to be opened over https. Until then, click inside the browser and press Ctrl+V to paste.");
+  }
 
   if (!renew) {
     renew = setInterval(renewTicket, RENEW_MS);
@@ -220,6 +235,16 @@ async function sendFiles() {
   } catch {
     notice.value = t("The files could not be sent to the browser.");
   }
+}
+
+// The page inside has an opaque origin, so the only way to reach it is a message. The browser starts muted; the first unmute is this click.
+function sendAudioState() {
+  frame.value?.contentWindow?.postMessage({ type: "hd-audio", muted: muted.value }, "*");
+}
+
+function toggleMute() {
+  muted.value = !muted.value;
+  sendAudioState();
 }
 
 function openDownloads() {
