@@ -202,6 +202,9 @@ class SelkiesChromiumEngine:
             "--proxy-bypass-list=<-loopback>",
             "--disable-quic",
             "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
+            # A browser that was stopped or replaced should open fresh, not on a prompt about the last session.
+            "--disable-session-crashed-bubble",
+            "--hide-crash-restore-bubble",
         ]
 
     def tmpfs(self):

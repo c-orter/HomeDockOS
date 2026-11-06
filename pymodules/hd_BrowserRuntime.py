@@ -348,8 +348,19 @@ def _existing(client, name=CONTAINER_NAME):
         return None
 
 
-def _remove(container):
+STOP_GRACE_SECONDS = 8
+
+
+def _remove(container, graceful=False):
+    """Removes a container. The browser is asked to stop first, so Chromium can save its session and the next start does not open on a 'did not shut down correctly' prompt."""
+
     try:
+        if graceful and container.status == "running":
+            try:
+                container.stop(timeout=STOP_GRACE_SECONDS)
+            except docker.errors.APIError:
+                pass
+
         container.remove(force=True)
     except docker.errors.NotFound:
         pass
@@ -438,7 +449,7 @@ def _launch():
     stale = _existing(client)
 
     if stale is not None:
-        _remove(stale)
+        _remove(stale, graceful=True)
 
     container = client.containers.create(
         image,
@@ -527,11 +538,11 @@ def stop():
         container = _existing(client)
 
         if container is not None:
-            _remove(container)
+            _remove(container, graceful=True)
 
         _remove_proxy(client)
     except docker.errors.DockerException as e:
-        _set_phase("error", "docker_error", str(e))
+        _set_phase("error", "docker_error", readable(e))
         return
 
     _set_phase("stopped")

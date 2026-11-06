@@ -386,7 +386,7 @@ class FakeContainers:
 
     def create(self, image, **kwargs):
         self.created.append((image, kwargs))
-        container = SimpleNamespace(status="running", attrs={"NetworkSettings": {"Networks": {runtime.NETWORK_NAME: {"IPAddress": "172.30.0.2"}}}}, start=lambda: None, reload=lambda: None, remove=lambda force=False: None)
+        container = SimpleNamespace(status="running", attrs={"NetworkSettings": {"Networks": {runtime.NETWORK_NAME: {"IPAddress": "172.30.0.2"}}}}, start=lambda: None, stop=lambda timeout=10: None, reload=lambda: None, remove=lambda force=False: None)
         self.items[kwargs["name"]] = container
 
         return container
@@ -577,6 +577,38 @@ def test_stopping_removes_the_proxy_with_the_browser(monkeypatch):
     runtime.stop()
 
     assert set(removed) == {runtime.CONTAINER_NAME, runtime.PROXY_CONTAINER_NAME}
+
+
+def test_the_browser_is_asked_to_stop_before_it_is_removed_so_chromium_can_save_its_session(monkeypatch):
+    order = []
+    container = SimpleNamespace(status="running", stop=lambda timeout=10: order.append(("stop", timeout)), remove=lambda force=False: order.append(("remove", force)))
+
+    runtime._remove(container, graceful=True)
+
+    assert order == [("stop", runtime.STOP_GRACE_SECONDS), ("remove", True)]
+
+    order.clear()
+    runtime._remove(container)
+
+    assert order == [("remove", True)]
+
+
+def test_a_browser_that_will_not_stop_politely_is_still_removed():
+    def refuses(timeout=10):
+        raise docker.errors.APIError("could not stop")
+
+    removed = []
+    container = SimpleNamespace(status="running", stop=refuses, remove=lambda force=False: removed.append(force))
+
+    runtime._remove(container, graceful=True)
+
+    assert removed == [True]
+
+
+def test_chromium_is_told_not_to_ask_about_the_last_session():
+    flags = runtime.engine().proxy_flags("proxy:3128")
+
+    assert "--disable-session-crashed-bubble" in flags and "--hide-crash-restore-bubble" in flags
 
 
 def test_the_proxy_image_is_pinned_and_rebuilds_when_the_script_changes(tmp_path):
