@@ -263,17 +263,19 @@ export function getAppById(appId: string): SystemApp | undefined {
   return SYSTEM_APPS.find((app) => app.id === appId);
 }
 
+const isAvailable = (app: SystemApp) => !app.available || app.available();
+
 export function getAllApps(): SystemApp[] {
-  return SYSTEM_APPS;
+  return SYSTEM_APPS.filter(isAvailable);
 }
 
 export function getAppsByCategory(category: SystemApp["category"]): SystemApp[] {
-  return SYSTEM_APPS.filter((app) => app.category === category);
+  return SYSTEM_APPS.filter((app) => app.category === category && isAvailable(app));
 }
 
 export function searchApps(query: string): SystemApp[] {
   const lowerQuery = query.toLowerCase();
-  return SYSTEM_APPS.filter((app) => app.name.toLowerCase().includes(lowerQuery) || app.description.toLowerCase().includes(lowerQuery));
+  return SYSTEM_APPS.filter((app) => isAvailable(app) && (app.name.toLowerCase().includes(lowerQuery) || app.description.toLowerCase().includes(lowerQuery)));
 }
 
 export function appExists(appId: string): boolean {
@@ -281,13 +283,13 @@ export function appExists(appId: string): boolean {
 }
 
 export function getStandaloneApps(): SystemApp[] {
-  return SYSTEM_APPS.filter((app) => app.showInMyHomeApp !== false);
+  return SYSTEM_APPS.filter((app) => app.showInMyHomeApp !== false && isAvailable(app));
 }
 
 export function getFinderApps(): SystemApp[] {
-  return SYSTEM_APPS.filter((app) => app.showInFinderApp !== false);
+  return SYSTEM_APPS.filter((app) => app.showInFinderApp !== false && isAvailable(app));
 }
 
 export function getStartMenuApps(): SystemApp[] {
-  return SYSTEM_APPS.filter((app) => app.showInStartMenu !== false);
+  return SYSTEM_APPS.filter((app) => app.showInStartMenu !== false && isAvailable(app));
 }

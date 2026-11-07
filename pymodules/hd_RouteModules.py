@@ -136,6 +136,26 @@ def RouteAllModules(homedock_www, send_public_key):
 
     homedock_www.add_url_rule("/api/container-terminal/session", "api_container_terminal_session", CSRF_Protect(api_container_terminal_session), methods=["POST"])
 
+    from pymodules.hd_UIBrowser import api_browser_files_refresh, api_browser_session, api_browser_session_close, api_browser_session_renew, api_browser_start, api_browser_status, api_browser_stop, api_browser_transfers
+
+    from pymodules.hd_UIBrowser import api_browser_allowlist_add, api_browser_allowlist_apps, api_browser_allowlist_remove, api_browser_reset, api_browser_settings, api_browser_settings_save
+
+    homedock_www.add_url_rule("/api/browser/settings", "api_browser_settings", CSRF_Protect(api_browser_settings), methods=["GET"])
+    homedock_www.add_url_rule("/api/browser/settings/save", "api_browser_settings_save", CSRF_Protect(api_browser_settings_save), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/allowlist/add", "api_browser_allowlist_add", CSRF_Protect(api_browser_allowlist_add), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/allowlist/remove", "api_browser_allowlist_remove", CSRF_Protect(api_browser_allowlist_remove), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/allowlist/apps", "api_browser_allowlist_apps", CSRF_Protect(api_browser_allowlist_apps), methods=["GET"])
+    homedock_www.add_url_rule("/api/browser/reset", "api_browser_reset", CSRF_Protect(api_browser_reset), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/transfers", "api_browser_transfers", CSRF_Protect(api_browser_transfers), methods=["GET"])
+    homedock_www.add_url_rule("/api/browser/files/refresh", "api_browser_files_refresh", CSRF_Protect(api_browser_files_refresh), methods=["POST"])
+
+    homedock_www.add_url_rule("/api/browser/status", "api_browser_status", CSRF_Protect(api_browser_status), methods=["GET"])
+    homedock_www.add_url_rule("/api/browser/start", "api_browser_start", CSRF_Protect(api_browser_start), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/stop", "api_browser_stop", CSRF_Protect(api_browser_stop), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/session", "api_browser_session", CSRF_Protect(api_browser_session), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/session/renew", "api_browser_session_renew", CSRF_Protect(api_browser_session_renew), methods=["POST"])
+    homedock_www.add_url_rule("/api/browser/session/close", "api_browser_session_close", CSRF_Protect(api_browser_session_close), methods=["POST"])
+
     from pymodules.hd_UIControlHubReadSaveYML import get_compose_info, update_yml_config
 
     homedock_www.add_url_rule("/api/get-compose-info", "get_compose_info", CSRF_Protect(get_compose_info), methods=["GET"])

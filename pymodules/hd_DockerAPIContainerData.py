@@ -185,7 +185,7 @@ def get_docker_containers():
         try:
             labels = container.labels
 
-            if labels.get("HDDockerInDocker") == "true":
+            if labels.get("HDDockerInDocker") == "true" or labels.get("homedock.browser"):
                 continue
 
             compose_file_path = os.path.join(compose_upload_folder, f"{sanitize_container_name(container.name)}.yml")

@@ -205,7 +205,7 @@ def appdrive_list_containers():
         for container in containers:
             try:
                 labels = container.labels
-                if labels.get("HDDockerInDocker") == "true":
+                if labels.get("HDDockerInDocker") == "true" or labels.get("homedock.browser"):
                     continue
 
                 sanitized_name = sanitize_container_name(container.name)

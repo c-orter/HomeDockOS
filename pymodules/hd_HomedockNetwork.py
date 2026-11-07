@@ -35,6 +35,10 @@ def _connect(network, container):
             raise
 
 
+def connect_container(network, container):
+    _connect(network, container)
+
+
 def own_container(client):
     """The container HomeDock itself runs in: its hostname is its container id, the compose name is the fallback. None when not containerised."""
 

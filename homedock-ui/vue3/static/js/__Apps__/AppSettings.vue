@@ -32,10 +32,13 @@
             <div v-else-if="activeKey === '4'" key="4" class="tab-content">
               <SettingsTabTheme ref="themeTabRef" v-model="formData.theme" />
             </div>
+            <div v-else-if="activeKey === '5'" key="5" class="tab-content">
+              <SettingsTabBrowser />
+            </div>
           </Transition>
         </div>
 
-        <div class="flex mt-4 gap-3">
+        <div v-if="activeKey !== '5'" class="flex mt-4 gap-3">
           <button type="button" id="cancelButton" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border cursor-pointer" :class="[themeClasses.appPropsActionButtonBg, themeClasses.appPropsActionButtonBorder, themeClasses.appPropsActionButtonText, themeClasses.appPropsActionButtonBgHover, themeClasses.appPropsActionButtonBorderHover]" @click="handleCancel">
             <Icon :icon="arrowLeftIcon" width="15" height="15" />
             {{ $t("Cancel") }}
@@ -92,6 +95,9 @@ import SettingsTabUser from "../__Components__/SettingsTabUser.vue";
 import SettingsTabSystem from "../__Components__/SettingsTabSystem.vue";
 import SettingsTabStorage from "../__Components__/SettingsTabStorage.vue";
 import SettingsTabTheme from "../__Components__/SettingsTabTheme.vue";
+import SettingsTabBrowser from "../__Components__/SettingsTabBrowser.vue";
+import { browserAvailable, loadBrowserAvailability } from "../__Composables__/useBrowserAvailability";
+import webIcon from "@iconify-icons/mdi/web";
 import StatusBar from "../__Components__/StatusBar.vue";
 import StatusBarHelpIcon from "../__Components__/StatusBarHelpIcon.vue";
 
@@ -131,7 +137,9 @@ const props = defineProps<Props>();
 
 const activeKey = ref("1");
 
-const SETTINGS_TABS: Record<string, string> = { user: "1", system: "2", storage: "3", theme: "4" };
+loadBrowserAvailability(csrfToken.value);
+
+const SETTINGS_TABS: Record<string, string> = { user: "1", system: "2", storage: "3", theme: "4", browser: "5" };
 
 watch(
   () => props.tab,
@@ -150,6 +158,7 @@ const segmentedOptions = computed(() => [
   { value: "2", payload: { label: t("System"), icon: consoleIcon } },
   { value: "3", payload: { label: t("Storage"), icon: sdIcon } },
   { value: "4", payload: { label: t("Theme"), icon: compareIcon } },
+  ...(browserAvailable.value ? [{ value: "5", payload: { label: t("Browser"), icon: webIcon } }] : []),
 ]);
 const savingLoading = ref<boolean>(false);
 const themeTabRef = ref<any>(null);

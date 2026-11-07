@@ -10,6 +10,8 @@ import { useDesktopStore, type DockerApp } from "../__Stores__/desktopStore";
 import { useWindowStore } from "../__Stores__/windowStore";
 import { appLayoutKey } from "../__Stores__/useDesktopSyncStore";
 import { getStartMenuApps, ENTERPRISE_APP_COLOR } from "../__Config__/WindowDefaultDetails";
+import { loadBrowserAvailability } from "./useBrowserAvailability";
+import { useCsrfToken } from "./useCsrfToken";
 import type { SystemApp } from "../__Config__/WindowTypes";
 import { UTILITIES_APPS } from "../__Config__/UtilitiesDefaultDetails";
 import { GAMES_APPS } from "../__Config__/GamesDefaultDetails";
@@ -59,6 +61,7 @@ export function useStartMenuApps() {
   const { t } = useI18n();
   const desktopStore = useDesktopStore();
   const windowStore = useWindowStore();
+  const csrfToken = useCsrfToken();
 
   const enterpriseModules = ref<EnterpriseStartMenuModule[]>([]);
   let enterpriseTimer: ReturnType<typeof setTimeout> | null = null;
@@ -74,6 +77,7 @@ export function useStartMenuApps() {
   }
 
   loadEnterpriseModules();
+  loadBrowserAvailability(csrfToken.value);
 
   onBeforeUnmount(() => {
     if (enterpriseTimer) clearTimeout(enterpriseTimer);
