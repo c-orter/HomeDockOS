@@ -1,6 +1,12 @@
 # CHANGELOG
 
-- **2.7.0.2** (Latest): Brings in upstream 2.6.2.210 (Trash, PDF Editor, Slides, the ReCasa App Store and the Pillow 13 security upgrade) on top of the 2.7.x domains work.
+- **2.7.1.0** (Latest): A real web browser in a HomeDock OS window.
+  - **Server-side Chromium** streamed into a window, started on first open and stopped after it has been idle (15 minutes by default). Its traffic leaves through an egress proxy that refuses loopback, link-local and private addresses, HomeDock itself and the Docker socket.
+  - **Downloads** land encrypted in your dropzone under `Browser/`; **uploads** come from the same dropzone. Clipboard and audio are supported (audio is muted until you turn it on).
+  - **Settings → Browser** sets the idle timeout, memory, CPU and process limits, lists the allowlist for reaching your own apps (adding an entry asks for your password and 2FA), and can reset the browser profile.
+  - One window holds the stream at a time; opening it elsewhere offers "Take it back".
+
+- **2.7.0.2**: Brings in upstream 2.6.2.210 (Trash, PDF Editor, Slides, the ReCasa App Store and the Pillow 13 security upgrade) on top of the 2.7.x domains work.
 
 - **2.7.0.1**: Edit opens the form editor straight from an app's menu, with Edit YAML (advanced) beside it, and the Domains card now fits narrow windows.
 

@@ -580,7 +580,8 @@ def downloading():
         if container is None or container.status != "running":
             return False
 
-        result = container.exec_run(["sh", "-c", f"ls {_engine.download_dir}/*.crdownload >/dev/null 2>&1"])
+        # Only a file touched in the last 10 minutes counts: a leftover from an interrupted download must not block the idle stop forever.
+        result = container.exec_run(["sh", "-c", f'test -n "$(find {_engine.download_dir} -maxdepth 1 -name \'*.crdownload\' -mmin -10 2>/dev/null)"'])
 
         return result.exit_code == 0
     except Exception:
