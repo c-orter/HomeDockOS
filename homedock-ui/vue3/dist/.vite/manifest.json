@@ -31,6 +31,15 @@
       "_hdos_C8hKoMRJjwC616RkaL7je.js"
     ]
   },
+  "_hdos_2R1xNF_-29fykNQovd7n0.js": {
+    "file": "hdos_2R1xNF_-29fykNQovd7n0.js",
+    "name": "useDialog",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js"
+    ]
+  },
   "_hdos_2wF9goyDcC9bFXbMQ9jJ5.js": {
     "file": "hdos_2wF9goyDcC9bFXbMQ9jJ5.js",
     "name": "page-layout-sidebar-left"
@@ -64,27 +73,24 @@
       "_hdos_akq_Om9DwjtrtSTvNXCS1.js"
     ]
   },
-  "_hdos_9biTLVfqvLzoYHLfGZ8bq.js": {
-    "file": "hdos_9biTLVfqvLzoYHLfGZ8bq.js",
-    "name": "arrow-top-right",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_DL0DRgj_sn3yV9wAr8t5j.js",
-      "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_Ci205l0AE_IJyIyiTqXo9.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
-      "_hdos_B6gc9G9bQQtVl-0l6WnoZ.js",
-      "_hdos_BuX6tbgvM7UrkeDHXg_d1.js",
-      "_hdos_CFbnmTUDIJ7moVkw4-TCg.js",
-      "_hdos_DpdXBmBGxKEbMcotj4HdW.js",
-      "_hdos_BMLcN2fDhVuwTkuttQiKJ.js",
-      "_hdos_vM-0fMhrsdg9j5--XLLEO.js"
-    ]
-  },
   "_hdos_9xVVWaiubmk1HFVFFegDX.js": {
     "file": "hdos_9xVVWaiubmk1HFVFFegDX.js",
     "name": "movie-open"
+  },
+  "_hdos_B-u6d9O0gZkVIiZDDMvnp.js": {
+    "file": "hdos_B-u6d9O0gZkVIiZDDMvnp.js",
+    "name": "StartMenuAppIcon",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_BkZa4mY-ZZ96czEtSeUC8.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
+      "_hdos_s3X5hubfT7JSI-sWJoJlt.js"
+    ]
   },
   "_hdos_B0QjQnfGyyV-Qy6jTehIu.js": {
     "file": "hdos_B0QjQnfGyyV-Qy6jTehIu.js",
@@ -153,80 +159,6 @@
   "_hdos_B6gc9G9bQQtVl-0l6WnoZ.js": {
     "file": "hdos_B6gc9G9bQQtVl-0l6WnoZ.js",
     "name": "server"
-  },
-  "_hdos_B7IMQnqaqJOUViqYu_Bmo.js": {
-    "file": "hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-    "name": "WindowDefaultDetails",
-    "imports": [
-      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_DL0DRgj_sn3yV9wAr8t5j.js"
-    ],
-    "dynamicImports": [
-      "homedock-ui/vue3/static/js/__Apps__/UtilsNotepad.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsCode.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsCalculator.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsImageViewer.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsPDFViewer.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsSheets.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsWriter.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsSlides.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsBrusher.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsMediaPlayer.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsCalendar.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsZipfile.vue",
-      "homedock-ui/vue3/static/js/__Apps__/UtilsTrash.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppLogs.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppTerminal.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppBrowser.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppProperties.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppEdit.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppInstallConfig.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppFolder.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppEnterpriseWindow.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppFileProperties.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppWhatsNew.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppDockerView.vue",
-      "homedock-ui/vue3/static/js/__Apps__/GameNeonRush.vue",
-      "homedock-ui/vue3/static/js/__Apps__/GamePacketSnake.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppHome.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppFinder.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppAppStore.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppFileExplorer.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppPackager.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppControlHub.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppSystemLogs.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppSettings.vue",
-      "homedock-ui/vue3/static/js/__Apps__/AppAbout.vue"
-    ]
-  },
-  "_hdos_B7LBKXSTuLusCmmUPM9JU.js": {
-    "file": "hdos_B7LBKXSTuLusCmmUPM9JU.js",
-    "name": "useWidgetsStore",
-    "imports": [
-      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
-      "_hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
-      "_hdos_DqFYBfx9rI3RiWBchaAKY.js",
-      "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_C-s-GDUq7_Ni754gim2BH.js",
-      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js"
-    ],
-    "dynamicImports": [
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetClock.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetSystem.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetStorage.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetNetwork.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetNotes.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetCalendar.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetMedia.vue",
-      "homedock-ui/vue3/static/js/__Widgets__/WidgetShortcut.vue"
-    ]
   },
   "_hdos_BAIRSvM-hQVyfhYknd_R_.js": {
     "file": "hdos_BAIRSvM-hQVyfhYknd_R_.js",
@@ -325,25 +257,6 @@
     "file": "hdos_BKrmARhtCpM2_-EiYL70B.js",
     "name": "text-box-outline"
   },
-  "_hdos_BLc-_mcT0GUTM3Of_YOjm.js": {
-    "file": "hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-    "name": "StatusBarHelpIcon",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
-      "_hdos_Bacn-k0fg1pvmEJKLUg7d.js",
-      "_hdos_e5nskmYd3QirWvSpajSy4.js",
-      "_hdos_BpNVLaXnKAzopo5KniLG_.js",
-      "_hdos_CbxB-LOV9lxIBilegKKU2.js",
-      "_hdos_BnAIAHNRncgnCI-Tbjy12.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_CQ2Ei-j5aZe9__CTI3P5L.js",
-      "_hdos_CfLMEzY1oSPDIRUHKQy_i.js"
-    ]
-  },
   "_hdos_BMLcN2fDhVuwTkuttQiKJ.js": {
     "file": "hdos_BMLcN2fDhVuwTkuttQiKJ.js",
     "name": "book-open-variant"
@@ -352,28 +265,53 @@
     "file": "hdos_BMVPuTvgRkgmZ3LnAeV_q.js",
     "name": "arrow-left-circle"
   },
-  "_hdos_BNygDiSj_9wEvJRb9vGtL.js": {
-    "file": "hdos_BNygDiSj_9wEvJRb9vGtL.js",
-    "name": "monitor-off",
+  "_hdos_BMzXBlTtaCdMDhmciwLCL.js": {
+    "file": "hdos_BMzXBlTtaCdMDhmciwLCL.js",
+    "name": "WindowDefaultDetails",
     "imports": [
+      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
       "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7LBKXSTuLusCmmUPM9JU.js",
-      "_hdos_C-s-GDUq7_Ni754gim2BH.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_9biTLVfqvLzoYHLfGZ8bq.js",
-      "_hdos_DjJbH5RzfOQjaFBw22Kyd.js"
+      "_hdos_DL0DRgj_sn3yV9wAr8t5j.js"
     ],
-    "css": [
-      "hdos_BgVYvIs2kKpsM_OljXgdS.css"
+    "dynamicImports": [
+      "homedock-ui/vue3/static/js/__Apps__/UtilsNotepad.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsCode.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsCalculator.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsImageViewer.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsPDFViewer.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsSheets.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsWriter.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsSlides.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsBrusher.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsMediaPlayer.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsCalendar.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsZipfile.vue",
+      "homedock-ui/vue3/static/js/__Apps__/UtilsTrash.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppLogs.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppTerminal.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppBrowser.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppProperties.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppEdit.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppInstallConfig.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppFolder.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppEnterpriseWindow.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppFileProperties.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppWhatsNew.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppDockerView.vue",
+      "homedock-ui/vue3/static/js/__Apps__/GameNeonRush.vue",
+      "homedock-ui/vue3/static/js/__Apps__/GamePacketSnake.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppHome.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppFinder.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppAppStore.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppFileExplorer.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppPackager.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppControlHub.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppSystemLogs.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppSettings.vue",
+      "homedock-ui/vue3/static/js/__Apps__/AppAbout.vue"
     ]
   },
   "_hdos_BOGx8htyTqOf-OItOjbH4.js": {
@@ -404,9 +342,38 @@
     "file": "hdos_BQjT5ru06-Fytfd0iP0hj.js",
     "name": "magnify-close"
   },
+  "_hdos_BQy0ENES9DFUwQVjKc9kA.js": {
+    "file": "hdos_BQy0ENES9DFUwQVjKc9kA.js",
+    "name": "useControlHub",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_JyND2lL-Cs7Ns6McdiSMi.js",
+      "_hdos_Cxsm1rhYJ1sNwywXaePHI.js",
+      "_hdos_DbP4taWDGth7jJtex30QS.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_yWQyZkuTmU_YQBjUSf3JX.js",
+      "_hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
+      "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
+      "_hdos_C4JOUQTgnotojx1yWTgHf.js",
+      "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
+      "_hdos_KQcD2urwWhNfwx7IBpQDn.js",
+      "_hdos_CzysbEnmyodrIvTYiy6YD.js",
+      "_hdos_DjJbH5RzfOQjaFBw22Kyd.js",
+      "_hdos_Dfqrx0UEb2FFwUJ0D5AHd.js",
+      "_hdos_DqFYBfx9rI3RiWBchaAKY.js"
+    ]
+  },
   "_hdos_BS-yzNiGUTG_q-Sh1Mj1h.js": {
     "file": "hdos_BS-yzNiGUTG_q-Sh1Mj1h.js",
     "name": "history"
+  },
+  "_hdos_BTZoYOQVXmprE2dlNLgpq.js": {
+    "file": "hdos_BTZoYOQVXmprE2dlNLgpq.js",
+    "name": "EnterpriseSlotReplacer",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_BkZa4mY-ZZ96czEtSeUC8.js"
+    ]
   },
   "_hdos_BUJjHatvUmVlqwmn_RtXE.js": {
     "file": "hdos_BUJjHatvUmVlqwmn_RtXE.js",
@@ -423,14 +390,12 @@
     "file": "hdos_BUoRNLH10YwEFK_LfZnuT.js",
     "name": "check"
   },
-  "_hdos_BVfdlYbpijbZ-_dGo1d_h.js": {
-    "file": "hdos_BVfdlYbpijbZ-_dGo1d_h.js",
-    "name": "useAppStoreActions",
+  "_hdos_BWMb1THs7eF7O97vyRjiY.js": {
+    "file": "hdos_BWMb1THs7eF7O97vyRjiY.js",
+    "name": "EnterpriseSlotRenderer",
     "imports": [
-      "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
-      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_BkZa4mY-ZZ96czEtSeUC8.js"
     ]
   },
   "_hdos_BYXxqaV7_jb6opn7do1jz.js": {
@@ -454,21 +419,6 @@
       "_hdos_sUtp2sXSMFXIlNlUbePuP.js",
       "_hdos_B0QjQnfGyyV-Qy6jTehIu.js",
       "_hdos_DYSqDpdwOGkpFpE1RfNVm.js"
-    ]
-  },
-  "_hdos_BZJWDSKK5ZmwQ20QLFc25.js": {
-    "file": "hdos_BZJWDSKK5ZmwQ20QLFc25.js",
-    "name": "useAppQuickActions",
-    "imports": [
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_BVfdlYbpijbZ-_dGo1d_h.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_BKrmARhtCpM2_-EiYL70B.js",
-      "_hdos_BcX2BxUpmDH5xeSSk_xiX.js"
     ]
   },
   "_hdos_BZPVoTvBwz6lHfsUjuOsN.js": {
@@ -501,12 +451,19 @@
       "_hdos_e5nskmYd3QirWvSpajSy4.js"
     ]
   },
-  "_hdos_BbVw16d5-BxKjs-sc5wND.js": {
-    "file": "hdos_BbVw16d5-BxKjs-sc5wND.js",
-    "name": "EnterpriseSlotReplacer",
+  "_hdos_BamuXaWc7Tn5M06hEi_z7.js": {
+    "file": "hdos_BamuXaWc7Tn5M06hEi_z7.js",
+    "name": "FileAssociations",
     "imports": [
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_Sv0jQxc0nXkAsChwPLxGm.js"
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_BIyDavK7WP2_Rrc4yCOBw.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
+      "_hdos_CRrF-yLmQVbOg0JfOg0I0.js"
     ]
   },
   "_hdos_Bc59DYPRk-8qaWFThmtvV.js": {
@@ -540,6 +497,21 @@
       "_hdos_sUtp2sXSMFXIlNlUbePuP.js"
     ]
   },
+  "_hdos_Bf8X-QBtK_IZpZe-3_wlb.js": {
+    "file": "hdos_Bf8X-QBtK_IZpZe-3_wlb.js",
+    "name": "useAppQuickActions",
+    "imports": [
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_BKrmARhtCpM2_-EiYL70B.js",
+      "_hdos_BcX2BxUpmDH5xeSSk_xiX.js"
+    ]
+  },
   "_hdos_BgCMGw4mYGBmyHUevNXj1.js": {
     "file": "hdos_BgCMGw4mYGBmyHUevNXj1.js",
     "name": "arrow-right"
@@ -551,6 +523,30 @@
   "_hdos_BkR4a3tHYei8i8RrrDqni.js": {
     "file": "hdos_BkR4a3tHYei8i8RrrDqni.js",
     "name": "help-circle-outline"
+  },
+  "_hdos_BkZa4mY-ZZ96czEtSeUC8.js": {
+    "file": "hdos_BkZa4mY-ZZ96czEtSeUC8.js",
+    "name": "EnterpriseSRILoader",
+    "imports": [
+      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_CTdPtFZdtKpJ5WN90DKWk.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
+      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js"
+    ],
+    "dynamicImports": [
+      "node_modules/ant-design-vue/es/message/index.js",
+      "node_modules/ant-design-vue/es/notification/index.js",
+      "node_modules/ant-design-vue/es/button/index.js",
+      "node_modules/ant-design-vue/es/switch/index.js"
+    ]
   },
   "_hdos_BlR9OJOLy6FNekXgtBsUB.js": {
     "file": "hdos_BlR9OJOLy6FNekXgtBsUB.js",
@@ -584,20 +580,6 @@
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js"
     ]
   },
-  "_hdos_Bq3q7CojEIocvIAY63X2-.js": {
-    "file": "hdos_Bq3q7CojEIocvIAY63X2-.js",
-    "name": "usePackager",
-    "imports": [
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
-      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_BVfdlYbpijbZ-_dGo1d_h.js"
-    ]
-  },
   "_hdos_BqmL9LYt7Zg_OBGl73daH.js": {
     "file": "hdos_BqmL9LYt7Zg_OBGl73daH.js",
     "name": "trash-can-outline"
@@ -605,27 +587,6 @@
   "_hdos_BrJaSdHqTWdDhj_sEf5FE.js": {
     "file": "hdos_BrJaSdHqTWdDhj_sEf5FE.js",
     "name": "shield-alert"
-  },
-  "_hdos_BrYeUSZIP5UeblF6O3c3u.js": {
-    "file": "hdos_BrYeUSZIP5UeblF6O3c3u.js",
-    "name": "useControlHub",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_JyND2lL-Cs7Ns6McdiSMi.js",
-      "_hdos_Cxsm1rhYJ1sNwywXaePHI.js",
-      "_hdos_DbP4taWDGth7jJtex30QS.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_yWQyZkuTmU_YQBjUSf3JX.js",
-      "_hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
-      "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
-      "_hdos_C4JOUQTgnotojx1yWTgHf.js",
-      "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
-      "_hdos_KQcD2urwWhNfwx7IBpQDn.js",
-      "_hdos_CzysbEnmyodrIvTYiy6YD.js",
-      "_hdos_DjJbH5RzfOQjaFBw22Kyd.js",
-      "_hdos_Dfqrx0UEb2FFwUJ0D5AHd.js",
-      "_hdos_DqFYBfx9rI3RiWBchaAKY.js"
-    ]
   },
   "_hdos_BreAkmTpsNB5lEksJMIzR.js": {
     "file": "hdos_BreAkmTpsNB5lEksJMIzR.js",
@@ -818,16 +779,6 @@
     "file": "hdos_C1z-HXOguu7EMrtAVp8tn.js",
     "name": "lock-outline"
   },
-  "_hdos_C3N1F8gp8vAqkpiWK8OOD.js": {
-    "file": "hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-    "name": "windowStore",
-    "imports": [
-      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
-      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_CTyQjANnwN-CZAJ04i6HS.js"
-    ]
-  },
   "_hdos_C3bObO9h0AtO9uiurR0iu.js": {
     "file": "hdos_C3bObO9h0AtO9uiurR0iu.js",
     "name": "archive-arrow-up-outline"
@@ -992,6 +943,16 @@
     "file": "hdos_COiEfhsAQcgkqpV1LRHhj.js",
     "name": "rolldown-runtime"
   },
+  "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js": {
+    "file": "hdos_COj9HbWJ9MkBTujZ1ZPgY.js",
+    "name": "useAppStoreActions",
+    "imports": [
+      "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
+      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
+    ]
+  },
   "_hdos_CPCZM4yKX2HpXIWO46fVu.js": {
     "file": "hdos_CPCZM4yKX2HpXIWO46fVu.js",
     "name": "SelectionBox",
@@ -1018,6 +979,18 @@
       "_hdos_GOD2EXQhcY9XxAFnlTb7t.js",
       "_hdos_WwSA2on3D8Ux90M3YigU0.js",
       "_hdos_D7VQBvQ75jo0rq4W9WkfV.js"
+    ]
+  },
+  "_hdos_CPT6atBqNwgncb88NW2j_.js": {
+    "file": "hdos_CPT6atBqNwgncb88NW2j_.js",
+    "name": "DockerActions",
+    "imports": [
+      "_hdos_DiEO83Mp4UqYVtwBwQC3H.js",
+      "_hdos_C8hKoMRJjwC616RkaL7je.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
+      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js"
     ]
   },
   "_hdos_CQ2Ei-j5aZe9__CTI3P5L.js": {
@@ -1063,6 +1036,16 @@
     "file": "hdos_CRrF-yLmQVbOg0JfOg0I0.js",
     "name": "shield-alert-outline"
   },
+  "_hdos_CTdPtFZdtKpJ5WN90DKWk.js": {
+    "file": "hdos_CTdPtFZdtKpJ5WN90DKWk.js",
+    "name": "dist",
+    "imports": [
+      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
+    ]
+  },
   "_hdos_CTyQjANnwN-CZAJ04i6HS.js": {
     "file": "hdos_CTyQjANnwN-CZAJ04i6HS.js",
     "name": "__Languages__",
@@ -1106,6 +1089,20 @@
     "file": "hdos_CXsmJoj4Qpg5QXIOffc2x.js",
     "name": "package-variant-closed"
   },
+  "_hdos_CYQeqEeMBNQr1iYFfVSCU.js": {
+    "file": "hdos_CYQeqEeMBNQr1iYFfVSCU.js",
+    "name": "UtilityAboutDialog",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_DeUMJtVpw59O_f4aViLVt.js"
+    ]
+  },
   "_hdos_Ca7Q8Rdm8_Uyi2x7JOI_e.js": {
     "file": "hdos_Ca7Q8Rdm8_Uyi2x7JOI_e.js",
     "name": "dock-window"
@@ -1115,15 +1112,6 @@
     "name": "statusUtils",
     "imports": [
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js"
-    ]
-  },
-  "_hdos_CbnG-Raj2bfnddRwb1z7i.js": {
-    "file": "hdos_CbnG-Raj2bfnddRwb1z7i.js",
-    "name": "useDialog",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js"
     ]
   },
   "_hdos_CbxB-LOV9lxIBilegKKU2.js": {
@@ -1142,6 +1130,30 @@
       "_hdos_DL0DRgj_sn3yV9wAr8t5j.js"
     ]
   },
+  "_hdos_Cc1hlUdJERh3BsrdMbI5N.js": {
+    "file": "hdos_Cc1hlUdJERh3BsrdMbI5N.js",
+    "name": "monitor-off",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CV6eG3sWpP1Eprjt84654.js",
+      "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_pVi8psGA3-Ag2OcK4jWU9.js",
+      "_hdos_C-s-GDUq7_Ni754gim2BH.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_DWUxQY7eoRaqHnc_8nOSK.js",
+      "_hdos_DjJbH5RzfOQjaFBw22Kyd.js"
+    ],
+    "css": [
+      "hdos_BgVYvIs2kKpsM_OljXgdS.css"
+    ]
+  },
   "_hdos_CdYg2njxSUZH89Dq5WRUj.js": {
     "file": "hdos_CdYg2njxSUZH89Dq5WRUj.js",
     "name": "content-save"
@@ -1152,17 +1164,6 @@
     "imports": [
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_GOD2EXQhcY9XxAFnlTb7t.js"
-    ]
-  },
-  "_hdos_CfLMEzY1oSPDIRUHKQy_i.js": {
-    "file": "hdos_CfLMEzY1oSPDIRUHKQy_i.js",
-    "name": "WindowIcon",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_s3X5hubfT7JSI-sWJoJlt.js"
     ]
   },
   "_hdos_CflJMPooNeywZRJyljFMz.js": {
@@ -1186,17 +1187,14 @@
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js"
     ]
   },
-  "_hdos_CgyD2F3GaA4oXNR-kGE8f.js": {
-    "file": "hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-    "name": "desktopStore",
+  "_hdos_CfyiF7WSailjgFL2e92tD.js": {
+    "file": "hdos_CfyiF7WSailjgFL2e92tD.js",
+    "name": "useWhatsNewStore",
     "imports": [
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js"
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
     ]
   },
   "_hdos_ChE8cjMtNjDI1_VNxcnWd.js": {
@@ -1223,6 +1221,16 @@
     "file": "hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
     "name": "clock-outline"
   },
+  "_hdos_CkaoTq0Og5ylcXJKP6aya.js": {
+    "file": "hdos_CkaoTq0Og5ylcXJKP6aya.js",
+    "name": "windowStore",
+    "imports": [
+      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
+      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_CTyQjANnwN-CZAJ04i6HS.js"
+    ]
+  },
   "_hdos_ClLR4zDrgXM1S20Ia-3v6.css": {
     "file": "hdos_ClLR4zDrgXM1S20Ia-3v6.css",
     "src": "_hdos_ClLR4zDrgXM1S20Ia-3v6.css"
@@ -1235,23 +1243,22 @@
     "file": "hdos_CmTOz1lMf6vvt9i8L1QQr.js",
     "name": "fullscreen"
   },
-  "_hdos_CmqWYCcU2XOT1kYOkjvfS.js": {
-    "file": "hdos_CmqWYCcU2XOT1kYOkjvfS.js",
-    "name": "UtilityAboutDialog",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_DeUMJtVpw59O_f4aViLVt.js"
-    ]
-  },
   "_hdos_CnMYQNsH_MwmRWTLZ_jkT.js": {
     "file": "hdos_CnMYQNsH_MwmRWTLZ_jkT.js",
     "name": "window-maximize"
+  },
+  "_hdos_CnYMcuDYW5914SeNI0ubk.js": {
+    "file": "hdos_CnYMcuDYW5914SeNI0ubk.js",
+    "name": "desktopStore",
+    "imports": [
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
+      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js"
+    ]
   },
   "_hdos_Cne1fd39ucVDwIe-a_Cje.js": {
     "file": "hdos_Cne1fd39ucVDwIe-a_Cje.js",
@@ -1287,6 +1294,27 @@
     "file": "hdos_Ct6ye_SFHAaYLNROCDTHA.js",
     "name": "window-minimize"
   },
+  "_hdos_Ctuy2fJ-_-MGb5pp5D9yc.js": {
+    "file": "hdos_Ctuy2fJ-_-MGb5pp5D9yc.js",
+    "name": "AppDomainsCard",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_lEt9deBu_20VQ41T5YAOl.js",
+      "_hdos_Dp4rM0NkWmc8hMiuyh0LN.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_sL-izrsdGLPNe_PeuQWId.js",
+      "_hdos_B6PrYiTCjTemUWTdXfqaA.js",
+      "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
+      "_hdos_D4Y7Bw7Wyloei05_TsWJ_.js",
+      "_hdos_BUoRNLH10YwEFK_LfZnuT.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_M4Z_V-To-T_fxKbwgm21X.js"
+    ]
+  },
   "_hdos_Cu9HaQjmuSeavGpGfuexI.js": {
     "file": "hdos_Cu9HaQjmuSeavGpGfuexI.js",
     "name": "three.module"
@@ -1302,21 +1330,6 @@
       "_hdos_j6m_hI4tPRmaAPOMV8Xsj.js",
       "_hdos_DI8meKH2937XAhf2me_-y.js",
       "_hdos_hqr378jMFxLQH0I0GbHBx.js"
-    ]
-  },
-  "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js": {
-    "file": "hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-    "name": "AppDialog",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_osbVYGLYg7mxlEwI2q6gs.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_psKYZJ_thF34tmgfCB87Y.js",
-      "_hdos_BreAkmTpsNB5lEksJMIzR.js",
-      "_hdos_BkR4a3tHYei8i8RrrDqni.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
     ]
   },
   "_hdos_Cun4CMqaUSEv-oUoclaZD.css": {
@@ -1397,16 +1410,6 @@
     "file": "hdos_DB-m3SwnBRsDVISngKoi4.js",
     "name": "refresh"
   },
-  "_hdos_DCKhlL6tt9wrDHuXger0I.js": {
-    "file": "hdos_DCKhlL6tt9wrDHuXger0I.js",
-    "name": "useWhatsNewStore",
-    "imports": [
-      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
-    ]
-  },
   "_hdos_DE8-hgalK6EZtvbrOukq9.js": {
     "file": "hdos_DE8-hgalK6EZtvbrOukq9.js",
     "name": "runtime-dom.esm-bundler",
@@ -1473,6 +1476,20 @@
     "file": "hdos_DNvCzE9dZipp8TIPety70.js",
     "name": "exit-to-app"
   },
+  "_hdos_DOSBPyORkq3Ctj2KAJsOk.js": {
+    "file": "hdos_DOSBPyORkq3Ctj2KAJsOk.js",
+    "name": "usePackager",
+    "imports": [
+      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
+      "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
+      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
+      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
+      "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js"
+    ]
+  },
   "_hdos_DOp1ypBBjy9zEHQoRJTHR.js": {
     "file": "hdos_DOp1ypBBjy9zEHQoRJTHR.js",
     "name": "folder-file"
@@ -1521,6 +1538,24 @@
     "file": "hdos_DW9Yu4vrVE6MppDHDcRTW.js",
     "name": "chevron-left"
   },
+  "_hdos_DWUxQY7eoRaqHnc_8nOSK.js": {
+    "file": "hdos_DWUxQY7eoRaqHnc_8nOSK.js",
+    "name": "arrow-top-right",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_DL0DRgj_sn3yV9wAr8t5j.js",
+      "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
+      "_hdos_Ci205l0AE_IJyIyiTqXo9.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
+      "_hdos_B6gc9G9bQQtVl-0l6WnoZ.js",
+      "_hdos_BuX6tbgvM7UrkeDHXg_d1.js",
+      "_hdos_CFbnmTUDIJ7moVkw4-TCg.js",
+      "_hdos_DpdXBmBGxKEbMcotj4HdW.js",
+      "_hdos_BMLcN2fDhVuwTkuttQiKJ.js",
+      "_hdos_vM-0fMhrsdg9j5--XLLEO.js"
+    ]
+  },
   "_hdos_DWbSsoGEVUofUHsOMgcy-.css": {
     "file": "hdos_DWbSsoGEVUofUHsOMgcy-.css",
     "src": "_hdos_DWbSsoGEVUofUHsOMgcy-.css"
@@ -1547,6 +1582,31 @@
     "imports": [
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_D7VQBvQ75jo0rq4W9WkfV.js"
+    ]
+  },
+  "_hdos_DYdB5ue4wyMyc_d3J25lj.js": {
+    "file": "hdos_DYdB5ue4wyMyc_d3J25lj.js",
+    "name": "FolderGraphic",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
+      "_hdos_DHIOD9yiBisctF3_gHpcb.js",
+      "_hdos_n8t_zorJmPHbEy6twgjHA.js",
+      "_hdos_CX4cbI_qswOWnFMNcgJKq.js",
+      "_hdos_9xVVWaiubmk1HFVFFegDX.js",
+      "_hdos_gDrbRLvMUT589QF_ewsjC.js",
+      "_hdos_CKkVDlsTcArp-3CiP-RjT.js",
+      "_hdos_CVnpvLuVdelGtdGmKav-G.js",
+      "_hdos_CWntnfpU3Ijgkgli9ahTz.js",
+      "_hdos_DmbHv-zoxLN6fV80HJX4I.js",
+      "_hdos_DUgxhjPloEbgSNjd9RHYO.js"
+    ],
+    "css": [
+      "hdos_vcyH17WZskfTLs48xeBvv.css"
     ]
   },
   "_hdos_DZ4Qsoqyw5SuN_TeG7y0K.js": {
@@ -1615,6 +1675,21 @@
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js"
     ]
   },
+  "_hdos_DhCOYTthGKtFCE8P-HBtW.js": {
+    "file": "hdos_DhCOYTthGKtFCE8P-HBtW.js",
+    "name": "AppDialog",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_CTdPtFZdtKpJ5WN90DKWk.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_psKYZJ_thF34tmgfCB87Y.js",
+      "_hdos_BreAkmTpsNB5lEksJMIzR.js",
+      "_hdos_BkR4a3tHYei8i8RrrDqni.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_CV6eG3sWpP1Eprjt84654.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
+    ]
+  },
   "_hdos_DhhCgCENAv_OIixWa0Lu0.js": {
     "file": "hdos_DhhCgCENAv_OIixWa0Lu0.js",
     "name": "pinia",
@@ -1654,14 +1729,6 @@
     "file": "hdos_DjJbH5RzfOQjaFBw22Kyd.js",
     "name": "tray-arrow-up"
   },
-  "_hdos_DkBGSR4tTUtZpcij3LXZ9.js": {
-    "file": "hdos_DkBGSR4tTUtZpcij3LXZ9.js",
-    "name": "EnterpriseSlotRenderer",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_Sv0jQxc0nXkAsChwPLxGm.js"
-    ]
-  },
   "_hdos_DlneKEsjH9b5SKxnVHBkC.css": {
     "file": "hdos_DlneKEsjH9b5SKxnVHBkC.css",
     "src": "_hdos_DlneKEsjH9b5SKxnVHBkC.css"
@@ -1673,18 +1740,6 @@
   "_hdos_DmUJr3_msadK1IZoa6ic1.js": {
     "file": "hdos_DmUJr3_msadK1IZoa6ic1.js",
     "name": "close"
-  },
-  "_hdos_DmYXxzFPZedqeu3cUaHES.js": {
-    "file": "hdos_DmYXxzFPZedqeu3cUaHES.js",
-    "name": "DockerActions",
-    "imports": [
-      "_hdos_DiEO83Mp4UqYVtwBwQC3H.js",
-      "_hdos_C8hKoMRJjwC616RkaL7je.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js"
-    ]
   },
   "_hdos_DmbHv-zoxLN6fV80HJX4I.js": {
     "file": "hdos_DmbHv-zoxLN6fV80HJX4I.js",
@@ -1792,21 +1847,6 @@
       "hdos_Cv7tcrMUutuWbZXc0hZTm.css"
     ]
   },
-  "_hdos_DrlcU-fvQA02-NJEXc-Ky.js": {
-    "file": "hdos_DrlcU-fvQA02-NJEXc-Ky.js",
-    "name": "StartMenuAppIcon",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_Sv0jQxc0nXkAsChwPLxGm.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
-      "_hdos_s3X5hubfT7JSI-sWJoJlt.js"
-    ]
-  },
   "_hdos_DsDwhqfwyHkeCHn0Llog0.js": {
     "file": "hdos_DsDwhqfwyHkeCHn0Llog0.js",
     "name": "heart"
@@ -1846,27 +1886,6 @@
   "_hdos_DxmRnBEu58dRbWQ_DKoYR.js": {
     "file": "hdos_DxmRnBEu58dRbWQ_DKoYR.js",
     "name": "volume-medium"
-  },
-  "_hdos_Dy3PEjjXx--PXql17Efo3.js": {
-    "file": "hdos_Dy3PEjjXx--PXql17Efo3.js",
-    "name": "AppDomainsCard",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_lEt9deBu_20VQ41T5YAOl.js",
-      "_hdos_Dp4rM0NkWmc8hMiuyh0LN.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_sL-izrsdGLPNe_PeuQWId.js",
-      "_hdos_B6PrYiTCjTemUWTdXfqaA.js",
-      "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
-      "_hdos_D4Y7Bw7Wyloei05_TsWJ_.js",
-      "_hdos_BUoRNLH10YwEFK_LfZnuT.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_M4Z_V-To-T_fxKbwgm21X.js"
-    ]
   },
   "_hdos_Dy9zJck5J5xUd9c0jyavn.js": {
     "file": "hdos_Dy9zJck5J5xUd9c0jyavn.js",
@@ -1924,21 +1943,6 @@
     "name": "vue-types",
     "imports": [
       "_hdos_B508z3v_JfpK2nzgMijjB.js"
-    ]
-  },
-  "_hdos_Eqr6S0FoBr4Hc9FiON_Rf.js": {
-    "file": "hdos_Eqr6S0FoBr4Hc9FiON_Rf.js",
-    "name": "FileAssociations",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_BIyDavK7WP2_Rrc4yCOBw.js",
-      "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
-      "_hdos_CRrF-yLmQVbOg0JfOg0I0.js"
     ]
   },
   "_hdos_GOD2EXQhcY9XxAFnlTb7t.js": {
@@ -2005,6 +2009,17 @@
       "hdos_Cjxwf_qeYivGsyVNC-oGy.css"
     ]
   },
+  "_hdos_Iv7ClYOX9nOb7zDf2oUjn.js": {
+    "file": "hdos_Iv7ClYOX9nOb7zDf2oUjn.js",
+    "name": "WindowIcon",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_s3X5hubfT7JSI-sWJoJlt.js"
+    ]
+  },
   "_hdos_J_EZ1seatZqfS99HuW_f8.js": {
     "file": "hdos_J_EZ1seatZqfS99HuW_f8.js",
     "name": "id3v2"
@@ -2055,30 +2070,6 @@
     "file": "hdos_RxOXjffmnWQny014gv1VN.js",
     "name": "keyboard-outline"
   },
-  "_hdos_Sv0jQxc0nXkAsChwPLxGm.js": {
-    "file": "hdos_Sv0jQxc0nXkAsChwPLxGm.js",
-    "name": "EnterpriseSRILoader",
-    "imports": [
-      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_osbVYGLYg7mxlEwI2q6gs.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
-      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
-      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js"
-    ],
-    "dynamicImports": [
-      "node_modules/ant-design-vue/es/message/index.js",
-      "node_modules/ant-design-vue/es/notification/index.js",
-      "node_modules/ant-design-vue/es/button/index.js",
-      "node_modules/ant-design-vue/es/switch/index.js"
-    ]
-  },
   "_hdos_VcGWUM29Lhg6tmbh9qA5G.css": {
     "file": "hdos_VcGWUM29Lhg6tmbh9qA5G.css",
     "src": "_hdos_VcGWUM29Lhg6tmbh9qA5G.css"
@@ -2101,6 +2092,25 @@
       "_hdos_D7VQBvQ75jo0rq4W9WkfV.js"
     ]
   },
+  "_hdos_Wxzdgusy96b2tKo1uN8Yv.js": {
+    "file": "hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+    "name": "StatusBarHelpIcon",
+    "imports": [
+      "_hdos_B508z3v_JfpK2nzgMijjB.js",
+      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
+      "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
+      "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
+      "_hdos_Bacn-k0fg1pvmEJKLUg7d.js",
+      "_hdos_e5nskmYd3QirWvSpajSy4.js",
+      "_hdos_BpNVLaXnKAzopo5KniLG_.js",
+      "_hdos_CbxB-LOV9lxIBilegKKU2.js",
+      "_hdos_BnAIAHNRncgnCI-Tbjy12.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
+      "_hdos_CQ2Ei-j5aZe9__CTI3P5L.js",
+      "_hdos_Iv7ClYOX9nOb7zDf2oUjn.js"
+    ]
+  },
   "_hdos_Xm6em5myZvaOvFoS2fRc9.js": {
     "file": "hdos_Xm6em5myZvaOvFoS2fRc9.js",
     "name": "method",
@@ -2115,31 +2125,6 @@
   "_hdos_YncUzCMrO6AgNVHrVasta.js": {
     "file": "hdos_YncUzCMrO6AgNVHrVasta.js",
     "name": "volume-high"
-  },
-  "_hdos__8Af68z-SlzSwGmwTq5_i.js": {
-    "file": "hdos__8Af68z-SlzSwGmwTq5_i.js",
-    "name": "FolderGraphic",
-    "imports": [
-      "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
-      "_hdos_DHIOD9yiBisctF3_gHpcb.js",
-      "_hdos_n8t_zorJmPHbEy6twgjHA.js",
-      "_hdos_CX4cbI_qswOWnFMNcgJKq.js",
-      "_hdos_9xVVWaiubmk1HFVFFegDX.js",
-      "_hdos_gDrbRLvMUT589QF_ewsjC.js",
-      "_hdos_CKkVDlsTcArp-3CiP-RjT.js",
-      "_hdos_CVnpvLuVdelGtdGmKav-G.js",
-      "_hdos_CWntnfpU3Ijgkgli9ahTz.js",
-      "_hdos_DmbHv-zoxLN6fV80HJX4I.js",
-      "_hdos_DUgxhjPloEbgSNjd9RHYO.js"
-    ],
-    "css": [
-      "hdos_vcyH17WZskfTLs48xeBvv.css"
-    ]
   },
   "_hdos_akq_Om9DwjtrtSTvNXCS1.js": {
     "file": "hdos_akq_Om9DwjtrtSTvNXCS1.js",
@@ -2240,14 +2225,29 @@
     "file": "hdos_n8t_zorJmPHbEy6twgjHA.js",
     "name": "file-code"
   },
-  "_hdos_osbVYGLYg7mxlEwI2q6gs.js": {
-    "file": "hdos_osbVYGLYg7mxlEwI2q6gs.js",
-    "name": "dist",
+  "_hdos_pVi8psGA3-Ag2OcK4jWU9.js": {
+    "file": "hdos_pVi8psGA3-Ag2OcK4jWU9.js",
+    "name": "useWidgetsStore",
     "imports": [
-      "_hdos_COiEfhsAQcgkqpV1LRHhj.js",
+      "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
-      "_hdos_DE8-hgalK6EZtvbrOukq9.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
+      "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
+      "_hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
+      "_hdos_DqFYBfx9rI3RiWBchaAKY.js",
+      "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_C-s-GDUq7_Ni754gim2BH.js",
+      "_hdos_C4mOgj8KbAM_FmwT9CkPY.js"
+    ],
+    "dynamicImports": [
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetClock.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetSystem.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetStorage.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetNetwork.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetNotes.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetCalendar.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetMedia.vue",
+      "homedock-ui/vue3/static/js/__Widgets__/WidgetShortcut.vue"
     ]
   },
   "_hdos_psKYZJ_thF34tmgfCB87Y.js": {
@@ -2324,7 +2324,7 @@
     "isEntry": true
   },
   "homedock-ui/vue3/static/js/MountPoints/__desktop__.ts": {
-    "file": "hdos_D4itPrKxMk79XeEsUCR5l.js",
+    "file": "hdos_BkysySfxRIo7WUO3d1XZc.js",
     "name": "__desktop__",
     "src": "homedock-ui/vue3/static/js/MountPoints/__desktop__.ts",
     "isEntry": true,
@@ -2335,17 +2335,17 @@
       "_hdos_DsunMXXhSkFYYKiDF62kY.js",
       "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_fS6Z4M9Dp6_lc7kBb9ymo.js",
       "_hdos_DTBwYNPvYfW0PE9k2C96M.js",
-      "_hdos_DCKhlL6tt9wrDHuXger0I.js",
+      "_hdos_CfyiF7WSailjgFL2e92tD.js",
       "_hdos_i6-LZhsNuQ24ZvwfL1nDg.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_DUZTwbr_NbRKRYXBEp_Er.js",
-      "_hdos_DkBGSR4tTUtZpcij3LXZ9.js",
-      "_hdos_BbVw16d5-BxKjs-sc5wND.js",
+      "_hdos_BWMb1THs7eF7O97vyRjiY.js",
+      "_hdos_BTZoYOQVXmprE2dlNLgpq.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
@@ -2355,16 +2355,16 @@
       "_hdos_Ct6ye_SFHAaYLNROCDTHA.js",
       "_hdos_CnMYQNsH_MwmRWTLZ_jkT.js",
       "_hdos_DiItMNOMGFTuQ4H-iRaKI.js",
-      "_hdos_osbVYGLYg7mxlEwI2q6gs.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_CfLMEzY1oSPDIRUHKQy_i.js",
-      "_hdos_DrlcU-fvQA02-NJEXc-Ky.js",
+      "_hdos_CTdPtFZdtKpJ5WN90DKWk.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_Iv7ClYOX9nOb7zDf2oUjn.js",
+      "_hdos_B-u6d9O0gZkVIiZDDMvnp.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
       "_hdos_0ygpwR6N-l6ZJQ9vx0i9Y.js",
       "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
-      "_hdos_BZJWDSKK5ZmwQ20QLFc25.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
+      "_hdos_Bf8X-QBtK_IZpZe-3_wlb.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_BQjT5ru06-Fytfd0iP0hj.js",
       "_hdos_Ci205l0AE_IJyIyiTqXo9.js",
@@ -2378,7 +2378,7 @@
       "_hdos_DXzcdzZyjTuf5AiDzlIY_.js",
       "_hdos_BS-yzNiGUTG_q-Sh1Mj1h.js",
       "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
       "_hdos_CbxB-LOV9lxIBilegKKU2.js",
@@ -2425,12 +2425,12 @@
       "_hdos_B6gc9G9bQQtVl-0l6WnoZ.js",
       "_hdos_C6s96fGbTBRV2a_ageWoR.js",
       "_hdos_BOlvIvzDTW-E395F1R6tV.js",
-      "_hdos_B7LBKXSTuLusCmmUPM9JU.js",
-      "_hdos_BNygDiSj_9wEvJRb9vGtL.js",
+      "_hdos_pVi8psGA3-Ag2OcK4jWU9.js",
+      "_hdos_Cc1hlUdJERh3BsrdMbI5N.js",
       "_hdos_C4PSOpyq-hACOJ7qtN-_x.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
       "_hdos_CPCZM4yKX2HpXIWO46fVu.js",
-      "_hdos_9biTLVfqvLzoYHLfGZ8bq.js",
+      "_hdos_DWUxQY7eoRaqHnc_8nOSK.js",
       "_hdos_I3o2eS_gLVgInS--vRoJW.js",
       "_hdos_BMLcN2fDhVuwTkuttQiKJ.js",
       "_hdos_CFbnmTUDIJ7moVkw4-TCg.js",
@@ -2442,13 +2442,13 @@
       "_hdos_DL0DRgj_sn3yV9wAr8t5j.js",
       "_hdos_ChtcDg5OqdQzLdMU4L-Pj.js",
       "_hdos_BPR8lR_dU8T-UVodP1yDM.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_C-q1od8QOSlpV8Y6Y6HBI.js",
       "_hdos_CnoYefifpHOF_hvWRc226.js",
       "_hdos_BcX2BxUpmDH5xeSSk_xiX.js",
       "_hdos_B0dzyDGmZ72jWOPWcFc5G.js",
       "_hdos_CLadJyaFSZFLhzUoXDWSh.js",
-      "_hdos_Sv0jQxc0nXkAsChwPLxGm.js"
+      "_hdos_BkZa4mY-ZZ96czEtSeUC8.js"
     ],
     "css": [
       "hdos_IVfAfHYp3D_YPXFJICk37.css"
@@ -2547,7 +2547,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/MountPoints/__onboarding__.ts": {
-    "file": "hdos_CYhtAyHdoDb50bEQthMDp.js",
+    "file": "hdos_-6oR6FjCGmChTuoHqNRcg.js",
     "name": "__onboarding__",
     "src": "homedock-ui/vue3/static/js/MountPoints/__onboarding__.ts",
     "isEntry": true,
@@ -2585,7 +2585,7 @@
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_DhttYWR_RPhgtGN6yiVRM.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BIAv-MyQu3PY3EMPgzw6j.js",
       "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
@@ -2623,7 +2623,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppAbout.vue": {
-    "file": "hdos_BjNcZaJ4knzzLI5fCEBuV.js",
+    "file": "hdos_Cn9_n5FzuBPtDgJVa6iEE.js",
     "name": "AppAbout",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppAbout.vue",
     "isDynamicEntry": true,
@@ -2631,9 +2631,9 @@
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_DCKhlL6tt9wrDHuXger0I.js",
+      "_hdos_CfyiF7WSailjgFL2e92tD.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DbK20JHgrreeIn8kNgb0g.js",
       "_hdos_DqWRH7QPlyn7pe5v6B5hz.js",
       "_hdos_DeUMJtVpw59O_f4aViLVt.js",
@@ -2646,11 +2646,11 @@
       "_hdos_eYkx47xBOFYz7u7LR4LRr.js",
       "_hdos_DsDwhqfwyHkeCHn0Llog0.js",
       "_hdos_BaBXm-eYYGO6ky6hcNWyT.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_DhttYWR_RPhgtGN6yiVRM.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_DkBGSR4tTUtZpcij3LXZ9.js",
-      "_hdos_BbVw16d5-BxKjs-sc5wND.js",
+      "_hdos_BWMb1THs7eF7O97vyRjiY.js",
+      "_hdos_BTZoYOQVXmprE2dlNLgpq.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -2658,7 +2658,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppAppStore.vue": {
-    "file": "hdos_j672X-27RYaqpJ9hgimPx.js",
+    "file": "hdos_DHjZZs4nKnwgRarW9EauG.js",
     "name": "AppAppStore",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppAppStore.vue",
     "isDynamicEntry": true,
@@ -2667,15 +2667,15 @@
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_Cz6GOOW7L78dC1osulNeo.js",
       "_hdos_CzysbEnmyodrIvTYiy6YD.js",
       "_hdos_BPR8lR_dU8T-UVodP1yDM.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_C8YpzLgezj3vXlWzJG9mN.js",
       "_hdos_fqEB9XRsPgwKj_FzJhV83.js",
       "_hdos_ByELQR2dMDSx5BgHlKKBW.js",
@@ -2690,7 +2690,7 @@
       "_hdos_CwAGMwRlrZAW2nurOuv89.js",
       "_hdos_CnoYefifpHOF_hvWRc226.js",
       "_hdos_CTyQjANnwN-CZAJ04i6HS.js",
-      "_hdos_BVfdlYbpijbZ-_dGo1d_h.js",
+      "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js",
       "_hdos_DW9Yu4vrVE6MppDHDcRTW.js",
       "_hdos_BZPVoTvBwz6lHfsUjuOsN.js",
       "_hdos_Ct6ye_SFHAaYLNROCDTHA.js",
@@ -2699,7 +2699,7 @@
       "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
       "_hdos_DgSxH-cdZvUrjAGWQG36U.js",
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_Cne1fd39ucVDwIe-a_Cje.js"
     ],
     "css": [
@@ -2707,7 +2707,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppBrowser.vue": {
-    "file": "hdos_ChEC843RR25WktGm30qun.js",
+    "file": "hdos_DVkaT1x4uLunfedCfYgVA.js",
     "name": "AppBrowser",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppBrowser.vue",
     "isDynamicEntry": true,
@@ -2718,7 +2718,7 @@
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_DZSmRLcR25PSEaR3RgzXp.js",
       "_hdos_DyKQtL3xrFVSwdvcKdWg7.js",
@@ -2726,11 +2726,11 @@
       "_hdos_yWQyZkuTmU_YQBjUSf3JX.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_YncUzCMrO6AgNVHrVasta.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppControlHub.vue": {
-    "file": "hdos_Dz4uGK7V1HAUheHUeYJ2B.js",
+    "file": "hdos_BBChIYldXe6mH5WqxFOlh.js",
     "name": "AppControlHub",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppControlHub.vue",
     "isDynamicEntry": true,
@@ -2740,17 +2740,17 @@
       "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_BrYeUSZIP5UeblF6O3c3u.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_BQy0ENES9DFUwQVjKc9kA.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BZJWDSKK5ZmwQ20QLFc25.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_Bf8X-QBtK_IZpZe-3_wlb.js",
       "_hdos_DTBwYNPvYfW0PE9k2C96M.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
@@ -2764,7 +2764,7 @@
       "_hdos_D4Y7Bw7Wyloei05_TsWJ_.js",
       "_hdos_BUoRNLH10YwEFK_LfZnuT.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
@@ -2787,7 +2787,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppDockerView.vue": {
-    "file": "hdos_Drt3k3EBIOB8ZtLDXJUuB.js",
+    "file": "hdos_Bk-lWABxofoThBB05O39l.js",
     "name": "AppDockerView",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppDockerView.vue",
     "isDynamicEntry": true,
@@ -2797,25 +2797,25 @@
       "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_DB-m3SwnBRsDVISngKoi4.js",
       "_hdos_B0dzyDGmZ72jWOPWcFc5G.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
     ],
     "css": [
       "hdos_PQTDPnJIxsLmuiGo4DDuQ.css"
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppEdit.vue": {
-    "file": "hdos_D-HmBlsjlk5-4gT-IpHzd.js",
+    "file": "hdos_DxKKl0hR-IMcuctruAa5f.js",
     "name": "AppEdit",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppEdit.vue",
     "isDynamicEntry": true,
@@ -2825,18 +2825,18 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_DB-m3SwnBRsDVISngKoi4.js",
       "_hdos_BreAkmTpsNB5lEksJMIzR.js",
       "_hdos_BcX2BxUpmDH5xeSSk_xiX.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BVfdlYbpijbZ-_dGo1d_h.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_C-P5DKfY1R9GkvZxQVZt-.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
@@ -2846,7 +2846,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppEnterpriseWindow.vue": {
-    "file": "hdos_LkGL6PmJ52y_Pu3w6X7rF.js",
+    "file": "hdos_DTjQRvKSFOilRmB1WB3yR.js",
     "name": "AppEnterpriseWindow",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppEnterpriseWindow.vue",
     "isDynamicEntry": true,
@@ -2855,7 +2855,7 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_Sv0jQxc0nXkAsChwPLxGm.js",
+      "_hdos_BkZa4mY-ZZ96czEtSeUC8.js",
       "_hdos_BrJaSdHqTWdDhj_sEf5FE.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
@@ -2864,7 +2864,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppFileExplorer.vue": {
-    "file": "hdos_DPMpAWAAPXtkIiE1AzIvq.js",
+    "file": "hdos_X0wnLBtGDyHyZpOqB07Os.js",
     "name": "AppFileExplorer",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppFileExplorer.vue",
     "isDynamicEntry": true,
@@ -2877,31 +2877,31 @@
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_0ygpwR6N-l6ZJQ9vx0i9Y.js",
       "_hdos_BOlvIvzDTW-E395F1R6tV.js",
       "_hdos_EIzH_nGAHGnhsr77RtBf2.js",
       "_hdos_BAW5mvgmusUSknRZFoaEj.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
-      "_hdos_Eqr6S0FoBr4Hc9FiON_Rf.js",
+      "_hdos_BamuXaWc7Tn5M06hEi_z7.js",
       "_hdos_BIyDavK7WP2_Rrc4yCOBw.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_C1z-HXOguu7EMrtAVp8tn.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_DdndypyzyJ8Bax3FXx16Y.js",
       "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_BlR9OJOLy6FNekXgtBsUB.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_BYXxqaV7_jb6opn7do1jz.js",
       "_hdos_CMOGU6HoO-C5DvvZEzA0p.js",
       "_hdos_GwFgipgFN6R_SRI7Dzs-U.js",
       "_hdos_Dp4rM0NkWmc8hMiuyh0LN.js",
       "_hdos_lEt9deBu_20VQ41T5YAOl.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_B2AJuLmTs6ZnjdoSJfP-n.js",
       "_hdos_CRoh8dHkHD9KpeYna1GvV.js",
       "_hdos_C3bObO9h0AtO9uiurR0iu.js",
@@ -2938,7 +2938,7 @@
       "_hdos_BPR8lR_dU8T-UVodP1yDM.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_CPCZM4yKX2HpXIWO46fVu.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
       "_hdos_DndCRiPrqUoqin35ISDBq.js"
     ],
@@ -2947,7 +2947,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppFileProperties.vue": {
-    "file": "hdos_DQrWo6atNA0DomEN0Gqe3.js",
+    "file": "hdos_fes43PdwJ1a1T2vod6Bz5.js",
     "name": "AppFileProperties",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppFileProperties.vue",
     "isDynamicEntry": true,
@@ -2957,7 +2957,7 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DdndypyzyJ8Bax3FXx16Y.js",
       "_hdos_B6PrYiTCjTemUWTdXfqaA.js",
       "_hdos_BlR9OJOLy6FNekXgtBsUB.js",
@@ -2965,8 +2965,8 @@
       "_hdos_DHIOD9yiBisctF3_gHpcb.js",
       "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
       "_hdos_BaBXm-eYYGO6ky6hcNWyT.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -2974,7 +2974,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppFinder.vue": {
-    "file": "hdos_Cz9ORpKyUvU-Cun-Mzfp8.js",
+    "file": "hdos_DZhtnOZ00q4mDldOBTv45.js",
     "name": "AppFinder",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppFinder.vue",
     "isDynamicEntry": true,
@@ -2985,20 +2985,20 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_Cz6GOOW7L78dC1osulNeo.js",
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_0ygpwR6N-l6ZJQ9vx0i9Y.js",
       "_hdos_BAW5mvgmusUSknRZFoaEj.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_DrlcU-fvQA02-NJEXc-Ky.js",
+      "_hdos_B-u6d9O0gZkVIiZDDMvnp.js",
       "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_DndCRiPrqUoqin35ISDBq.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
@@ -3006,7 +3006,7 @@
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_CzysbEnmyodrIvTYiy6YD.js",
       "_hdos_DHIOD9yiBisctF3_gHpcb.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
       "_hdos_CvpyIjnsfXFPdwacFT3hU.js",
       "_hdos_n5OxU-RcCn6Z9GP0_1Yow.js",
@@ -3017,7 +3017,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppFolder.vue": {
-    "file": "hdos_YaPtR2UxLUlOuG6STVlVT.js",
+    "file": "hdos_mNOB2idPdnx_4pFK7pdna.js",
     "name": "AppFolder",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppFolder.vue",
     "isDynamicEntry": true,
@@ -3025,23 +3025,23 @@
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BZJWDSKK5ZmwQ20QLFc25.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_Bf8X-QBtK_IZpZe-3_wlb.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_BNygDiSj_9wEvJRb9vGtL.js",
+      "_hdos_Cc1hlUdJERh3BsrdMbI5N.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
       "_hdos_EIzH_nGAHGnhsr77RtBf2.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_CPCZM4yKX2HpXIWO46fVu.js",
       "_hdos_BAQJ98EzRrttWA1w1LMhn.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_9biTLVfqvLzoYHLfGZ8bq.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DWUxQY7eoRaqHnc_8nOSK.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
       "_hdos_CvpyIjnsfXFPdwacFT3hU.js",
@@ -3061,7 +3061,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppHome.vue": {
-    "file": "hdos_C8lty5HLoP9Ne28Q4ghbc.js",
+    "file": "hdos_2gRcldWerqs7PCk_sWW44.js",
     "name": "AppHome",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppHome.vue",
     "isDynamicEntry": true,
@@ -3070,16 +3070,16 @@
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_l13Gp0EwaHEFa1RU_WKrl.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_DhhCgCENAv_OIixWa0Lu0.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_DTBwYNPvYfW0PE9k2C96M.js",
       "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_DL0DRgj_sn3yV9wAr8t5j.js",
@@ -3097,7 +3097,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppInstallConfig.vue": {
-    "file": "hdos_B6eu5PDCstzP6Ig4d5VJN.js",
+    "file": "hdos_CGgW3ZbBFLyYeYPEVkL-r.js",
     "name": "AppInstallConfig",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppInstallConfig.vue",
     "isDynamicEntry": true,
@@ -3108,7 +3108,7 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_Bq3q7CojEIocvIAY63X2-.js",
+      "_hdos_DOSBPyORkq3Ctj2KAJsOk.js",
       "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
       "_hdos_Dp4rM0NkWmc8hMiuyh0LN.js",
       "_hdos_lEt9deBu_20VQ41T5YAOl.js",
@@ -3120,8 +3120,8 @@
       "_hdos_sfb3XabhsS8IxFa5BjC-I.js",
       "_hdos_B1CzudJKJP2jxJQey7EFO.js",
       "_hdos_M4Z_V-To-T_fxKbwgm21X.js",
-      "_hdos_Dy3PEjjXx--PXql17Efo3.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_Ctuy2fJ-_-MGb5pp5D9yc.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_ClrLVQnxpvmoqJlgO8-5f.js",
       "_hdos_HJYD8VuXzzrvDEDUPERGo.js",
       "_hdos_fqEB9XRsPgwKj_FzJhV83.js",
@@ -3140,8 +3140,8 @@
       "_hdos_Cz88L8TN5Lu4Q4MWikZ8l.js",
       "_hdos_9xVVWaiubmk1HFVFFegDX.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_DW9Yu4vrVE6MppDHDcRTW.js",
       "_hdos_BZPVoTvBwz6lHfsUjuOsN.js",
       "_hdos_Ct6ye_SFHAaYLNROCDTHA.js",
@@ -3157,7 +3157,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppLogs.vue": {
-    "file": "hdos_LyjyO1haGsj8lol0DPsXf.js",
+    "file": "hdos_Bh70VX0G_gJCpbp8fogGV.js",
     "name": "AppLogs",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppLogs.vue",
     "isDynamicEntry": true,
@@ -3172,12 +3172,12 @@
       "_hdos_DgSxH-cdZvUrjAGWQG36U.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_BrYeUSZIP5UeblF6O3c3u.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_BQy0ENES9DFUwQVjKc9kA.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_DiItMNOMGFTuQ4H-iRaKI.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_DutWkdaYPhXVbmE5FyqBG.js",
@@ -3185,7 +3185,7 @@
       "_hdos_BKrmARhtCpM2_-EiYL70B.js",
       "_hdos_BreAkmTpsNB5lEksJMIzR.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -3193,7 +3193,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppPackager.vue": {
-    "file": "hdos_C8kdkwGc4h1r5JhMmDOO1.js",
+    "file": "hdos_BYJElcZ_2s7e_sHm83X2Z.js",
     "name": "AppPackager",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppPackager.vue",
     "isDynamicEntry": true,
@@ -3202,17 +3202,17 @@
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_Bq3q7CojEIocvIAY63X2-.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_DOSBPyORkq3Ctj2KAJsOk.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_C1jsBEiqRC7ON10SJcm-b.js",
       "_hdos_DjJbH5RzfOQjaFBw22Kyd.js",
       "_hdos_C77b_Ou7EIKXQgjlvITJB.js",
       "_hdos_BUoRNLH10YwEFK_LfZnuT.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_Dfqrx0UEb2FFwUJ0D5AHd.js",
       "_hdos_D4Y7Bw7Wyloei05_TsWJ_.js",
@@ -3222,7 +3222,7 @@
       "_hdos_JyND2lL-Cs7Ns6McdiSMi.js",
       "_hdos_C58u7xrkdHAjTFksyltLD.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_BVfdlYbpijbZ-_dGo1d_h.js",
+      "_hdos_COj9HbWJ9MkBTujZ1ZPgY.js",
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
@@ -3240,7 +3240,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppProperties.vue": {
-    "file": "hdos_D-3TVg7pQY_hluwKw3PAg.js",
+    "file": "hdos_DLtfhiFwUUT52XPwNHfc2.js",
     "name": "AppProperties",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppProperties.vue",
     "isDynamicEntry": true,
@@ -3253,9 +3253,9 @@
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BZJWDSKK5ZmwQ20QLFc25.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_Bf8X-QBtK_IZpZe-3_wlb.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_n5OxU-RcCn6Z9GP0_1Yow.js",
       "_hdos_DyKQtL3xrFVSwdvcKdWg7.js",
@@ -3264,7 +3264,7 @@
       "_hdos_YHLejpkmJyhAhaeDJoazt.js",
       "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
       "_hdos_BreAkmTpsNB5lEksJMIzR.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_Cxsm1rhYJ1sNwywXaePHI.js",
       "_hdos_DbP4taWDGth7jJtex30QS.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
@@ -3281,10 +3281,10 @@
       "_hdos_BUoRNLH10YwEFK_LfZnuT.js",
       "_hdos_Ca7Q8Rdm8_Uyi2x7JOI_e.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_Dy3PEjjXx--PXql17Efo3.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Ctuy2fJ-_-MGb5pp5D9yc.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_1SnfxsSU4YSjUcCySGnM6.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -3292,7 +3292,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppSettings.vue": {
-    "file": "hdos_GcT1-og9X-5mi8jKy9Q_M.js",
+    "file": "hdos_CVpiAAZIuYQBJyibMNk9Q.js",
     "name": "AppSettings",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppSettings.vue",
     "isDynamicEntry": true,
@@ -3313,7 +3313,7 @@
       "_hdos_DGJ_NjoQJW_3WrIGiAuMb.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_Ei8JofcnxkjwMtt_ZAcia.js",
       "_hdos_CRcP7qunUgC50zGcXEE6L.js",
       "_hdos_DYSqDpdwOGkpFpE1RfNVm.js",
@@ -3329,8 +3329,8 @@
       "_hdos_DB-m3SwnBRsDVISngKoi4.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_GOD2EXQhcY9XxAFnlTb7t.js",
       "_hdos_Dp4rM0NkWmc8hMiuyh0LN.js",
       "_hdos_DnQa3mJeOxGN9vLG5Mr3D.js",
@@ -3351,7 +3351,7 @@
       "_hdos_B1CzudJKJP2jxJQey7EFO.js",
       "_hdos_CkHI-Pn0TUL9n4Xc0ig3d.js",
       "_hdos_M4Z_V-To-T_fxKbwgm21X.js",
-      "_hdos_DkBGSR4tTUtZpcij3LXZ9.js",
+      "_hdos_BWMb1THs7eF7O97vyRjiY.js",
       "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
       "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
       "_hdos_Cne1fd39ucVDwIe-a_Cje.js",
@@ -3364,14 +3364,14 @@
       "_hdos_CXsmJoj4Qpg5QXIOffc2x.js",
       "_hdos_DiItMNOMGFTuQ4H-iRaKI.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js"
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js"
     ],
     "css": [
       "hdos_DpMLG7kHVbOmObOAHGXhh.css"
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppSystemLogs.vue": {
-    "file": "hdos_D_dH2pY-EYHZ2fkiSdeYe.js",
+    "file": "hdos_B6dcoUcGD436qjSE0BWQe.js",
     "name": "AppSystemLogs",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppSystemLogs.vue",
     "isDynamicEntry": true,
@@ -3405,19 +3405,19 @@
       "_hdos_DNtAKsAcnTe9TWR50F40q.js",
       "_hdos_DyKg4EUBnr9eKVuqhq_eH.js",
       "_hdos_DYSqDpdwOGkpFpE1RfNVm.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_DkBGSR4tTUtZpcij3LXZ9.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_BWMb1THs7eF7O97vyRjiY.js",
       "_hdos_DGtaoLsHDy5tzbnYzWLwS.js",
       "_hdos_DbP4taWDGth7jJtex30QS.js",
       "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js"
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js"
     ],
     "css": [
       "hdos_CKIVOU_ZS9DT5_3YqISSS.css"
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppTerminal.vue": {
-    "file": "hdos_veW8hwBCuZgmTqxRL3rZx.js",
+    "file": "hdos_DuKbUVbQUgGSJN1YMrwjx.js",
     "name": "AppTerminal",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppTerminal.vue",
     "isDynamicEntry": true,
@@ -3429,7 +3429,7 @@
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_sL-izrsdGLPNe_PeuQWId.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
@@ -3441,8 +3441,8 @@
       "_hdos_Be8Sqxdltjc7YGijmE7Qb.js",
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_DmYXxzFPZedqeu3cUaHES.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_CPT6atBqNwgncb88NW2j_.js",
       "_hdos_C6s96fGbTBRV2a_ageWoR.js",
       "_hdos_RxOXjffmnWQny014gv1VN.js",
       "_hdos_D4Y7Bw7Wyloei05_TsWJ_.js",
@@ -3458,7 +3458,7 @@
       "_hdos_DGJ_NjoQJW_3WrIGiAuMb.js",
       "_hdos_BgCMGw4mYGBmyHUevNXj1.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -3466,7 +3466,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/AppWhatsNew.vue": {
-    "file": "hdos_C3LWbfgk2zT00vhoJXn4n.js",
+    "file": "hdos_BG1kop0EfEPkKfGcMpDUC.js",
     "name": "AppWhatsNew",
     "src": "homedock-ui/vue3/static/js/__Apps__/AppWhatsNew.vue",
     "isDynamicEntry": true,
@@ -3474,7 +3474,7 @@
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BS-yzNiGUTG_q-Sh1Mj1h.js",
       "_hdos_BUJjHatvUmVlqwmn_RtXE.js",
       "_hdos_BMLcN2fDhVuwTkuttQiKJ.js",
@@ -3496,11 +3496,11 @@
       "_hdos_DL11XYgeYyOhzQZhfwkJU.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_DCKhlL6tt9wrDHuXger0I.js",
+      "_hdos_CfyiF7WSailjgFL2e92tD.js",
       "_hdos_BIAv-MyQu3PY3EMPgzw6j.js",
       "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js"
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js"
     ],
     "dynamicImports": [
       "homedock-ui/vue3/static/js/__Utils__/WhatsNewSceneEngine.ts"
@@ -3510,7 +3510,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/GameNeonRush.vue": {
-    "file": "hdos_k3NRBYesZ_QLLRg1TBUAK.js",
+    "file": "hdos_l10czdRa_qfkzh73waJyy.js",
     "name": "GameNeonRush",
     "src": "homedock-ui/vue3/static/js/__Apps__/GameNeonRush.vue",
     "isDynamicEntry": true,
@@ -3525,11 +3525,11 @@
       "_hdos_DW9Yu4vrVE6MppDHDcRTW.js",
       "_hdos_BZPVoTvBwz6lHfsUjuOsN.js",
       "_hdos_YncUzCMrO6AgNVHrVasta.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DsDwhqfwyHkeCHn0Llog0.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_Cu9HaQjmuSeavGpGfuexI.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
@@ -3538,7 +3538,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/GamePacketSnake.vue": {
-    "file": "hdos_CBIA9CvAaIuPdpNvvITVh.js",
+    "file": "hdos_CxHXf3pHxmqqZGB4dmSGk.js",
     "name": "GamePacketSnake",
     "src": "homedock-ui/vue3/static/js/__Apps__/GamePacketSnake.vue",
     "isDynamicEntry": true,
@@ -3551,11 +3551,11 @@
       "_hdos_W1kpBlJ_r6fKhw8zqL0e_.js",
       "_hdos_B3RAoTAMekpvBNy_kMOyu.js",
       "_hdos_YncUzCMrO6AgNVHrVasta.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DsDwhqfwyHkeCHn0Llog0.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
       "_hdos_Cu9HaQjmuSeavGpGfuexI.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
@@ -3564,7 +3564,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsBrusher.vue": {
-    "file": "hdos_CCWW_yHOVe50dDexhRvLb.js",
+    "file": "hdos_DugIZAHsbh3sNfrf7i7Wb.js",
     "name": "UtilsBrusher",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsBrusher.vue",
     "isDynamicEntry": true,
@@ -3578,13 +3578,13 @@
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_BcX2BxUpmDH5xeSSk_xiX.js",
       "_hdos_CqrH4uyz6vWF8dZNWeK5I.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BIBI_6Okq37W9KoLoe5Xu.js",
       "_hdos_C77b_Ou7EIKXQgjlvITJB.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
@@ -3612,7 +3612,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsCalendar.vue": {
-    "file": "hdos_6MWlF3bQZk6xHZrA4RY1B.js",
+    "file": "hdos_PyWHWLLKqZSyh78YtRBpy.js",
     "name": "UtilsCalendar",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsCalendar.vue",
     "isDynamicEntry": true,
@@ -3655,9 +3655,9 @@
       "_hdos_C77b_Ou7EIKXQgjlvITJB.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -3665,7 +3665,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsCode.vue": {
-    "file": "hdos_CJwL8RC3Abjbk7xxW7ok-.js",
+    "file": "hdos_BtMn-JQN-E9ivbIYDxUBw.js",
     "name": "UtilsCode",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsCode.vue",
     "isDynamicEntry": true,
@@ -3681,7 +3681,7 @@
       "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
       "_hdos_C-nlMm5CXNyllfsSL0bnk.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_-kApvkxgRZCqcarHFdZSt.js",
       "_hdos_CstBDUChKbM5ys_5Nfgrb.js",
@@ -3697,10 +3697,10 @@
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_CRoh8dHkHD9KpeYna1GvV.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
@@ -3710,7 +3710,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsImageViewer.vue": {
-    "file": "hdos_DhM776ZHbTNgkAQdxWHtJ.js",
+    "file": "hdos_D5THMuE3YpV_FuPL1Pzw-.js",
     "name": "UtilsImageViewer",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsImageViewer.vue",
     "isDynamicEntry": true,
@@ -3724,10 +3724,10 @@
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_-kApvkxgRZCqcarHFdZSt.js",
       "_hdos_DsTLwrg3enAhHPfhY5XfZ.js",
       "_hdos_C7J7is_gG_UZTRYsQZWm4.js",
@@ -3741,7 +3741,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsMediaPlayer.vue": {
-    "file": "hdos_jaW-4W5d18iHdU_P3uivs.js",
+    "file": "hdos_UEY1zjgH04ttz_0MnOF0l.js",
     "name": "UtilsMediaPlayer",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsMediaPlayer.vue",
     "isDynamicEntry": true,
@@ -3759,12 +3759,12 @@
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BAa7GzclPG8-o-LMg8NJc.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_BuX6tbgvM7UrkeDHXg_d1.js",
       "_hdos_gDrbRLvMUT589QF_ewsjC.js",
       "_hdos_n5OxU-RcCn6Z9GP0_1Yow.js",
@@ -3804,7 +3804,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsNotepad.vue": {
-    "file": "hdos_B8XPwy5vSzMSprMxnzQuy.js",
+    "file": "hdos_C8mjAJ3bjlyhYGVYWhpnf.js",
     "name": "UtilsNotepad",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsNotepad.vue",
     "isDynamicEntry": true,
@@ -3819,7 +3819,7 @@
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_CX4cbI_qswOWnFMNcgJKq.js",
       "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
       "_hdos_C-nlMm5CXNyllfsSL0bnk.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
@@ -3840,10 +3840,10 @@
       "_hdos_BcX2BxUpmDH5xeSSk_xiX.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_CRoh8dHkHD9KpeYna1GvV.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
@@ -3853,7 +3853,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsPDFViewer.vue": {
-    "file": "hdos_CgwsPF7diBj4KafLu99BK.js",
+    "file": "hdos_BmVsvlP6RqS60JDso2Lnn.js",
     "name": "UtilsPDFViewer",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsPDFViewer.vue",
     "isDynamicEntry": true,
@@ -3865,7 +3865,7 @@
       "_hdos_DnAVgL3oWhURc9uhArAVn.js",
       "_hdos_Be8Sqxdltjc7YGijmE7Qb.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_-kApvkxgRZCqcarHFdZSt.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_DsTLwrg3enAhHPfhY5XfZ.js",
@@ -3889,11 +3889,11 @@
       "_hdos_7tZsubCTIQ35EK1ePaQIz.js",
       "_hdos_C1z-HXOguu7EMrtAVp8tn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_C58u7xrkdHAjTFksyltLD.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js",
@@ -3913,7 +3913,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsSheets.vue": {
-    "file": "hdos_Bq3rry6Dl6cBvsw_cQVBq.js",
+    "file": "hdos_CvUGIoSh3kEneHuWC9bba.js",
     "name": "UtilsSheets",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsSheets.vue",
     "isDynamicEntry": true,
@@ -3924,15 +3924,15 @@
       "_hdos_Be8Sqxdltjc7YGijmE7Qb.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_CdYg2njxSUZH89Dq5WRUj.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DNvCzE9dZipp8TIPety70.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
       "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_CmqWYCcU2XOT1kYOkjvfS.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_CYQeqEeMBNQr1iYFfVSCU.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_CqIHQZ9-RfOWcSTLUcXTc.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
@@ -3947,7 +3947,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsSlides.vue": {
-    "file": "hdos_CuEvoYfpBLTvFy7AIR9Va.js",
+    "file": "hdos_axKvpENqNFQbwCMeMH39q.js",
     "name": "UtilsSlides",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsSlides.vue",
     "isDynamicEntry": true,
@@ -3958,7 +3958,7 @@
       "_hdos_DnAVgL3oWhURc9uhArAVn.js",
       "_hdos_Be8Sqxdltjc7YGijmE7Qb.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DW9Yu4vrVE6MppDHDcRTW.js",
       "_hdos_BZPVoTvBwz6lHfsUjuOsN.js",
       "_hdos_2wF9goyDcC9bFXbMQ9jJ5.js",
@@ -3968,10 +3968,10 @@
       "_hdos_BreAkmTpsNB5lEksJMIzR.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_CV6eG3sWpP1Eprjt84654.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
@@ -3983,7 +3983,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsTrash.vue": {
-    "file": "hdos_Bh1PygjGHJbQLPF3QbdNc.js",
+    "file": "hdos_DwtDa7fKc8ECrtrwNVdXS.js",
     "name": "UtilsTrash",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsTrash.vue",
     "isDynamicEntry": true,
@@ -3993,25 +3993,25 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_CbnG-Raj2bfnddRwb1z7i.js",
+      "_hdos_2R1xNF_-29fykNQovd7n0.js",
       "_hdos_BOlvIvzDTW-E395F1R6tV.js",
       "_hdos_EIzH_nGAHGnhsr77RtBf2.js",
       "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_I3o2eS_gLVgInS--vRoJW.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_DndCRiPrqUoqin35ISDBq.js",
       "_hdos_DyZLsBiMefQmAKhr6iD_j.js",
       "_hdos_CPCZM4yKX2HpXIWO46fVu.js",
       "_hdos_BAQJ98EzRrttWA1w1LMhn.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
       "_hdos_BAIRSvM-hQVyfhYknd_R_.js",
       "_hdos_ClrLVQnxpvmoqJlgO8-5f.js",
       "_hdos_B6PrYiTCjTemUWTdXfqaA.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_Dd_eWCVi0wFnmIN-BKhGK.js",
       "_hdos_CstBDUChKbM5ys_5Nfgrb.js",
       "_hdos_DB-m3SwnBRsDVISngKoi4.js",
@@ -4023,7 +4023,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsWriter.vue": {
-    "file": "hdos_3L-yxc-RQfPwFZuFQ49s3.js",
+    "file": "hdos_e9C3dldoWlzidDnM4v_oH.js",
     "name": "UtilsWriter",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsWriter.vue",
     "isDynamicEntry": true,
@@ -4033,13 +4033,13 @@
       "_hdos_Dy9zJck5J5xUd9c0jyavn.js",
       "_hdos_DycTXnQkcXFJm1gZ7Fn0z.js",
       "_hdos_C4mOgj8KbAM_FmwT9CkPY.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
-      "_hdos_CuUmtPzihZQ9Ik1U1C7Qb.js",
-      "_hdos_CmqWYCcU2XOT1kYOkjvfS.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
+      "_hdos_DhCOYTthGKtFCE8P-HBtW.js",
+      "_hdos_CYQeqEeMBNQr1iYFfVSCU.js",
       "_hdos_C8hKoMRJjwC616RkaL7je.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
@@ -4058,7 +4058,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Apps__/UtilsZipfile.vue": {
-    "file": "hdos_B7HF9dl6_pYqzaO89Cgi5.js",
+    "file": "hdos_CXVqJtufsyciBtmk6m6wA.js",
     "name": "UtilsZipfile",
     "src": "homedock-ui/vue3/static/js/__Apps__/UtilsZipfile.vue",
     "isDynamicEntry": true,
@@ -4071,19 +4071,19 @@
       "_hdos_OeGYJZ8-OGM2pq2i2Tgbp.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_Eqr6S0FoBr4Hc9FiON_Rf.js",
+      "_hdos_BamuXaWc7Tn5M06hEi_z7.js",
       "_hdos_BJxhX8YlIr99P63T-Ai98.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_CBaxpBUV7FS7UJ30DiH8h.js",
       "_hdos_B2AJuLmTs6ZnjdoSJfP-n.js",
       "_hdos_DgY7ccf52_jGfAgDzyTy3.js",
-      "_hdos__8Af68z-SlzSwGmwTq5_i.js",
+      "_hdos_DYdB5ue4wyMyc_d3J25lj.js",
       "_hdos_CRoh8dHkHD9KpeYna1GvV.js",
-      "_hdos_BLc-_mcT0GUTM3Of_YOjm.js",
+      "_hdos_Wxzdgusy96b2tKo1uN8Yv.js",
       "_hdos_CFTz3m0BCDYL_l4fX_Jut.js",
       "_hdos_s3X5hubfT7JSI-sWJoJlt.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_W3N6fZqGqFczPChdsvtfu.js",
       "_hdos_DmUJr3_msadK1IZoa6ic1.js",
       "_hdos_Cne1fd39ucVDwIe-a_Cje.js",
@@ -4239,7 +4239,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Widgets__/WidgetCalendar.vue": {
-    "file": "hdos_rpqkWfoerfRvaDJqfTHaH.js",
+    "file": "hdos_o2PRYjhrx0EOrj6KArm3V.js",
     "name": "WidgetCalendar",
     "src": "homedock-ui/vue3/static/js/__Widgets__/WidgetCalendar.vue",
     "isDynamicEntry": true,
@@ -4250,10 +4250,10 @@
       "_hdos_BU_idP0iz3_jjb3FeTzsk.js",
       "_hdos_Cp_QXMjZ6Ul22X87zKkvy.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_B7IMQnqaqJOUViqYu_Bmo.js",
+      "_hdos_BMzXBlTtaCdMDhmciwLCL.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_CTyQjANnwN-CZAJ04i6HS.js"
     ]
   },
@@ -4270,7 +4270,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Widgets__/WidgetMedia.vue": {
-    "file": "hdos_BwltiXePgVZG-gEKxB924.js",
+    "file": "hdos_BofI8xZr0Y6bYrZNnwjw4.js",
     "name": "WidgetMedia",
     "src": "homedock-ui/vue3/static/js/__Widgets__/WidgetMedia.vue",
     "isDynamicEntry": true,
@@ -4284,7 +4284,7 @@
       "_hdos_CFbnmTUDIJ7moVkw4-TCg.js",
       "_hdos_CvpyIjnsfXFPdwacFT3hU.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BAa7GzclPG8-o-LMg8NJc.js"
     ]
   },
@@ -4303,7 +4303,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Widgets__/WidgetNotes.vue": {
-    "file": "hdos_DvCBn96AHmYObMnYVz9sG.js",
+    "file": "hdos_DeX9fETDWS6zqd-QhyAsZ.js",
     "name": "WidgetNotes",
     "src": "homedock-ui/vue3/static/js/__Widgets__/WidgetNotes.vue",
     "isDynamicEntry": true,
@@ -4318,8 +4318,8 @@
       "_hdos_sL-izrsdGLPNe_PeuQWId.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
       "_hdos_C7UhuUAB8wsC-Oe7AuGLu.js",
-      "_hdos_B7LBKXSTuLusCmmUPM9JU.js",
-      "_hdos_C3N1F8gp8vAqkpiWK8OOD.js",
+      "_hdos_pVi8psGA3-Ag2OcK4jWU9.js",
+      "_hdos_CkaoTq0Og5ylcXJKP6aya.js",
       "_hdos_BDNMzG2s4PQA0d8hcEv9d.js"
     ],
     "css": [
@@ -4327,7 +4327,7 @@
     ]
   },
   "homedock-ui/vue3/static/js/__Widgets__/WidgetShortcut.vue": {
-    "file": "hdos_DA1yH-HxdufVIR3Hh3GHO.js",
+    "file": "hdos_Cngs6b2eMsV_rA4m_qW9R.js",
     "name": "WidgetShortcut",
     "src": "homedock-ui/vue3/static/js/__Widgets__/WidgetShortcut.vue",
     "isDynamicEntry": true,
@@ -4335,11 +4335,11 @@
       "_hdos_B508z3v_JfpK2nzgMijjB.js",
       "_hdos_DE8-hgalK6EZtvbrOukq9.js",
       "_hdos_6P96EGVKIEaUKhSm5pTif.js",
-      "_hdos_9biTLVfqvLzoYHLfGZ8bq.js",
+      "_hdos_DWUxQY7eoRaqHnc_8nOSK.js",
       "_hdos_B0dzyDGmZ72jWOPWcFc5G.js",
       "_hdos_DPdZBfSod3AZ4eED6AgM8.js",
-      "_hdos_CgyD2F3GaA4oXNR-kGE8f.js",
-      "_hdos_B7LBKXSTuLusCmmUPM9JU.js"
+      "_hdos_CnYMcuDYW5914SeNI0ubk.js",
+      "_hdos_pVi8psGA3-Ag2OcK4jWU9.js"
     ]
   },
   "homedock-ui/vue3/static/js/__Widgets__/WidgetStorage.vue": {

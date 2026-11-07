@@ -144,6 +144,8 @@ const busy = computed(() => ["pulling", "building", "checking", "starting"].incl
 const running = computed(() => phase.value === "running" && !!frameSrc.value);
 
 const statusLabel = computed(() => {
+  if (displaced.value) return t("Open in another window");
+
   switch (phase.value) {
     case "pulling":
       return progress.value === null ? t("Downloading the browser image...") : t("Downloading the browser image... {percent}%", { percent: progress.value });
